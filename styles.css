@@ -1,0 +1,41 @@
+/* Arcade neon theme */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root{
+  --bg:#0b0014;
+  --panel:#12001f;
+  --neon1:#ff00e6;
+  --neon2:#00eaff;
+  --text:#f2dfff;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:'Press Start 2P', monospace;background:radial-gradient(circle at 50% 20%, #2a0040, var(--bg) 70%);color:var(--text)}
+.site-header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:4px solid rgba(255,255,255,0.02)}
+.logo{font-size:18px;color:var(--neon1);text-shadow:0 0 8px var(--neon1)}
+.subtitle{font-size:10px;color:#bfa8ff;margin-top:6px}
+.header-right{text-align:right;font-size:12px;color:#b5b0d9}
+.main-wrap{max-width:1100px;margin:28px auto;padding:0 20px}
+
+.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:3px solid var(--neon1);box-shadow:0 0 20px rgba(255,0,230,0.05);margin-bottom:20px}
+.voice-panel .lead, .arcade-panel .lead{color:#bfa8ff;font-size:12px;margin-top:6px}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn{background:var(--panel);border:2px solid var(--neon2);color:var(--text);padding:10px 12px;border-radius:8px;cursor:pointer;box-shadow:0 0 8px var(--neon2)}
+.btn.primary{background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#001018;border:0;box-shadow:0 0 10px var(--neon1),0 0 12px var(--neon2)}
+.status{margin-top:12px;color:#cfc0ff;font-size:13px}
+.people{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.person{background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;min-width:140px}
+.person.muted{opacity:0.5}
+
+.ad-slot{margin:12px 0;padding:12px;border-radius:8px;background:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.01));text-align:center}
+
+.arcade-panel h2{margin-top:0}
+.games-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.game-frame{width:100%;height:480px;border:4px solid var(--neon2);border-radius:10px;box-shadow:0 0 18px var(--neon2)}
+
+.site-footer{margin:18px auto;text-align:center;color:#bfa8ff;font-size:12px}
+@media (max-width:800px){
+  .games-grid{grid-template-columns:1fr}
+  .game-frame{height:360px}
+}

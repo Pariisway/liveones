@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Live Ones Arcade</title>
+
+  <!-- Google AdSense Meta Tag -->
+  <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+
+  <!-- Google AdSense Script -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
+    crossorigin="anonymous"></script>
+
+  <!-- Agora Web SDK -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+
+  <!-- styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-left">
+      <div class="logo">🎮 The Live Ones</div>
+      <div class="subtitle">Arcade • Voice Room • Games</div>
+    </div>
+    <div class="header-right">
+      <div id="userCount">Users: 0</div>
+      <div class="channel-name">Channel: <strong>The Live Ones</strong></div>
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <section class="panel voice-panel">
+      <h2>Live Voice Chat</h2>
+      <p class="lead">Join the ongoing voice room — no login required for testing.</p>
+
+      <div class="controls">
+        <button id="joinBtn" class="btn primary">Join Voice Room</button>
+        <button id="leaveBtn" class="btn" disabled>Leave</button>
+        <button id="muteBtn" class="btn" disabled>Mute</button>
+      </div>
+
+      <div id="status" class="status">Status: Not connected</div>
+
+      <div id="people" class="people"></div>
+    </section>
+
+    <!-- Ad slot (manual placement) - Google may add its own via Auto Ads too -->
+    <section class="ad-slot">
+      <!-- Example responsive ad slot (you can change format in AdSense later) -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1184595877548269"
+           data-ad-slot=""
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </section>
+
+    <section id="arcade-section" class="panel arcade-panel">
+      <h2>Arcade Games</h2>
+      <p class="lead">Pick a game below — replace the iframe `src` with any HTML5 game URL or local file.</p>
+
+      <div class="games-grid">
+        <!-- Example embedded game frames. Replace src with the URL of the game you want. -->
+        <iframe class="game-frame" src="https://funhtml5games.com/games/snake/" title="Game 1" allowfullscreen></iframe>
+        <iframe class="game-frame" src="https://funhtml5games.com/games/tetris/" title="Game 2" allowfullscreen></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© The Live Ones — Arcade</div>
+    <div class="credits">Built with Agora • Ads by Google</div>
+  </footer>
+
+  <!-- app logic -->
+  <script src="app.js"></script>
+</body>
+</html>

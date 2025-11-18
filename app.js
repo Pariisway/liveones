@@ -1,70 +1,99 @@
-// app.js - Agora voice room logic
-// IMPORTANT: This uses "no-token" mode (testing). For production, create and use a server token.
-const APP_ID = '19383786453e4bae98ee25658adf5a4c'; // <- your App ID
-const CHANNEL = 'The Live Ones'; // channel name
-const TOKEN = null; // for testing leave as null
+// app.js — Agora Voice Chat for "The Live Ones"
 
-const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-let localAudioTrack = null;
-let remoteUsers = new Map();
-let isMuted = false;
+const APP_ID = "966c8e41da614722a88d4372c3d95dba"; // Your new App ID
+const CHANNEL = "The Live Ones"; // Channel name
+let client;
+let localAudioTrack;
 
-const joinBtn = document.getElementById('joinBtn');
-const leaveBtn = document.getElementById('leaveBtn');
-const muteBtn = document.getElementById('muteBtn');
-const statusEl = document.getElementById('status');
-const peopleEl = document.getElementById('people');
-const userCountEl = document.getElementById('userCount');
+const joinBtn = document.getElementById("joinBtn");
+const leaveBtn = document.getElementById("leaveBtn");
+const muteBtn = document.getElementById("muteBtn");
+const statusDiv = document.getElementById("status");
+const peopleDiv = document.getElementById("people");
+const userCountDiv = document.getElementById("userCount");
 
-function setStatus(s){ statusEl.textContent = 'Status: ' + s; }
+let muted = false;
 
-joinBtn.addEventListener('click', async () => {
-  setStatus('Requesting microphone...');
+// Initialize Agora client
+async function initClient() {
+  client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+  client.on("user-published", async (user, mediaType) => {
+    await client.subscribe(user, mediaType);
+    if (mediaType === "audio") {
+      const audioTrack = user.audioTrack;
+      audioTrack.play(); // Play remote audio
+    }
+    updateUserList();
+  });
+
+  client.on("user-unpublished", (user) => {
+    updateUserList();
+  });
+
+  client.on("user-joined", updateUserList);
+  client.on("user-left", updateUserList);
+}
+
+// Join the voice channel
+async function joinChannel() {
+  joinBtn.disabled = true;
+  statusDiv.textContent = "Status: Connecting...";
+
   try {
-    // create local track (prompts for mic)
+    await client.join(APP_ID, CHANNEL, null, null); // token=null
     localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    setStatus('Joining channel...');
-    const uid = await client.join(APP_ID, CHANNEL, TOKEN, null);
     await client.publish([localAudioTrack]);
-    setStatus('Connected — you are live');
-    addPerson(uid, true);
-    updateCount();
 
-    // enable UI
-    joinBtn.disabled = true;
+    statusDiv.textContent = "Status: Connected!";
     leaveBtn.disabled = false;
     muteBtn.disabled = false;
-  } catch (err) {
-    console.error(err);
-    setStatus('Error: ' + (err.message || err));
-  }
-});
 
-leaveBtn.addEventListener('click', async () => {
-  try {
-    if (localAudioTrack) {
-      await client.unpublish([localAudioTrack]);
-      localAudioTrack.close();
-      localAudioTrack = null;
-    }
-    await client.leave();
-    setStatus('Left the channel');
-    clearPeople();
+    updateUserList();
+  } catch (err) {
+    console.error("Failed to join channel:", err);
+    statusDiv.textContent = "Status: Error joining channel. See console.";
     joinBtn.disabled = false;
-    leaveBtn.disabled = true;
-    muteBtn.disabled = true;
-  } catch (err) {
-    console.error(err);
-    setStatus('Error leaving: ' + (err.message || err));
   }
-});
+}
 
-muteBtn.addEventListener('click', async () => {
+// Leave the channel
+async function leaveChannel() {
+  if (localAudioTrack) {
+    localAudioTrack.close();
+    localAudioTrack = null;
+  }
+  await client.leave();
+
+  statusDiv.textContent = "Status: Not connected";
+  peopleDiv.innerHTML = "";
+  joinBtn.disabled = false;
+  leaveBtn.disabled = true;
+  muteBtn.disabled = true;
+}
+
+// Toggle mute
+function toggleMute() {
   if (!localAudioTrack) return;
-  isMuted = !isMuted;
-  await localAudioTrack.setEnabled(!isMuted);
-  muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
-  setStatus(isMuted ? 'You are muted' : 'You are live');
+  muted = !muted;
+  localAudioTrack.setEnabled(!muted);
+  muteBtn.textContent = muted ? "Unmute" : "Mute";
+}
+
+// Update user list
+function updateUserList() {
+  const users = client.remoteUsers ? Object.values(client.remoteUsers) : [];
+  peopleDiv.innerHTML = users.map(u => `<div>${u.uid}</div>`).join("");
+  userCountDiv.textContent = `Users: ${users.length + 1}`; // +1 for self
+}
+
+// Event listeners
+joinBtn.addEventListener("click", joinChannel);
+leaveBtn.addEventListener("click", leaveChannel);
+muteBtn.addEventListener("click", toggleMute);
+
+// Initialize client on page load
+initClient();  setStatus(isMuted ? 'You are muted' : 'You are live');
   toggleLocalMutedClass(isMuted);
 });
 

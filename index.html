@@ -1,118 +1,360 @@
-<style>
-  .games-section {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 30px 20px;
-  }
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Live Ones Arcade</title>
 
-  .games-header {
-    text-align: center;
-    font-size: 38px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    color: #222;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  }
+  <!-- Google AdSense Meta Tag -->
+  <meta name="google-adsense-account" content="ca-pub-1184595877548269">
 
-  .game-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 25px;
-  }
+  <!-- Google AdSense Script -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
+    crossorigin="anonymous"></script>
 
-  .game-wrapper {
-    background: white;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    overflow: hidden;
-    text-align: center;
-  }
+  <!-- Agora Web SDK -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
-  .game-wrapper iframe {
-    width: 100%;
-    height: 180px; /* smaller games */
-    border: 0;
-  }
+  <style>
+    /* Hybrid Neon + Clean Grid theme (Option C) */
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-  /* Make htmlgames.com embeds smaller too */
-  .game-wrapper script,
-  .game-wrapper div {
-    width: 100%;
-  }
-</style>
+    :root{
+      --bg:#0b0014;
+      --panel:#12001f;
+      --neon1:#ff00e6;
+      --neon2:#00eaff;
+      --text:#f2dfff;
+      --muted:#bfa8ff;
+    }
 
-<div class="games-section">
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:'Press Start 2P',monospace;background:radial-gradient(circle at 50% 20%, #2a0040, var(--bg) 70%);color:var(--text)}
+    .site-header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-bottom:4px solid rgba(255,255,255,0.02)}
+    .logo{font-size:18px;color:var(--neon1);text-shadow:0 0 8px var(--neon1)}
+    .subtitle{font-size:10px;color:var(--muted);margin-top:6px}
+    .header-right{text-align:right;font-size:12px;color:#b5b0d9}
+    .main-wrap{max-width:1400px;margin:28px auto;padding:0 20px}
 
-  <div class="games-header">Games</div>
+    /* Panels */
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:3px solid var(--neon1);box-shadow:0 0 40px rgba(2,6,23,0.6);margin-bottom:20px}
+    .voice-panel .lead, .arcade-panel .lead{color:var(--muted);font-size:12px;margin-top:6px}
 
-  <div class="game-grid">
+    /* Controls */
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{background:var(--panel);border:2px solid var(--neon2);color:var(--text);padding:10px 12px;border-radius:8px;cursor:pointer;box-shadow:0 0 8px var(--neon2)}
+    .btn.primary{background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#001018;border:0;box-shadow:0 0 10px var(--neon1),0 0 12px var(--neon2)}
+    .status{margin-top:12px;color:var(--muted);font-size:13px}
+    .people{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .person{background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;min-width:140px}
+    .person.muted{opacity:0.5}
 
-    <!-- Space Pinball -->
-    <div class="game-wrapper">
-      <script src="https://cdn.htmlgames.com/embed.js?game=SpacePinball&bgcolor=white"></script>
+    /* Ads */
+    .ad-slot{margin:12px 0;padding:12px;border-radius:8px;background:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.01));text-align:center}
+
+    /* Arcade header */
+    .arcade-title{
+      color:var(--neon2);
+      text-shadow:0 0 12px var(--neon2);
+      font-size:20px;
+      margin:6px 0 14px 0;
+    }
+
+    /* Games grid (4-col) */
+    .games-grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:18px;
+      width:100%;
+    }
+
+    .game-card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 3px solid var(--neon2);
+      border-radius: 10px;
+      box-shadow: 0 0 18px var(--neon2);
+      background: #000;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .game-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 25px var(--neon2);
+    }
+
+    .game-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.7;
+    }
+
+    .game-title {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 8px;
+      font-size: 10px;
+      text-align: center;
+      color: white;
+    }
+
+    /* Popup Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 90%;
+      height: 90%;
+      background: var(--panel);
+      border-radius: 12px;
+      border: 3px solid var(--neon1);
+      box-shadow: 0 0 40px var(--neon1);
+      overflow: hidden;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--neon1);
+      color: var(--text);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 1001;
+      font-weight: bold;
+    }
+
+    .modal-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Responsive */
+    @media (max-width:1100px){
+      .games-grid{grid-template-columns: repeat(2, 1fr);}
+    }
+    @media (max-width:700px){
+      .games-grid{grid-template-columns: 1fr;}
+      .game-card{aspect-ratio: 4/3;}
+      .modal-content {
+        width: 95%;
+        height: 95%;
+      }
+    }
+
+    /* Footer */
+    .site-footer{margin:18px auto;text-align:center;color:var(--muted);font-size:12px}
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-left">
+      <div class="logo">🎮 The Live Ones</div>
+      <div class="subtitle">Arcade • Voice Room • Games</div>
     </div>
-
-    <!-- The Lost Crown -->
-    <div class="game-wrapper">
-      <script src="https://cdn.htmlgames.com/embed.js?game=TheLostCrown&bgcolor=white"></script>
+    <div class="header-right">
+      <div id="userCount">Users: 0</div>
+      <div class="channel-name">Channel: <strong>The Live Ones</strong></div>
     </div>
+  </header>
 
-    <!-- Bullet Fury 2 -->
-    <div class="game-wrapper">
-      <iframe 
-        src="https://1000webgames.com/games/bulletfury2/html5/"
-        scrolling="no"
-        allowfullscreen>
-      </iframe>
-    </div>
+  <main class="main-wrap">
 
-  </div>
-</div>    <!-- =============================== -->
+    <!-- VOICE CHAT PANEL -->
+    <section class="panel voice-panel">
+      <h2>Live Voice Chat</h2>
+      <p class="lead">Join the ongoing voice room — no login required for testing.</p>
 
-    <section id="games" style="width:100%; display:flex; flex-direction:column; gap:40px; align-items:center; padding:40px 0;">
+      <div class="controls">
+        <button id="joinBtn" class="btn primary">Join Voice Room</button>
+        <button id="leaveBtn" class="btn" disabled>Leave</button>
+        <button id="muteBtn" class="btn" disabled>Mute</button>
+      </div>
 
-      <!-- ===== GAME #1: Space Pinball ===== -->
-      <div style="width:900px; max-width:100%; display:flex; justify-content:center;">
-        <div>
-          <script src="https://cdn.htmlgames.com/embed.js?game=SpacePinball&bgcolor=white"></script>
+      <div id="status" class="status">Status: Not connected</div>
+      <div id="people" class="people"></div>
+    </section>
+
+    <!-- ADSENSE AUTO AD SLOT -->
+    <section class="ad-slot">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1184595877548269"
+           data-ad-slot=""
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </section>
+
+    <!-- =============================== -->
+    <!-- 🎮 ARCADE GAME SECTION START   -->
+    <!-- =============================== -->
+
+    <section class="panel arcade-panel">
+      <h2 class="arcade-title">🎮 Games</h2>
+      <p class="lead">Click on any game to play in fullscreen mode</p>
+
+      <!-- 4-column neon grid -->
+      <div class="games-grid" id="gamesGrid">
+
+        <!-- Game cards with thumbnails -->
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/war-the-knights/index.html" data-title="War The Knights">
+          <div class="game-title">War The Knights</div>
         </div>
-      </div>
 
-      <!-- ===== GAME #2: The Lost Crown ===== -->
-      <div style="width:900px; max-width:100%; display:flex; justify-content:center;">
-        <div>
-          <script src="https://cdn.htmlgames.com/embed.js?game=TheLostCrown&bgcolor=white"></script>
-          <script src="https://cloud.onlinegames.io/games/2024/unity3/stickman-gta-city/index-og.html
-"></script>
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/bloxdhop-io/index.html" data-title="BloxdHop.io">
+          <div class="game-title">BloxdHop.io</div>
         </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/smash-karts/index.html" data-title="Smash Karts">
+          <div class="game-title">Smash Karts</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/grow-a-garden---growden-io/index.html" data-title="Grow a Garden">
+          <div class="game-title">Grow a Garden</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/shellshockersio/index.html" data-title="Shell Shockers">
+          <div class="game-title">Shell Shockers</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/evowarsio/index.html" data-title="EvoWars.io">
+          <div class="game-title">EvoWars.io</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/escape-from-pizzeria/index.html" data-title="Escape From Pizzeria">
+          <div class="game-title">Escape From Pizzeria</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/poxel-io/index.html" data-title="Poxel.io">
+          <div class="game-title">Poxel.io</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/fragen/index.html" data-title="Fragen">
+          <div class="game-title">Fragen</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/overtide-io/index.html" data-title="Overtide.io">
+          <div class="game-title">Overtide.io</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/traffic-rider-vvq/index.html" data-title="Traffic Rider">
+          <div class="game-title">Traffic Rider</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/police-chase-simulator/index.html" data-title="Police Chase Simulator">
+          <div class="game-title">Police Chase Simulator</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/drive-quest---car-game/index.html" data-title="Drive Quest">
+          <div class="game-title">Drive Quest</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/fighter-aircraft-pilot/index.html" data-title="Fighter Aircraft Pilot">
+          <div class="game-title">Fighter Aircraft Pilot</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/crazy-stunt-cars-multiplayer/index.html" data-title="Crazy Stunt Cars">
+          <div class="game-title">Crazy Stunt Cars</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/deadshot-io/index.html" data-title="Deadshot.io">
+          <div class="game-title">Deadshot.io</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/unmatched-ego---soccer-action/index.html" data-title="Unmatched Ego">
+          <div class="game-title">Unmatched Ego</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/soccer-legends-2021/index.html" data-title="Soccer Legends 2021">
+          <div class="game-title">Soccer Legends 2021</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/wrestle-bros/index.html" data-title="Wrestle Bros">
+          <div class="game-title">Wrestle Bros</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/cg-fc-24/index.html" data-title="CG FC 24">
+          <div class="game-title">CG FC 24</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/steal-brainrot-online/index.html" data-title="Steal Brainrot Online">
+          <div class="game-title">Steal Brainrot Online</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/monster-truck-demolition-derby/index.html" data-title="Monster Truck Derby">
+          <div class="game-title">Monster Truck Derby</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/derby-crash-2/index.html" data-title="Derby Crash 2">
+          <div class="game-title">Derby Crash 2</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/911-prey/index.html" data-title="911 Prey">
+          <div class="game-title">911 Prey</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/evil-father/index.html" data-title="Evil Father">
+          <div class="game-title">Evil Father</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/death-attraction-horror-game/index.html" data-title="Death Attraction">
+          <div class="game-title">Death Attraction</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/zombie-derby-2-kya/index.html" data-title="Zombie Derby 2">
+          <div class="game-title">Zombie Derby 2</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/world-z-defense---zombie-defense/index.html" data-title="World Z Defense">
+          <div class="game-title">World Z Defense</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/tanks-arena-io-craft-combat/index.html" data-title="Tanks Arena IO">
+          <div class="game-title">Tanks Arena IO</div>
+        </div>
+
+        <div class="game-card" data-game="https://gameframe.crazygames.com/games/transporter-hot-pursuit/index.html" data-title="Transporter Hot Pursuit">
+          <div class="game-title">Transporter Hot Pursuit</div>
+        </div>
+
       </div>
-
-      <!-- ===== GAME #3: Bullet Fury 2 ===== -->
-      <div style="width:900px; max-width:100%; display:flex; justify-content:center;">
-        <iframe 
-          src="https://1000webgames.com/games/bulletfury2/html5/" 
-          scrolling="no" 
-          allowfullscreen 
-          width="900" 
-          height="506" 
-          frameborder="0"
-          style="border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.4);">
-        </iframe>
-      </div>
-
-      <!-- ========================================================== -->
-      <!-- 🎮 ADD NEW GAMES BELOW THIS COMMENT                        -->
-      <!-- Just copy/paste a new iframe or script block here          -->
-      <!-- ========================================================== -->
-
     </section>
 
     <!-- =============================== -->
     <!-- 🎮 ARCADE GAME SECTION END     -->
     <!-- =============================== -->
+
+    <!-- Game Popup Modal -->
+    <div id="gameModal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close" id="modalClose">X</button>
+        <iframe id="gameIframe" class="modal-iframe" allow="fullscreen"></iframe>
+      </div>
+    </div>
 
   </main>
 
@@ -122,54 +364,172 @@
     <div class="credits">Built with Agora • Ads by Google</div>
   </footer>
 
-  <!-- app logic -->
-  <script src="app.js"></script>
+  <script>
+    // app.js — Agora voice chat (test mode, tokenless)
+    // Replace APP_ID if you later change projects
+    const APP_ID = "966c8e41da614722a88d4372c3d95dba";
+    const CHANNEL = "The Live Ones";
+    const TOKEN = null; // test mode
 
-</body>
-</html>      <script src="https://cdn.htmlgames.com/embed.js?game=SpacePinball&bgcolor=white"></script>
-    </div>
-  </div>
+    let client = null;
+    let localAudioTrack = null;
 
-  <!-- The Lost Crown -->
-  <div style="width:900px; max-width:100%; display:flex; justify-content:center;">
-    <div>
-      <script src="https://cdn.htmlgames.com/embed.js?game=TheLostCrown&bgcolor=white"></script>
-    </div>
-  </div>
+    const joinBtn = document.getElementById("joinBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const muteBtn = document.getElementById("muteBtn");
+    const statusEl = document.getElementById("status");
+    const peopleEl = document.getElementById("people");
+    const userCountEl = document.getElementById("userCount");
 
-  <!-- Bullet Fury 2 -->
-  <div style="width:900px; max-width:100%; display:flex; justify-content:center;">
-    <iframe 
-      src="https://1000webgames.com/games/bulletfury2/html5/" 
-      scrolling="no" 
-      allowfullscreen 
-      width="900" 
-      height="506" 
-      frameborder="0"
-      style="border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.4);">
-    </iframe>
-  </div>
+    function setStatus(text){
+      if(statusEl) statusEl.textContent = "Status: " + text;
+    }
 
-  <footer class="site-footer">
-    <div>© The Live Ones — Arcade</div>
-    <div class="credits">Built with Agora • Ads by Google</div>
-  </footer>
+    async function initClient(){
+      client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-  <!-- app logic -->
-  <script src="app.js"></script>
-</body>
-</html>  
+      client.on("user-published", async (user, mediaType) => {
+        await client.subscribe(user, mediaType);
+        if (mediaType === "audio") {
+          user.audioTrack.play();
+        }
+        renderUsers();
+      });
 
-</div>
-    </section>
-  </main>
+      client.on("user-unpublished", (user) => {
+        renderUsers();
+      });
 
-  <footer class="site-footer">
-    <div>© The Live Ones — Arcade</div>
-    <div class="credits">Built with Agora • Ads by Google</div>
-  </footer>
+      client.on("user-left", (user) => {
+        renderUsers();
+      });
+    }
 
-  <!-- app logic -->
-  <script src="app.js"></script>
+    async function joinChannel(){
+      if(!client) await initClient();
+      try {
+        setStatus("Requesting microphone...");
+        localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        setStatus("Joining channel...");
+        await client.join(APP_ID, CHANNEL, TOKEN, null);
+        await client.publish([localAudioTrack]);
+        setStatus("Connected — you are live");
+        joinBtn.disabled = true;
+        leaveBtn.disabled = false;
+        muteBtn.disabled = false;
+        renderUsers();
+      } catch (err) {
+        console.error("Agora join error:", err);
+        setStatus("Error joining channel (see console)");
+        joinBtn.disabled = false;
+      }
+    }
+
+    async function leaveChannel(){
+      try {
+        if(localAudioTrack){
+          await client.unpublish([localAudioTrack]);
+          localAudioTrack.close();
+          localAudioTrack = null;
+        }
+        await client.leave();
+      } catch(e){
+        console.warn("Leave error", e);
+      }
+      setStatus("Not connected");
+      peopleEl.innerHTML = "";
+      joinBtn.disabled = false;
+      leaveBtn.disabled = true;
+      muteBtn.disabled = true;
+      renderUsers();
+    }
+
+    function toggleMute(){
+      if(!localAudioTrack) return;
+      const enabled = localAudioTrack.enabled;
+      localAudioTrack.setEnabled(!enabled);
+      muteBtn.textContent = enabled ? "Unmute" : "Mute";
+      setStatus(enabled ? "You are muted" : "You are live");
+    }
+
+    function renderUsers(){
+      if(!client) return;
+      const remote = client.remoteUsers ? Object.values(client.remoteUsers) : [];
+      peopleEl.innerHTML = "";
+      // local user first
+      if(localAudioTrack){
+        const d = document.createElement("div");
+        d.className = "person";
+        d.innerHTML = "<div style='font-weight:700'>You</div><div style='font-size:12px;color:var(--muted)'>Local (publishing)</div>";
+        peopleEl.appendChild(d);
+      }
+      // remote users
+      remote.forEach(u => {
+        const div = document.createElement("div");
+        div.className = "person";
+        div.id = "u-" + u.uid;
+        div.innerHTML = "<div style='font-weight:700'>User " + u.uid + "</div><div style='font-size:12px;color:var(--muted)'>Remote</div>";
+        peopleEl.appendChild(div);
+      });
+      userCountEl.textContent = "Users: " + (remote.length + (localAudioTrack ? 1 : 0));
+    }
+
+    // Game popup functionality
+    const gameModal = document.getElementById('gameModal');
+    const gameIframe = document.getElementById('gameIframe');
+    const modalClose = document.getElementById('modalClose');
+    const gameCards = document.querySelectorAll('.game-card');
+
+    // Open game in popup
+    gameCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const gameUrl = card.getAttribute('data-game');
+        const gameTitle = card.getAttribute('data-title');
+        
+        gameIframe.src = gameUrl;
+        gameModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+      });
+    });
+
+    // Close popup
+    modalClose.addEventListener('click', () => {
+      gameModal.style.display = 'none';
+      gameIframe.src = ''; // Stop the game
+      document.body.style.overflow = 'auto'; // Re-enable scrolling
+    });
+
+    // Close popup when clicking outside the content
+    gameModal.addEventListener('click', (e) => {
+      if (e.target === gameModal) {
+        gameModal.style.display = 'none';
+        gameIframe.src = ''; // Stop the game
+        document.body.style.overflow = 'auto'; // Re-enable scrolling
+      }
+    });
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && gameModal.style.display === 'flex') {
+        gameModal.style.display = 'none';
+        gameIframe.src = ''; // Stop the game
+        document.body.style.overflow = 'auto'; // Re-enable scrolling
+      }
+    });
+
+    // wire buttons
+    joinBtn.addEventListener("click", joinChannel);
+    leaveBtn.addEventListener("click", leaveChannel);
+    muteBtn.addEventListener("click", toggleMute);
+
+    // init
+    initClient().catch(e => console.error(e));
+
+    // tidy up on unload
+    window.addEventListener("beforeunload", async () => {
+      try { await leaveChannel(); } catch(e) {}
+    });
+  </script>
+
 </body>
 </html>

@@ -1,21 +1,11 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>The Live Ones Arcade</title>
-
-  <!-- Google AdSense Meta Tag -->
-  <meta name="google-adsense-account" content="ca-pub-1184595877548269">
-
-  <!-- Google AdSense Script -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
-    crossorigin="anonymous"></script>
-
-  <!-- Agora Web SDK -->
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-
-  <style>
+  <title>The Live Ones Arcade</title>  <!-- Google AdSense Meta Tag -->  <meta name="google-adsense-account" content="ca-pub-1184595877548269">  <!-- Google AdSense Script -->  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
+    crossorigin="anonymous"></script>  <!-- Agora Web SDK -->  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>  <style>
     /* Hybrid Neon + Clean Grid theme (Option C) */
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -71,103 +61,60 @@
     .game-card {
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 9;
+      padding-top: 56.25%; /* 16:9 aspect by padding trick */
       border: 3px solid var(--neon2);
       border-radius: 10px;
       box-shadow: 0 0 18px var(--neon2);
-      background: #000;
+      background: linear-gradient(180deg,#000,#08020b);
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.18s, box-shadow 0.18s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:120px;
     }
 
-    .game-card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 25px var(--neon2);
+    .game-card .content {
+      position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;
     }
 
-    .game-thumbnail {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.7;
+    .game-thumb {
+      width:64px;height:64px;border-radius:8px;margin-bottom:8px;object-fit:cover;background:#111;border:2px solid rgba(255,255,255,0.04);
     }
 
     .game-title {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 8px;
-      font-size: 10px;
-      text-align: center;
-      color: white;
+      font-size:10px;text-align:center;color:var(--text);text-shadow:0 0 6px rgba(0,0,0,0.6);
     }
+
+    .game-card:hover{transform:translateY(-4px);box-shadow:0 0 30px var(--neon2)}
 
     /* Popup Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { position: relative; width: 90%; height: 90%; background: var(--panel); border-radius: 12px; border: 3px solid var(--neon1); box-shadow: 0 0 40px var(--neon1); overflow: hidden; }
+    .modal-close { position: absolute; top: 10px; right: 10px; background: var(--neon1); color: var(--text); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; z-index: 1001; font-weight: bold; }
+    .modal-iframe { width: 100%; height: 100%; border: none; }
 
-    .modal-content {
-      position: relative;
-      width: 90%;
-      height: 90%;
-      background: var(--panel);
-      border-radius: 12px;
-      border: 3px solid var(--neon1);
-      box-shadow: 0 0 40px var(--neon1);
-      overflow: hidden;
-    }
+    /* Username modal */
+    .username-modal { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.8); z-index:2000 }
+    .username-box { background:var(--panel); padding:20px; border-radius:12px; border: 3px solid var(--neon2); width:320px; text-align:center }
+    .username-box input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
 
-    .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: var(--neon1);
-      color: var(--text);
-      border: none;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      z-index: 1001;
-      font-weight: bold;
-    }
+    /* Chat rooms */
+    .rooms { display:flex; gap:8px; flex-wrap:wrap; margin: 12px 0 18px 0 }
+    .room-btn { background:transparent;border:2px solid rgba(255,255,255,0.03);color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer }
+    .room-btn.active{border-color:var(--neon1);box-shadow:0 0 12px var(--neon1) }
 
-    .modal-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
+    /* Notification */
+    .notif { position: fixed; top: 18px; right: 18px; background: rgba(0,0,0,0.8); color: var(--text); padding:10px 14px; border-radius:10px; border:2px solid var(--neon1); box-shadow:0 0 16px var(--neon1); z-index:3000 }
 
     /* Responsive */
-    @media (max-width:1100px){
-      .games-grid{grid-template-columns: repeat(2, 1fr);}
-    }
-    @media (max-width:700px){
-      .games-grid{grid-template-columns: 1fr;}
-      .game-card{aspect-ratio: 4/3;}
-      .modal-content {
-        width: 95%;
-        height: 95%;
-      }
-    }
+    @media (max-width:1100px){ .games-grid{grid-template-columns: repeat(2, 1fr);} }
+    @media (max-width:700px){ .games-grid{grid-template-columns: 1fr;} .modal-content{width:96%;height:92%} }
 
     /* Footer */
     .site-footer{margin:18px auto;text-align:center;color:var(--muted);font-size:12px}
-  </style>
-</head>
+  </style></head>
 <body>
   <!-- HEADER -->
   <header class="site-header">
@@ -177,291 +124,240 @@
     </div>
     <div class="header-right">
       <div id="userCount">Users: 0</div>
-      <div class="channel-name">Channel: <strong>The Live Ones</strong></div>
+      <div class="channel-name">Channel: <strong id="currentChannel">The Live Ones</strong></div>
     </div>
-  </header>
+  </header>  <main class="main-wrap"><!-- VOICE CHAT PANEL -->
+<section class="panel voice-panel">
+  <h2>Live Voice Chat</h2>
+  <p class="lead">Join the ongoing voice room — enter a username first.</p>
 
-  <main class="main-wrap">
+  <div class="controls">
+    <button id="joinBtn" class="btn primary">Join Voice Room</button>
+    <button id="leaveBtn" class="btn" disabled>Leave</button>
+    <button id="muteBtn" class="btn" disabled>Mute</button>
+  </div>
 
-    <!-- VOICE CHAT PANEL -->
-    <section class="panel voice-panel">
-      <h2>Live Voice Chat</h2>
-      <p class="lead">Join the ongoing voice room — no login required for testing.</p>
+  <div id="status" class="status">Status: Not connected</div>
+  <div id="people" class="people"></div>
 
-      <div class="controls">
-        <button id="joinBtn" class="btn primary">Join Voice Room</button>
-        <button id="leaveBtn" class="btn" disabled>Leave</button>
-        <button id="muteBtn" class="btn" disabled>Mute</button>
-      </div>
+  <div style="margin-top:14px">
+    <div class="rooms">
+      <button class="room-btn active" onclick="switchRoom('The Live Ones')">General</button>
+      <button class="room-btn" onclick="switchRoom('Roblox')">Roblox</button>
+      <button class="room-btn" onclick="switchRoom('Fortnite')">Fortnite</button>
+      <button class="room-btn" onclick="switchRoom('Minecraft')">Minecraft</button>
+      <button class="room-btn" onclick="switchRoom('Warzone')">Warzone</button>
+      <button class="room-btn" onclick="switchRoom('Music')">Music</button>
+      <button class="room-btn" onclick="switchRoom('Games')">Games</button>
+      <button class="room-btn" onclick="switchRoom('67')">67</button>
+      <button class="room-btn" onclick="switchRoom('Group7')">Group7</button>
+    </div>
+  </div>
+</section>
 
-      <div id="status" class="status">Status: Not connected</div>
-      <div id="people" class="people"></div>
-    </section>
+<!-- ADSENSE AUTO AD SLOT -->
+<section class="ad-slot">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-1184595877548269"
+       data-ad-slot=""
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</section>
 
-    <!-- ADSENSE AUTO AD SLOT -->
-    <section class="ad-slot">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-1184595877548269"
-           data-ad-slot=""
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </section>
-
-    <!-- =============================== -->
-<!-- 🎮 BEGIN GAME GRID (HTMLGames) -->
 <!-- =============================== -->
 
-<div class="games-grid">
-
-  <!-- Airport Sniper -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=AirportSniper&bgcolor=white"></script>
-  </div>
-
-  <!-- Galaxy Shooter -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=GalaxyShooter&bgcolor=white"></script>
-  </div>
-
-  <!-- Archer -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=Archer&bgcolor=white"></script>
-  </div>
-
-  <!-- Bowling -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=Bowling&bgcolor=white"></script>
-  </div>
-
-  <!-- Red and Green -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=RedAndGreen&bgcolor=white"></script>
-  </div>
-
-  <!-- Soccer Pinball -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=SoccerPinball&bgcolor=white"></script>
-  </div>
-
-  <!-- Catch The Thief -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=CatchTheThief&bgcolor=white"></script>
-  </div>
-
-  <!-- Ninja Darts -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=NinjaDarts&bgcolor=white"></script>
-  </div>
-
-  <!-- Neon Breaker -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=NeonBreaker&bgcolor=white"></script>
-  </div>
-
-  <!-- Neon Arkanoid -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=NeonArkanoid&bgcolor=white"></script>
-  </div>
-
-  <!-- Ninja Breakout -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=NinjaBreakout&bgcolor=white"></script>
-  </div>
-
-  <!-- The Lost Crown -->
-  <div class="game-box">
-    <script src="https://cdn.htmlgames.com/embed.js?game=TheLostCrown&bgcolor=white"></script>
-  </div>
-
+  <!-- 🎮 BEGIN GAME GRID (ICON CARDS) -->  <!-- =============================== -->  <section class="panel arcade-panel">
+    <h2 class="arcade-title">🎮 Games</h2><div class="games-grid" id="gamesGrid">
+  <!-- cards will be inserted here by JS -->
 </div>
 
-<!-- END HTMLGames section -->
-<!-- I will place the CrazyGames Smart-Mode games BELOW this block -->
+  </section>  <!-- END GAME GRID --><!-- Game Popup Modal -->
+<div id="gameModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" id="modalClose">X</button>
+    <iframe id="gameIframe" class="modal-iframe" allow="fullscreen"></iframe>
+  </div>
+</div>
 
-    <!-- Game Popup Modal -->
-    <div id="gameModal" class="modal">
-      <div class="modal-content">
-        <button class="modal-close" id="modalClose">X</button>
-        <iframe id="gameIframe" class="modal-iframe" allow="fullscreen"></iframe>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
+  </main>  <!-- FOOTER -->  <footer class="site-footer">
     <div>© The Live Ones — Arcade</div>
     <div class="credits">Built with Agora • Ads by Google</div>
-  </footer>
+  </footer>  <script>
+    // --- Game list (converted from htmlgames embeds) ---
+    const GAMES = [
+      {slug:'AirportSniper', title:'Airport Sniper', thumb:'https://cdn.htmlgames.com/AirportSniper/cover.jpg', url:'https://cdn.htmlgames.com/AirportSniper/index.html'},
+      {slug:'GalaxyShooter', title:'Galaxy Shooter', thumb:'https://cdn.htmlgames.com/GalaxyShooter/cover.jpg', url:'https://cdn.htmlgames.com/GalaxyShooter/index.html'},
+      {slug:'Archer', title:'Archer', thumb:'https://cdn.htmlgames.com/Archer/cover.jpg', url:'https://cdn.htmlgames.com/Archer/index.html'},
+      {slug:'Bowling', title:'Bowling', thumb:'https://cdn.htmlgames.com/Bowling/cover.jpg', url:'https://cdn.htmlgames.com/Bowling/index.html'},
+      {slug:'RedAndGreen', title:'Red & Green', thumb:'https://cdn.htmlgames.com/RedAndGreen/cover.jpg', url:'https://cdn.htmlgames.com/RedAndGreen/index.html'},
+      {slug:'SoccerPinball', title:'Soccer Pinball', thumb:'https://cdn.htmlgames.com/SoccerPinball/cover.jpg', url:'https://cdn.htmlgames.com/SoccerPinball/index.html'},
+      {slug:'CatchTheThief', title:'Catch The Thief', thumb:'https://cdn.htmlgames.com/CatchTheThief/cover.jpg', url:'https://cdn.htmlgames.com/CatchTheThief/index.html'},
+      {slug:'NinjaDarts', title:'Ninja Darts', thumb:'https://cdn.htmlgames.com/NinjaDarts/cover.jpg', url:'https://cdn.htmlgames.com/NinjaDarts/index.html'},
+      {slug:'NeonBreaker', title:'Neon Breaker', thumb:'https://cdn.htmlgames.com/NeonBreaker/cover.jpg', url:'https://cdn.htmlgames.com/NeonBreaker/index.html'},
+      {slug:'NeonArkanoid', title:'Neon Arkanoid', thumb:'https://cdn.htmlgames.com/NeonArkanoid/cover.jpg', url:'https://cdn.htmlgames.com/NeonArkanoid/index.html'},
+      {slug:'NinjaBreakout', title:'Ninja Breakout', thumb:'https://cdn.htmlgames.com/NinjaBreakout/cover.jpg', url:'https://cdn.htmlgames.com/NinjaBreakout/index.html'},
+      {slug:'TheLostCrown', title:'The Lost Crown', thumb:'https://cdn.htmlgames.com/TheLostCrown/cover.jpg', url:'https://cdn.htmlgames.com/TheLostCrown/index.html'},
+    ];
 
-  <script>
-    // app.js — Agora voice chat (test mode, tokenless)
-    // Replace APP_ID if you later change projects
-    const APP_ID = "966c8e41da614722a88d4372c3d95dba";
-    const CHANNEL = "The Live Ones";
-    const TOKEN = null; // test mode
+    // populate grid as icon cards
+    const grid = document.getElementById('gamesGrid');
+    GAMES.forEach(g => {
+      const card = document.createElement('div');
+      card.className = 'game-card';
+      card.setAttribute('data-game', g.url);
+      card.setAttribute('data-title', g.title);
 
+      card.innerHTML = `\
+        <div class="content">\
+          <img class="game-thumb" src="${g.thumb}" alt="${g.title}" onerror="this.style.display='none'">\
+          <div class="game-title">${g.title}</div>\
+        </div>`;
+
+      card.addEventListener('click', () => openGame(g.url, g.title));
+      grid.appendChild(card);
+    });
+
+    // modal open/close
+    const gameModal = document.getElementById('gameModal');
+    const gameIframe = document.getElementById('gameIframe');
+    const modalClose = document.getElementById('modalClose');
+
+    function openGame(url, title){
+      // try to open embed-friendly URL first
+      gameIframe.src = url;
+      gameModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal(){
+      gameModal.style.display = 'none';
+      gameIframe.src = '';
+      document.body.style.overflow = 'auto';
+    }
+    modalClose.addEventListener('click', closeModal);
+    gameModal.addEventListener('click', (e)=>{ if(e.target===gameModal) closeModal(); });
+
+    // --- Username modal ---
+    function showUsernameModal(){
+      if(localStorage.getItem('tl_username')) return; // already set
+      const m = document.createElement('div');
+      m.className = 'username-modal';
+      m.id = 'usernameModal';
+      m.innerHTML = `<div class="username-box">\
+        <h3 style="margin:0 0 10px 0">Enter a display name</h3>\
+        <input id="usernameInput" placeholder="Your name..." maxlength="24" />\
+        <div style="margin-top:12px">\
+          <button class="btn primary" id="saveName">Enter</button>\
+        </div>\
+      </div>`;
+      document.body.appendChild(m);
+      document.getElementById('saveName').addEventListener('click', ()=>{
+        const v = document.getElementById('usernameInput').value.trim();
+        if(!v) return alert('Please enter a name');
+        localStorage.setItem('tl_username', v);
+        m.remove();
+      });
+    }
+    showUsernameModal();
+
+    // --- Chat rooms ---
+    let CHANNEL = 'The Live Ones';
+    function switchRoom(name){
+      CHANNEL = name;
+      document.getElementById('currentChannel').textContent = name;
+      // update active buttons
+      document.querySelectorAll('.room-btn').forEach(b=>b.classList.toggle('active', b.textContent===name));
+      // if connected, leave and rejoin new channel
+      if(client){
+        leaveChannel().then(()=>{
+          setTimeout(()=>joinChannel(),300);
+        });
+      }
+    }
+
+    // --- Notifications ---
+    function showNotification(text){
+      const n = document.createElement('div');
+      n.className = 'notif';
+      n.innerHTML = text;
+      document.body.appendChild(n);
+      setTimeout(()=>n.remove(),4000);
+    }
+
+    // --- Agora voice chat (test mode) ---
+    const APP_ID = '966c8e41da614722a88d4372c3d95dba'; // your test App ID
     let client = null;
     let localAudioTrack = null;
 
-    const joinBtn = document.getElementById("joinBtn");
-    const leaveBtn = document.getElementById("leaveBtn");
-    const muteBtn = document.getElementById("muteBtn");
-    const statusEl = document.getElementById("status");
-    const peopleEl = document.getElementById("people");
-    const userCountEl = document.getElementById("userCount");
+    const joinBtn = document.getElementById('joinBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const statusEl = document.getElementById('status');
+    const peopleEl = document.getElementById('people');
+    const userCountEl = document.getElementById('userCount');
 
-    function setStatus(text){
-      if(statusEl) statusEl.textContent = "Status: " + text;
-    }
+    function setStatus(text){ if(statusEl) statusEl.textContent = 'Status: ' + text; }
 
     async function initClient(){
-      client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+      client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
-      client.on("user-published", async (user, mediaType) => {
+      client.on('user-published', async (user, mediaType)=>{
         await client.subscribe(user, mediaType);
-        if (mediaType === "audio") {
-          user.audioTrack.play();
-        }
+        if(mediaType==='audio') user.audioTrack.play();
         renderUsers();
+        // show notification for join
+        const name = user.uid || 'User';
+        showNotification(`<strong>${name}</strong> joined`);
       });
 
-      client.on("user-unpublished", (user) => {
-        renderUsers();
-      });
-
-      client.on("user-left", (user) => {
-        renderUsers();
-      });
+      client.on('user-unpublished', (user)=>{ renderUsers(); });
+      client.on('user-left', (user)=>{ renderUsers(); showNotification(`<strong>User ${user.uid}</strong> left`); });
     }
 
     async function joinChannel(){
       if(!client) await initClient();
-      try {
-        setStatus("Requesting microphone...");
+      try{
+        setStatus('Requesting mic...');
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        setStatus("Joining channel...");
-        await client.join(APP_ID, CHANNEL, TOKEN, null);
+        setStatus('Joining ' + CHANNEL + '...');
+        await client.join(APP_ID, CHANNEL, null, null);
         await client.publish([localAudioTrack]);
-        setStatus("Connected — you are live");
-        joinBtn.disabled = true;
-        leaveBtn.disabled = false;
-        muteBtn.disabled = false;
+        setStatus('Connected — you are live');
+        joinBtn.disabled=true; leaveBtn.disabled=false; muteBtn.disabled=false;
         renderUsers();
-      } catch (err) {
-        console.error("Agora join error:", err);
-        setStatus("Error joining channel (see console)");
-        joinBtn.disabled = false;
-      }
+        // announce locally
+        const nick = localStorage.getItem('tl_username') || 'Guest';
+        showNotification(`You joined as <strong>${nick}</strong> in ${CHANNEL}`);
+      }catch(err){ console.error(err); setStatus('Error joining (see console)'); }
     }
 
     async function leaveChannel(){
-      try {
-        if(localAudioTrack){
-          await client.unpublish([localAudioTrack]);
-          localAudioTrack.close();
-          localAudioTrack = null;
-        }
-        await client.leave();
-      } catch(e){
-        console.warn("Leave error", e);
-      }
-      setStatus("Not connected");
-      peopleEl.innerHTML = "";
-      joinBtn.disabled = false;
-      leaveBtn.disabled = true;
-      muteBtn.disabled = true;
-      renderUsers();
+      try{
+        if(localAudioTrack){ await client.unpublish([localAudioTrack]); localAudioTrack.close(); localAudioTrack=null; }
+        if(client) await client.leave();
+      }catch(e){ console.warn(e); }
+      setStatus('Not connected'); joinBtn.disabled=false; leaveBtn.disabled=true; muteBtn.disabled=true; peopleEl.innerHTML=''; renderUsers();
     }
 
-    function toggleMute(){
-      if(!localAudioTrack) return;
-      const enabled = localAudioTrack.enabled;
-      localAudioTrack.setEnabled(!enabled);
-      muteBtn.textContent = enabled ? "Unmute" : "Mute";
-      setStatus(enabled ? "You are muted" : "You are live");
-    }
+    function toggleMute(){ if(!localAudioTrack) return; const enabled = localAudioTrack.enabled; localAudioTrack.setEnabled(!enabled); muteBtn.textContent = enabled ? 'Unmute' : 'Mute'; setStatus(enabled ? 'You are muted' : 'You are live'); }
 
-    function renderUsers(){
-      if(!client) return;
-      const remote = client.remoteUsers ? Object.values(client.remoteUsers) : [];
-      peopleEl.innerHTML = "";
-      // local user first
-      if(localAudioTrack){
-        const d = document.createElement("div");
-        d.className = "person";
-        d.innerHTML = "<div style='font-weight:700'>You</div><div style='font-size:12px;color:var(--muted)'>Local (publishing)</div>";
-        peopleEl.appendChild(d);
-      }
-      // remote users
-      remote.forEach(u => {
-        const div = document.createElement("div");
-        div.className = "person";
-        div.id = "u-" + u.uid;
-        div.innerHTML = "<div style='font-weight:700'>User " + u.uid + "</div><div style='font-size:12px;color:var(--muted)'>Remote</div>";
-        peopleEl.appendChild(div);
-      });
-      userCountEl.textContent = "Users: " + (remote.length + (localAudioTrack ? 1 : 0));
-    }
-
-    // Game popup functionality
-    const gameModal = document.getElementById('gameModal');
-    const gameIframe = document.getElementById('gameIframe');
-    const modalClose = document.getElementById('modalClose');
-    const gameCards = document.querySelectorAll('.game-card');
-
-    // Open game in popup
-    gameCards.forEach(card => {
-      card.addEventListener('click', () => {
-        const gameUrl = card.getAttribute('data-game');
-        const gameTitle = card.getAttribute('data-title');
-        
-        gameIframe.src = gameUrl;
-        gameModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
-      });
-    });
-
-    // Close popup
-    modalClose.addEventListener('click', () => {
-      gameModal.style.display = 'none';
-      gameIframe.src = ''; // Stop the game
-      document.body.style.overflow = 'auto'; // Re-enable scrolling
-    });
-
-    // Close popup when clicking outside the content
-    gameModal.addEventListener('click', (e) => {
-      if (e.target === gameModal) {
-        gameModal.style.display = 'none';
-        gameIframe.src = ''; // Stop the game
-        document.body.style.overflow = 'auto'; // Re-enable scrolling
-      }
-    });
-
-    // Close popup with Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && gameModal.style.display === 'flex') {
-        gameModal.style.display = 'none';
-        gameIframe.src = ''; // Stop the game
-        document.body.style.overflow = 'auto'; // Re-enable scrolling
-      }
-    });
+    function renderUsers(){ if(!client) return; const remote = client.remoteUsers ? Object.values(client.remoteUsers) : []; peopleEl.innerHTML=''; if(localAudioTrack){ const d=document.createElement('div'); d.className='person'; d.innerHTML="<div style='font-weight:700'>You</div><div style='font-size:12px;color:var(--muted)'>Local</div>"; peopleEl.appendChild(d);} remote.forEach(u=>{ const div=document.createElement('div'); div.className='person'; div.id='u-'+u.uid; div.innerHTML = `<div style='font-weight:700'>User ${u.uid}</div><div style='font-size:12px;color:var(--muted)'>Remote</div>`; peopleEl.appendChild(div); }); userCountEl.textContent = 'Users: ' + (remote.length + (localAudioTrack?1:0)); }
 
     // wire buttons
-    joinBtn.addEventListener("click", joinChannel);
-    leaveBtn.addEventListener("click", leaveChannel);
-    muteBtn.addEventListener("click", toggleMute);
-
-    // init
-    initClient().catch(e => console.error(e));
-
-    // tidy up on unload
-    window.addEventListener("beforeunload", async () => {
-      try { await leaveChannel(); } catch(e) {}
+    joinBtn.addEventListener('click', ()=>{
+      // ensure username set
+      if(!localStorage.getItem('tl_username')){ showNotification('Please enter a display name first'); showUsernameModal(); return; }
+      joinChannel();
     });
-  </script>
+    leaveBtn.addEventListener('click', leaveChannel);
+    muteBtn.addEventListener('click', toggleMute);
 
-</body>
+    // cleanup on unload
+    window.addEventListener('beforeunload', async ()=>{ try{ await leaveChannel(); }catch(e){} });
+
+    // allow adding more games later (developer-friendly)
+    window.addGame = function(slug, title, thumb, url){ GAMES.push({slug,title,thumb,url}); const card = document.createElement('div'); card.className='game-card'; card.setAttribute('data-game', url); card.setAttribute('data-title',title); card.innerHTML = `<div class="content"><img class="game-thumb" src="${thumb}" /><div class="game-title">${title}</div></div>`; card.addEventListener('click', ()=>openGame(url,title)); grid.appendChild(card); }
+
+  </script></body>
 </html>

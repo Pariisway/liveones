@@ -11,10 +11,12 @@
   <!-- Google AdSense Script -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
     crossorigin="anonymous"></script>
-  
-  
+
+  <!-- Agora Web SDKs (RTC + RTM) -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTM_N.js"></script>
+
   <style>
-    /* Your existing CSS remains the same */
     /* Hybrid Neon + Clean Grid theme (Option C) */
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -56,11 +58,11 @@
     /* Arcade header */
     .arcade-title{color:var(--neon2);text-shadow:0 0 12px var(--neon2);font-size:20px;margin:6px 0 14px 0}
 
-    /* Games grid with thumbnails */
+    /* Games grid (icon cards with thumbnails) */
     .games-grid{display:grid;grid-template-columns: repeat(4, 1fr);gap:18px;width:100%}
     .game-card{position:relative;width:100%;padding-top:56.25%;border:3px solid var(--neon2);border-radius:10px;background:linear-gradient(180deg,#000,#08020b);overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;display:flex;align-items:center;justify-content:center;min-height:120px}
     .game-card .content{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px}
-    .game-thumbnail{width:100%;height:60%;object-fit:cover;border-radius:6px;margin-bottom:8px;background:linear-gradient(45deg, #ff00e6, #00eaff);display:flex;align-items:center;justify-content:center;font-size:24px}
+    .game-thumbnail{width:100%;height:60%;object-fit:cover;border-radius:6px;margin-bottom:8px}
     .game-icon-emoji{font-size:28px;margin-bottom:8px}
     .game-title{font-size:11px;text-align:center;color:var(--text);text-shadow:0 0 6px rgba(0,0,0,0.6);padding:0 6px;line-height:1.3}
     .game-card:hover{transform:translateY(-4px);box-shadow:0 0 30px var(--neon2)}
@@ -140,7 +142,7 @@
           <button class="room-btn" onclick="switchRoom('Music')">Music</button>
           <button class="room-btn" onclick="switchRoom('Games')">Games</button>
           <button class="room-btn" onclick="switchRoom('67')">67</button>
-          <button class="room-btn" onclick="switchRoom('Elliana Room')">Elliana's Room</button>
+          <button class="room-btn" onclick="switchRoom('Group7')">Group7</button>
         </div>
       </div>
     </section>
@@ -156,7 +158,7 @@
       <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </section>
 
-    <!-- Games area with thumbnails -->
+    <!-- Games area (converted to icons) -->
     <section class="panel arcade-panel">
       <h2 class="arcade-title">🎮 Games</h2>
       <div class="games-grid" id="gamesGrid">
@@ -192,32 +194,15 @@
     <div class="credits">Built with Agora • Ads by Google</div>
   </footer>
 
-   <!-- 1. Load Agora SDKs FIRST -->
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.24.1.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/agora-rtm-sdk@latest/lib/browser.js"></script>
-  
-  <!-- 2. THEN load your application code -->
   <script>
     /*************************************************************************
      * APP CONFIG & STATE
      *************************************************************************/
-    const APP_ID = '966c8e41da614722a88d4372c3d95dba';
-    const VOTE_STARTERS_REQUIRED = 3;
-    const VOTE_YES_RATIO = 0.60;
-    const VOTE_DURATION_MS = 45_000;
-    const KICK_DURATION_MS = 10 * 60_000;
-
-    // Verify SDKs are loaded before proceeding
-    console.log('AgoraRTC loaded:', typeof AgoraRTC !== 'undefined');
-    console.log('AgoraRTM loaded:', typeof AgoraRTM !== 'undefined');
-
-    if (typeof AgoraRTM === 'undefined') {
-      console.error('CRITICAL: AgoraRTM not loaded! Check:');
-      console.error('1. Script tag is present');
-      console.error('2. Network connection');
-      console.error('3. CDN availability');
-      alert('Voice features unavailable - SDK loading failed');
-    }
+    const APP_ID = '966c8e41da614722a88d4372c3d95dba'; // your Agora App ID
+    const VOTE_STARTERS_REQUIRED = 3;     // C2: need 3 different users to start the vote
+    const VOTE_YES_RATIO = 0.60;         // 60% yes required
+    const VOTE_DURATION_MS = 45_000;     // 45 seconds vote window
+    const KICK_DURATION_MS = 10 * 60_000; // 10 minutes ban
 
     // RTM & RTC
     let rtmClient = null, rtmChannel = null;
@@ -228,7 +213,11 @@
     let USERNAME = localStorage.getItem('tl_username') || null;
     let CURRENT_ROOM = 'The Live Ones';
 
-    // ... rest of your existing state variables
+    // presence maps & vote bookkeeping
+    const members = new Map(); // uid -> {name, joinedAt}
+    const voteStarters = {};   // targetUid -> Set(starterUid)
+    const voteSessions = {};   // targetUid -> {yes:Set, no:Set, expires, timerId}
+    const kickedUntil = new Map(); // uid -> timestamp when ban lifted
 
     // DOM elements
     const joinBtn = document.getElementById('joinBtn');
@@ -242,127 +231,76 @@
     const modalClose = document.getElementById('modalClose');
     const gameIframe = document.getElementById('gameIframe');
 
-    // ... rest of your DOM elements
+    const voteModal = document.getElementById('voteModal');
+    const voteQuestion = document.getElementById('voteQuestion');
+    const voteTimer = document.getElementById('voteTimer');
+    const voteYes = document.getElementById('voteYes');
+    const voteNo = document.getElementById('voteNo');
+
     function setStatus(t){ if(statusEl) statusEl.textContent = 'Status: ' + t; }
     function showNotification(html){ const n=document.createElement('div'); n.className='notif'; n.innerHTML=html; document.body.appendChild(n); setTimeout(()=>n.remove(),4500); }
 
     /*************************************************************************
-     * GAMES: Manual thumbnail system
+     * GAMES: converted from provided iframe list -> text-only icons (Option C)
      *************************************************************************/
-    
-    // Game emoji mapping - you can customize these!
-    const GAME_EMOJIS = {
-      'marvel': '🦸',
-      'sonic': '🦔',
-      'tekken': '🥋',
-      'dragon': '🐉',
-      'smash': '💥',
-      'racing': '🏎️',
-      'street': '👊',
-      'blazing': '🔥',
-      'crash': '💥',
-      'king of fighters': '👑',
-      'fatal fury': '⚡',
-      'strikers': '✈️',
-      'double dragon': '🐲',
-      'knights': '⚔️',
-      'metal slug': '🔫',
-      'x-men': '🧬',
-      'ballistic': '🎯',
-      'nba': '🏀',
-      'nfl': '🏈',
-      'nicktoons': '📺',
-      'tony hawk': '🛹',
-      'syphon': '🕵️',
-      'mega man': '🔫',
-      'test drive': '🚗',
-      'aces': '✈️',
-      'batman': '🦇',
-      'spyro': '🐲',
-      'spongebob': '🧽',
-      'mortal kombat': '💀',
-      'contra': '🔫',
-      'samurai': '🗡️',
-      'baseball': '⚾',
-      'silent hill': '🌫️',
-      'duke nukem': '💪',
-      'nightmare': '😱',
-      'wwf': '💪',
-      'arkanoid': '◼️',
-      '007': '🔫',
-      'after burner': '🛩️',
-      'sega': '🎮'
-    };
-
-    // Function to find appropriate emoji for a game title
-    function getGameEmoji(title) {
-      const lowerTitle = title.toLowerCase();
-      for (const [key, emoji] of Object.entries(GAME_EMOJIS)) {
-        if (lowerTitle.includes(key)) {
-          return emoji;
-        }
-      }
-      return '🎮'; // default emoji
-    }
-
     const GAME_IFRAMES = [
-      { title: 'Marvel vs Capcom', url: 'https://www.retrogames.cc/embed/9123-marvel-vs-capcom-clash-of-super-heroes-980123-usa.html' },
-      { title: 'Silent Dragon', url: 'https://www.retrogames.cc/embed/9836-silent-dragon-world.html' },
-      { title: 'Sonic the Hedgehog', url: 'https://www.retrogames.cc/embed/30899-sonic-the-hedgehog-usa-europe.html' },
-      { title: 'Tekken 3', url: 'https://www.retrogames.cc/embed/40238-tekken-3.html' },
-      { title: 'Dragon Ball Z', url: 'https://www.retrogames.cc/embed/28096-dragon-ball-z-supersonic-warriors-k-projectg.html' },
-      { title: 'Super Smash Bros', url: 'https://www.retrogames.cc/embed/32117-super-smash-bros-usa.html' },
-      { title: 'Diddy Kong Racing', url: 'https://www.retrogames.cc/embed/32115-diddy-kong-racing-usa-en-fr.html' },
-      { title: 'Street Fighter II CE (bootleg)', url: 'https://www.retrogames.cc/embed/10042-street-fighter-ii-champion-edition-yyc-bootleg-set-2-920313-etc-bootleg.html' },
-      { title: 'Blazing Star', url: 'https://www.retrogames.cc/embed/7955-blazing-star.html' },
-      { title: 'Sonic 3', url: 'https://www.retrogames.cc/embed/30002-sonic-the-hedgehog-3-europe.html' },
-      { title: 'Crash Bandicoot', url: 'https://www.retrogames.cc/embed/40784-crash-bandicoot.html' },
-      { title: 'Crash Team Racing', url: 'https://www.retrogames.cc/embed/41687-crash-team-racing.html' },
-      { title: 'KOF 2002 (bootleg)', url: 'https://www.retrogames.cc/embed/10391-the-king-of-fighters-2002-super-bootleg-bootleg.html' },
-      { title: 'Street Fighter II CE (rainbow bootleg)', url: 'https://www.retrogames.cc/embed/10021-street-fighter-ii-champion-edition-rainbow-bootleg-set-3-920322-etc-bootleg.html' },
-      { title: 'Real Bout Fatal Fury Special', url: 'https://www.retrogames.cc/embed/9653-real-bout-fatal-fury-special-real-bout-garou-densetsu-special-korean-release.html' },
-      { title: 'Strikers 1945', url: 'https://www.retrogames.cc/embed/10111-strikers-1945-japan-unprotected.html' },
-      { title: 'Double Dragon', url: 'https://www.retrogames.cc/embed/8332-double-dragon-world-set-1.html' },
-      { title: 'Knights of the Round', url: 'https://www.retrogames.cc/embed/8912-knights-of-the-round-911127-etc.html' },
-      { title: 'Metal Slug', url: 'https://www.retrogames.cc/embed/9157-metal-slug-super-vehicle-001.html' },
-      { title: 'Sonic Generations 2', url: 'https://www.retrogames.cc/embed/42251-sonic-generations-2.html' },
-      { title: 'X-Men (arcade)', url: 'https://www.retrogames.cc/embed/16944-x-men-usa.html' },
-      { title: 'Ballistic', url: 'https://www.retrogames.cc/embed/40052-ballistic.html' },
-      { title: 'NBA Jam Extreme', url: 'https://www.retrogames.cc/embed/40094-nba-jam-extreme.html' },
-      { title: 'NBA Showtime', url: 'https://www.retrogames.cc/embed/40106-nba-showtime-nba-on-nbc.html' },
-      { title: 'NFL Blitz 2001', url: 'https://www.retrogames.cc/embed/40172-nfl-blitz-2001.html' },
-      { title: 'Nicktoons Racing', url: 'https://www.retrogames.cc/embed/45185-nicktoons-racing-usa.html' },
-      { title: 'Tony Hawk Pro Skater 3', url: 'https://www.retrogames.cc/embed/42331-tony-hawks-pro-skater-3.html' },
-      { title: 'Syphon Filter 3', url: 'https://www.retrogames.cc/embed/40806-syphon-filter-3.html' },
-      { title: 'Mega Man X6', url: 'https://www.retrogames.cc/embed/40780-mega-man-x6.html' },
-      { title: 'Street Fighter EX+α', url: 'https://www.retrogames.cc/embed/42185-street-fighter-ex-plus-alpha.html' },
-      { title: 'Test Drive Off-Road 2', url: 'https://www.retrogames.cc/embed/40142-test-drive-off-road-2.html' },
-      { title: 'Aces of the Air', url: 'https://www.retrogames.cc/embed/41527-aces-of-the-air.html' },
-      { title: 'All Star Racing', url: 'https://www.retrogames.cc/embed/41537-all-star-racing.html' },
-      { title: 'Batman Gotham City Racer', url: 'https://www.retrogames.cc/embed/41600-batman-gotham-city-racer.html' },
-      { title: 'Spyro 3', url: 'https://www.retrogames.cc/embed/40798-spyro-3-year-of-the-dragon.html' },
-      { title: 'SpongeBob Supersponge', url: 'https://www.retrogames.cc/embed/40063-spongebob-squarepants-supersponge.html' },
-      { title: 'Mortal Kombat 4', url: 'https://www.retrogames.cc/embed/40811-mortal-kombat-4.html' },
-      { title: 'C: The Contra Adventure', url: 'https://www.retrogames.cc/embed/41642-c-the-contra-adventure.html' },
-      { title: '5-Star Racing', url: 'https://www.retrogames.cc/embed/40803-5-star-racing.html' },
-      { title: 'Crash Bandicoot Warped', url: 'https://www.retrogames.cc/embed/40136-crash-bandicoot-warped.html' },
-      { title: 'Sammy Sosa Softball Slam', url: 'https://www.retrogames.cc/embed/40097-sammy-sosa-softball-slam.html' },
-      { title: 'Samurai Shodown III', url: 'https://www.retrogames.cc/embed/41520-samurai-shodown-iii-blades-of-blood.html' },
-      { title: 'KOF 98', url: 'https://www.retrogames.cc/embed/41954-king-of-fighters-98.html' },
-      { title: 'High Heat Baseball 2001', url: 'https://www.retrogames.cc/embed/40165-sammy-sosa-high-heat-baseball-2001.html' },
-      { title: 'Syphon Filter 2', url: 'https://www.retrogames.cc/embed/40804-syphon-filter-2.html' },
-      { title: 'Silent Hill', url: 'https://www.retrogames.cc/embed/41684-silent-hill.html' },
-      { title: 'Duke Nukem: Land of the Babes', url: 'https://www.retrogames.cc/embed/41745-duke-nukem-land-of-the-babes.html' },
-      { title: 'Nightmare Creatures', url: 'https://www.retrogames.cc/embed/44009-nightmare-creatures-usa.html' },
-      { title: 'Nightmare Creatures II', url: 'https://www.retrogames.cc/embed/44010-nightmare-creatures-ii-usa.html' },
-      { title: 'WWF In Your House', url: 'https://www.retrogames.cc/embed/40235-wwf-in-your-house.html' },
-      { title: 'Arkanoid R 2000', url: 'https://www.retrogames.cc/embed/41564-arkanoid-r-2000.html' },
-      { title: '007 The World Is Not Enough', url: 'https://www.retrogames.cc/embed/41522-007-the-world-is-not-enough.html' },
-      { title: 'After Burner III', url: 'https://www.retrogames.cc/embed/40675-after-burner-iii.html' },
-      { title: 'Sega Classics 4-in-1', url: 'https://www.retrogames.cc/embed/40745-sega-classics-4-in-1.html' }
+      { title: 'Marvel vs Capcom', url: 'https://www.retrogames.cc/embed/9123-marvel-vs-capcom-clash-of-super-heroes-980123-usa.html', thumbnail: 'https://img.retrogames.cc/game/marvel-vs-capcom-clash-of-super-heroes-980123-usa.png' },
+      { title: 'Silent Dragon', url: 'https://www.retrogames.cc/embed/9836-silent-dragon-world.html', thumbnail: 'https://img.retrogames.cc/game/silent-dragon-world.png' },
+      { title: 'Sonic the Hedgehog', url: 'https://www.retrogames.cc/embed/30899-sonic-the-hedgehog-usa-europe.html', thumbnail: 'https://img.retrogames.cc/game/sonic-the-hedgehog-usa-europe.png' },
+      { title: 'Tekken 3', url: 'https://www.retrogames.cc/embed/40238-tekken-3.html', thumbnail: 'https://img.retrogames.cc/game/tekken-3.png' },
+      { title: 'Dragon Ball Z', url: 'https://www.retrogames.cc/embed/28096-dragon-ball-z-supersonic-warriors-k-projectg.html', thumbnail: 'https://img.retrogames.cc/game/dragon-ball-z-supersonic-warriors-k-projectg.png' },
+      { title: 'Super Smash Bros', url: 'https://www.retrogames.cc/embed/32117-super-smash-bros-usa.html', thumbnail: 'https://img.retrogames.cc/game/super-smash-bros-usa.png' },
+      { title: 'Diddy Kong Racing', url: 'https://www.retrogames.cc/embed/32115-diddy-kong-racing-usa-en-fr.html', thumbnail: 'https://img.retrogames.cc/game/diddy-kong-racing-usa-en-fr.png' },
+      { title: 'Street Fighter II CE (bootleg)', url: 'https://www.retrogames.cc/embed/10042-street-fighter-ii-champion-edition-yyc-bootleg-set-2-920313-etc-bootleg.html', thumbnail: 'https://img.retrogames.cc/game/street-fighter-ii-champion-edition-yyc-bootleg-set-2-920313-etc-bootleg.png' },
+      { title: 'Blazing Star', url: 'https://www.retrogames.cc/embed/7955-blazing-star.html', thumbnail: 'https://img.retrogames.cc/game/blazing-star.png' },
+      { title: 'Sonic 3', url: 'https://www.retrogames.cc/embed/30002-sonic-the-hedgehog-3-europe.html', thumbnail: 'https://img.retrogames.cc/game/sonic-the-hedgehog-3-europe.png' },
+      { title: 'Crash Bandicoot', url: 'https://www.retrogames.cc/embed/40784-crash-bandicoot.html', thumbnail: 'https://img.retrogames.cc/game/crash-bandicoot.png' },
+      { title: 'Crash Team Racing', url: 'https://www.retrogames.cc/embed/41687-crash-team-racing.html', thumbnail: 'https://img.retrogames.cc/game/crash-team-racing.png' },
+      { title: 'KOF 2002 (bootleg)', url: 'https://www.retrogames.cc/embed/10391-the-king-of-fighters-2002-super-bootleg-bootleg.html', thumbnail: 'https://img.retrogames.cc/game/the-king-of-fighters-2002-super-bootleg-bootleg.png' },
+      { title: 'Street Fighter II CE (rainbow bootleg)', url: 'https://www.retrogames.cc/embed/10021-street-fighter-ii-champion-edition-rainbow-bootleg-set-3-920322-etc-bootleg.html', thumbnail: 'https://img.retrogames.cc/game/street-fighter-ii-champion-edition-rainbow-bootleg-set-3-920322-etc-bootleg.png' },
+      { title: 'Real Bout Fatal Fury Special', url: 'https://www.retrogames.cc/embed/9653-real-bout-fatal-fury-special-real-bout-garou-densetsu-special-korean-release.html', thumbnail: 'https://img.retrogames.cc/game/real-bout-fatal-fury-special-real-bout-garou-densetsu-special-korean-release.png' },
+      { title: 'Strikers 1945', url: 'https://www.retrogames.cc/embed/10111-strikers-1945-japan-unprotected.html', thumbnail: 'https://img.retrogames.cc/game/strikers-1945-japan-unprotected.png' },
+      { title: 'Double Dragon', url: 'https://www.retrogames.cc/embed/8332-double-dragon-world-set-1.html', thumbnail: 'https://img.retrogames.cc/game/double-dragon-world-set-1.png' },
+      { title: 'Knights of the Round', url: 'https://www.retrogames.cc/embed/8912-knights-of-the-round-911127-etc.html', thumbnail: 'https://img.retrogames.cc/game/knights-of-the-round-911127-etc.png' },
+      { title: 'Metal Slug', url: 'https://www.retrogames.cc/embed/9157-metal-slug-super-vehicle-001.html', thumbnail: 'https://img.retrogames.cc/game/metal-slug-super-vehicle-001.png' },
+      { title: 'Sonic Generations 2', url: 'https://www.retrogames.cc/embed/42251-sonic-generations-2.html', thumbnail: 'https://img.retrogames.cc/game/sonic-generations-2.png' },
+      { title: 'X-Men (arcade)', url: 'https://www.retrogames.cc/embed/16944-x-men-usa.html', thumbnail: 'https://img.retrogames.cc/game/x-men-usa.png' },
+      { title: 'Ballistic', url: 'https://www.retrogames.cc/embed/40052-ballistic.html', thumbnail: 'https://img.retrogames.cc/game/ballistic.png' },
+      { title: 'NBA Jam Extreme', url: 'https://www.retrogames.cc/embed/40094-nba-jam-extreme.html', thumbnail: 'https://img.retrogames.cc/game/nba-jam-extreme.png' },
+      { title: 'NBA Showtime', url: 'https://www.retrogames.cc/embed/40106-nba-showtime-nba-on-nbc.html', thumbnail: 'https://img.retrogames.cc/game/nba-showtime-nba-on-nbc.png' },
+      { title: 'NFL Blitz 2001', url: 'https://www.retrogames.cc/embed/40172-nfl-blitz-2001.html', thumbnail: 'https://img.retrogames.cc/game/nfl-blitz-2001.png' },
+      { title: 'Nicktoons Racing', url: 'https://www.retrogames.cc/embed/45185-nicktoons-racing-usa.html', thumbnail: 'https://img.retrogames.cc/game/nicktoons-racing-usa.png' },
+      { title: 'Tony Hawk Pro Skater 3', url: 'https://www.retrogames.cc/embed/42331-tony-hawks-pro-skater-3.html', thumbnail: 'https://img.retrogames.cc/game/tony-hawks-pro-skater-3.png' },
+      { title: 'Syphon Filter 3', url: 'https://www.retrogames.cc/embed/40806-syphon-filter-3.html', thumbnail: 'https://img.retrogames.cc/game/syphon-filter-3.png' },
+      { title: 'Mega Man X6', url: 'https://www.retrogames.cc/embed/40780-mega-man-x6.html', thumbnail: 'https://img.retrogames.cc/game/mega-man-x6.png' },
+      { title: 'Street Fighter EX+α', url: 'https://www.retrogames.cc/embed/42185-street-fighter-ex-plus-alpha.html', thumbnail: 'https://img.retrogames.cc/game/street-fighter-ex-plus-alpha.png' },
+      { title: 'Test Drive Off-Road 2', url: 'https://www.retrogames.cc/embed/40142-test-drive-off-road-2.html', thumbnail: 'https://img.retrogames.cc/game/test-drive-off-road-2.png' },
+      { title: 'Aces of the Air', url: 'https://www.retrogames.cc/embed/41527-aces-of-the-air.html', thumbnail: 'https://img.retrogames.cc/game/aces-of-the-air.png' },
+      { title: 'All Star Racing', url: 'https://www.retrogames.cc/embed/41537-all-star-racing.html', thumbnail: 'https://img.retrogames.cc/game/all-star-racing.png' },
+      { title: 'Batman Gotham City Racer', url: 'https://www.retrogames.cc/embed/41600-batman-gotham-city-racer.html', thumbnail: 'https://img.retrogames.cc/game/batman-gotham-city-racer.png' },
+      { title: 'Spyro 3', url: 'https://www.retrogames.cc/embed/40798-spyro-3-year-of-the-dragon.html', thumbnail: 'https://img.retrogames.cc/game/spyro-3-year-of-the-dragon.png' },
+      { title: 'SpongeBob Supersponge', url: 'https://www.retrogames.cc/embed/40063-spongebob-squarepants-supersponge.html', thumbnail: 'https://img.retrogames.cc/game/spongebob-squarepants-supersponge.png' },
+      { title: 'Mortal Kombat 4', url: 'https://www.retrogames.cc/embed/40811-mortal-kombat-4.html', thumbnail: 'https://img.retrogames.cc/game/mortal-kombat-4.png' },
+      { title: 'C: The Contra Adventure', url: 'https://www.retrogames.cc/embed/41642-c-the-contra-adventure.html', thumbnail: 'https://img.retrogames.cc/game/c-the-contra-adventure.png' },
+      { title: '5-Star Racing', url: 'https://www.retrogames.cc/embed/40803-5-star-racing.html', thumbnail: 'https://img.retrogames.cc/game/5-star-racing.png' },
+      { title: 'Crash Bandicoot Warped', url: 'https://www.retrogames.cc/embed/40136-crash-bandicoot-warped.html', thumbnail: 'https://img.retrogames.cc/game/crash-bandicoot-warped.png' },
+      { title: 'Sammy Sosa Softball Slam', url: 'https://www.retrogames.cc/embed/40097-sammy-sosa-softball-slam.html', thumbnail: 'https://img.retrogames.cc/game/sammy-sosa-softball-slam.png' },
+      { title: 'Samurai Shodown III', url: 'https://www.retrogames.cc/embed/41520-samurai-shodown-iii-blades-of-blood.html', thumbnail: 'https://img.retrogames.cc/game/samurai-shodown-iii-blades-of-blood.png' },
+      { title: 'KOF 98', url: 'https://www.retrogames.cc/embed/41954-king-of-fighters-98.html', thumbnail: 'https://img.retrogames.cc/game/king-of-fighters-98.png' },
+      { title: 'High Heat Baseball 2001', url: 'https://www.retrogames.cc/embed/40165-sammy-sosa-high-heat-baseball-2001.html', thumbnail: 'https://img.retrogames.cc/game/sammy-sosa-high-heat-baseball-2001.png' },
+      { title: 'Syphon Filter 2', url: 'https://www.retrogames.cc/embed/40804-syphon-filter-2.html', thumbnail: 'https://img.retrogames.cc/game/syphon-filter-2.png' },
+      { title: 'Silent Hill', url: 'https://www.retrogames.cc/embed/41684-silent-hill.html', thumbnail: 'https://img.retrogames.cc/game/silent-hill.png' },
+      { title: 'Duke Nukem: Land of the Babes', url: 'https://www.retrogames.cc/embed/41745-duke-nukem-land-of-the-babes.html', thumbnail: 'https://img.retrogames.cc/game/duke-nukem-land-of-the-babes.png' },
+      { title: 'Nightmare Creatures', url: 'https://www.retrogames.cc/embed/44009-nightmare-creatures-usa.html', thumbnail: 'https://img.retrogames.cc/game/nightmare-creatures-usa.png' },
+      { title: 'Nightmare Creatures II', url: 'https://www.retrogames.cc/embed/44010-nightmare-creatures-ii-usa.html', thumbnail: 'https://img.retrogames.cc/game/nightmare-creatures-ii-usa.png' },
+      { title: 'WWF In Your House', url: 'https://www.retrogames.cc/embed/40235-wwf-in-your-house.html', thumbnail: 'https://img.retrogames.cc/game/wwf-in-your-house.png' },
+      { title: 'Arkanoid R 2000', url: 'https://www.retrogames.cc/embed/41564-arkanoid-r-2000.html', thumbnail: 'https://img.retrogames.cc/game/arkanoid-r-2000.png' },
+      { title: '007 The World Is Not Enough', url: 'https://www.retrogames.cc/embed/41522-007-the-world-is-not-enough.html', thumbnail: 'https://img.retrogames.cc/game/007-the-world-is-not-enough.png' },
+      { title: 'After Burner III', url: 'https://www.retrogames.cc/embed/40675-after-burner-iii.html', thumbnail: 'https://img.retrogames.cc/game/after-burner-iii.png' },
+      { title: 'Sega Classics 4-in-1', url: 'https://www.retrogames.cc/embed/40745-sega-classics-4-in-1.html', thumbnail: 'https://img.retrogames.cc/game/sega-classics-4-in-1.png' }
     ];
 
-    // Populate the grid with emoji thumbnails
+    // Populate the grid with thumbnails
     function populateGames(){
       gamesGrid.innerHTML = '';
       GAME_IFRAMES.forEach(g=>{
@@ -371,11 +309,13 @@
         card.dataset.game = g.url;
         card.dataset.title = g.title;
 
-        const emoji = getGameEmoji(g.title);
-        
         card.innerHTML = `
           <div class="content">
-            <div class="game-thumbnail">${emoji}</div>
+            ${g.thumbnail ? 
+              `<img class="game-thumbnail" src="${g.thumbnail}" alt="${g.title}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">` : 
+              ''
+            }
+            <div class="game-icon-emoji" style="${g.thumbnail ? 'display:none' : ''}">🕹️</div>
             <div class="game-title">${escapeHtml(g.title)}</div>
           </div>
         `;
@@ -400,12 +340,12 @@
     }
 
     /*************************************************************************
-     * Agora RTM & RTC integration (FIXED)
+     * Agora RTM presence, voting messages, and RTC voice integration
      *************************************************************************/
     // helper: escape HTML
     function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]); }
 
-    // show username modal for entry
+    // show username modal for entry (Option A flow)
     function showUsernameModal(){
       if(localStorage.getItem('tl_username')) return;
       const m = document.createElement('div'); m.className='username-modal'; m.id='usernameModal';
@@ -447,23 +387,14 @@
     // initialize on load
     if(!USERNAME) showUsernameModal(); else initializeRTM();
 
-    // RTM init & channel join - FIXED
+    // RTM init & channel join
     async function initializeRTM(){
-      // Check if AgoraRTM is available
-      if (typeof AgoraRTM === 'undefined') {
-        console.error('AgoraRTM not loaded. Check script URL.');
-        showNotification('RTM failed to load. Check console.');
-        return;
-      }
-      
       UID = 'u' + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36);
       try{
         rtmClient = AgoraRTM.createInstance(APP_ID);
         await rtmClient.login({uid: UID});
-        
-        rtmClient.on('MessageFromPeer', ({text}, peerId)=>{ 
-          console.log('Peer message', peerId, text); 
-        });
+        // when direct message arrives (not used now)
+        rtmClient.on('MessageFromPeer', ({text}, peerId)=>{ console.log('Peer message', peerId, text); });
 
         // join initial room
         await joinRTMChannel(CURRENT_ROOM);
@@ -481,6 +412,7 @@
         rtmChannel = rtmClient.createChannel(roomName);
         rtmChannel.on('ChannelMessage', handleChannelMessage);
         rtmChannel.on('MemberJoined', (memberId)=> {
+          // request profile from the new member (they'll reply with profile)
           rtmChannel.sendMessage({text: JSON.stringify({type:'request_profile'})});
         });
         rtmChannel.on('MemberLeft', (memberId)=> {
@@ -488,7 +420,9 @@
           renderMembers();
         });
         await rtmChannel.join();
+        // announce our presence
         await rtmChannel.sendMessage({text: JSON.stringify({type:'join', uid:UID, name:USERNAME})});
+        // ask for profiles
         await rtmChannel.sendMessage({text: JSON.stringify({type:'request_profiles'})});
       }catch(err){ console.error('joinRTMChannel', err); }
     }
@@ -511,6 +445,7 @@
           break;
 
         case 'request_profiles':
+          // reply with profile
           if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'profile', uid:UID, name:USERNAME})});
           break;
 
@@ -523,21 +458,26 @@
           break;
 
         case 'vote_session':
+          // when session broadcast begins (everyone opens vote modal)
           if(data.target && data.expires){
             createVoteSession(data.target, data.expires, false);
           }
           break;
 
         case 'vote':
+          // vote message contains {type:'vote', target, voter, choice}
           handleIncomingVote(data);
           break;
 
         case 'kick':
+          // if I'm the target, force leave
           if(data.target === UID){
             showNotification('You were kicked from this room');
             await leaveChannel();
+            // mark as kicked
             kickedUntil.set(UID, Date.now() + KICK_DURATION_MS);
           } else {
+            // show notification other user kicked
             showNotification(`${escapeHtml(members.get(data.target)?.name || 'User')} was kicked`);
             members.delete(data.target);
             renderMembers();
@@ -545,45 +485,49 @@
           break;
 
         default:
+          // ignore
           break;
       }
     }
 
     /*************************************************************************
-     * Rest of your existing functions (vote system, RTC voice, etc.)
-     * These remain the same as in your original code
+     * Vote flow (C2): start votes by starters; when starters >= required,
+     * broadcast vote_session to everyone. Then collect YES/NO votes.
      *************************************************************************/
-    
-    // [Include all your existing functions for voting, RTC voice, etc. here]
-    // They should work the same as before
-
     function handleStartVote(data){
       const {target, starter} = data;
       if(!voteStarters[target]) voteStarters[target] = new Set();
       voteStarters[target].add(starter);
 
+      // update UI
       renderMembers();
 
       const startersCount = voteStarters[target].size;
       showNotification(`${startersCount} / ${VOTE_STARTERS_REQUIRED} started a vote to kick ${escapeHtml(members.get(target)?.name || 'User')}`);
 
+      // if threshold reached and no active session, launch session
       if(startersCount >= VOTE_STARTERS_REQUIRED && (!voteSessions[target] || voteSessions[target].expired)){
         const expires = Date.now() + VOTE_DURATION_MS;
+        // announce session to everyone
         if(rtmChannel) {
           rtmChannel.sendMessage({text: JSON.stringify({type:'vote_session', target, expires})});
         }
+        // also locally create session
         createVoteSession(target, expires, true);
       }
     }
 
     function createVoteSession(target, expires, local){
+      // create or reset session
       if(voteSessions[target] && voteSessions[target].timerId){
         clearInterval(voteSessions[target].timerId);
       }
 
       voteSessions[target] = { yes: new Set(), no: new Set(), expires, timerId: null, expired:false };
+      // open vote modal to let local user vote
       openVoteModal(target);
 
+      // start countdown timer
       voteSessions[target].timerId = setInterval(()=>{
         const remaining = voteSessions[target].expires - Date.now();
         if(remaining <= 0){
@@ -599,43 +543,57 @@
     function openVoteModal(target){
       voteQuestion.innerHTML = `Vote to kick <strong>${escapeHtml(members.get(target)?.name || 'User')}</strong>?`;
       voteModal.style.display = 'flex';
+      // yes/no handlers
       voteYes.onclick = ()=>{ sendVote(target, true); };
       voteNo.onclick = ()=>{ sendVote(target, false); };
     }
 
     async function sendVote(target, choice){
+      // send vote message to RTM
       if(rtmChannel){
         rtmChannel.sendMessage({text: JSON.stringify({type:'vote', target, voter:UID, choice})});
       }
+      // close local vote UI for this user
       voteModal.style.display = 'none';
       showNotification('Vote submitted');
     }
 
+    // process incoming vote messages
     function handleIncomingVote(data){
       const {target, voter, choice} = data;
-      if(!voteSessions[target]) return;
+      if(!voteSessions[target]) return; // if no session, ignore votes
       if(choice) voteSessions[target].yes.add(voter); else voteSessions[target].no.add(voter);
+      // optional: update UI or notify
     }
 
+    // finalize: called when session expires
     function finalizeVoteSession(target){
       const sess = voteSessions[target];
       if(!sess) return;
       const yesCount = sess.yes.size;
       const noCount = sess.no.size;
+      // compute active users (members map + local if publishing)
       const activeCount = Math.max(1, members.size + (localAudioTrack ? 1 : 0));
       const needed = Math.ceil(activeCount * VOTE_YES_RATIO);
       if(yesCount >= needed){
+        // success: broadcast kick
         if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'kick', target})});
+        // locally mark ban for that UID (if you want)
         kickedUntil.set(target, Date.now() + KICK_DURATION_MS);
       } else {
         showNotification(`Vote failed — ${yesCount}/${needed} yes`);
       }
+      // clear starters and session
       delete voteStarters[target];
       delete voteSessions[target];
     }
 
+    /*************************************************************************
+     * Member UI & start vote button behavior
+     *************************************************************************/
     function renderMembers(){
       peopleEl.innerHTML = '';
+      // local user
       const localDiv = document.createElement('div'); localDiv.className='person';
       localDiv.innerHTML = `<div><div class="name">${escapeHtml(USERNAME || 'You')}</div><div class="meta">Local</div></div>
                             <div style="display:flex;gap:8px;align-items:center">
@@ -643,10 +601,14 @@
                             </div>`;
       peopleEl.appendChild(localDiv);
 
+      // remote members
       members.forEach((info, uid)=>{
+        // skip if this is our own UID
         if(uid === UID) return;
+        // skip if banned locally
         const bannedUntil = kickedUntil.get(uid) || 0;
         if(Date.now() < bannedUntil) {
+          // show as banned
           const bdiv = document.createElement('div'); bdiv.className='person';
           bdiv.innerHTML = `<div><div class="name">${escapeHtml(info.name)} (kicked)</div><div class="meta">temporarily banned</div></div>`;
           peopleEl.appendChild(bdiv);
@@ -658,14 +620,19 @@
         const name = escapeHtml(info.name || ('User'+uid.slice(-4)));
         div.innerHTML = `<div><div class="name">${name}</div><div class="meta">Remote</div></div>`;
 
+        // user menu: Start Vote button
         const menu = document.createElement('div'); menu.className='user-menu';
         const startBtn = document.createElement('button'); startBtn.className='kick-btn'; startBtn.textContent = 'Start Vote';
         startBtn.addEventListener('click', ()=>{
           if(!rtmChannel) return showNotification('Not connected to RTM');
+          // don't allow starting vote against self
           if(uid === UID) return showNotification('You cannot start a vote against yourself');
+          // check if target is currently banned
           const banned = kickedUntil.get(uid) || 0;
           if(Date.now() < banned) return showNotification('User is currently banned');
+          // send start_vote message
           rtmChannel.sendMessage({text: JSON.stringify({type:'start_vote', target:uid, starter:UID})});
+          // locally handle for instant feedback
           handleStartVote({target:uid, starter:UID});
         });
         menu.appendChild(startBtn);
@@ -673,9 +640,13 @@
         peopleEl.appendChild(div);
       });
 
+      // update count
       userCountEl.textContent = 'Users: ' + (members.size + (localAudioTrack?1:0));
     }
 
+    /*************************************************************************
+     * RTC voice (Agora) — joining/leaving/publish
+     *************************************************************************/
     async function initRTC(){
       rtcClient = AgoraRTC.createClient({mode:'rtc', codec:'vp8'});
       rtcClient.on('user-published', async (user, mediaType)=>{
@@ -690,6 +661,7 @@
     }
 
     async function joinChannel(){
+      // check ban for our UID
       const ban = kickedUntil.get(UID) || 0;
       if(Date.now() < ban) {
         const remain = Math.ceil((ban - Date.now())/1000);
@@ -706,6 +678,7 @@
         setStatus('Connected — you are live');
         joinBtn.disabled = true; leaveBtn.disabled = false; muteBtn.disabled = false;
         renderMembers();
+        // announce our join via RTM
         if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'join', uid:UID, name:USERNAME})});
       }catch(err){
         console.error('joinChannel', err);
@@ -745,17 +718,23 @@
     async function switchRoom(name){
       CURRENT_ROOM = name;
       document.getElementById('currentChannel').textContent = name;
+      // style active
       document.querySelectorAll('.room-btn').forEach(b=>b.classList.toggle('active', b.textContent===name));
+      // switch RTM channel
       if(rtmClient) await joinRTMChannel(name);
+      // rejoin RTC if publishing
       if(localAudioTrack){
         await leaveChannel();
         setTimeout(()=>joinChannel(), 300);
       }
     }
 
-    // helper to allow adding games later
-    window.addGame = function(title, url){
-      GAME_IFRAMES.push({title, url});
+    // render helpers
+    function renderUsers(){ renderMembers(); }
+
+    // helper to allow adding games later (dev)
+    window.addGame = function(title, url, thumbnail){
+      GAME_IFRAMES.push({title, url, thumbnail});
       populateGames();
     };
 

@@ -11,11 +11,8 @@
   <!-- Google AdSense Script -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
     crossorigin="anonymous"></script>
-
- <!-- Agora Web SDKs - CORRECTED URLs with proper loading order -->
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.24.1.js"></script>
-  <script src="https://download.agora.io/sdk/release/AgoraRTM_N-1.6.1.js"></script>
-
+  
+  
   <style>
     /* Your existing CSS remains the same */
     /* Hybrid Neon + Clean Grid theme (Option C) */
@@ -195,6 +192,11 @@
     <div class="credits">Built with Agora • Ads by Google</div>
   </footer>
 
+   <!-- 1. Load Agora SDKs FIRST -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.24.1.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/agora-rtm-sdk@latest/lib/browser.js"></script>
+  
+  <!-- 2. THEN load your application code -->
   <script>
     /*************************************************************************
      * APP CONFIG & STATE
@@ -205,6 +207,18 @@
     const VOTE_DURATION_MS = 45_000;
     const KICK_DURATION_MS = 10 * 60_000;
 
+    // Verify SDKs are loaded before proceeding
+    console.log('AgoraRTC loaded:', typeof AgoraRTC !== 'undefined');
+    console.log('AgoraRTM loaded:', typeof AgoraRTM !== 'undefined');
+
+    if (typeof AgoraRTM === 'undefined') {
+      console.error('CRITICAL: AgoraRTM not loaded! Check:');
+      console.error('1. Script tag is present');
+      console.error('2. Network connection');
+      console.error('3. CDN availability');
+      alert('Voice features unavailable - SDK loading failed');
+    }
+
     // RTM & RTC
     let rtmClient = null, rtmChannel = null;
     let rtcClient = null, localAudioTrack = null;
@@ -214,11 +228,7 @@
     let USERNAME = localStorage.getItem('tl_username') || null;
     let CURRENT_ROOM = 'The Live Ones';
 
-    // presence maps & vote bookkeeping
-    const members = new Map();
-    const voteStarters = {};
-    const voteSessions = {};
-    const kickedUntil = new Map();
+    // ... rest of your existing state variables
 
     // DOM elements
     const joinBtn = document.getElementById('joinBtn');
@@ -232,12 +242,7 @@
     const modalClose = document.getElementById('modalClose');
     const gameIframe = document.getElementById('gameIframe');
 
-    const voteModal = document.getElementById('voteModal');
-    const voteQuestion = document.getElementById('voteQuestion');
-    const voteTimer = document.getElementById('voteTimer');
-    const voteYes = document.getElementById('voteYes');
-    const voteNo = document.getElementById('voteNo');
-
+    // ... rest of your DOM elements
     function setStatus(t){ if(statusEl) statusEl.textContent = 'Status: ' + t; }
     function showNotification(html){ const n=document.createElement('div'); n.className='notif'; n.innerHTML=html; document.body.appendChild(n); setTimeout(()=>n.remove(),4500); }
 

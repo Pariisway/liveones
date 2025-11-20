@@ -1,11 +1,23 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>The Live Ones Arcade</title>  <!-- Google AdSense Meta Tag -->  <meta name="google-adsense-account" content="ca-pub-1184595877548269">  <!-- Google AdSense Script -->  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
-    crossorigin="anonymous"></script>  <!-- Agora Web SDK -->  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>  <style>
+  <title>The Live Ones Arcade</title>
+
+  <!-- Google AdSense Meta Tag -->
+  <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+
+  <!-- Google AdSense Script -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269"
+    crossorigin="anonymous"></script>
+
+  <!-- Agora Web SDKs (RTC + RTM) - FIXED URLs -->
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.24.1.js"></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTM_N-1.6.1.js"></script>
+
+  <style>
+    /* Your existing CSS remains the same */
     /* Hybrid Neon + Clean Grid theme (Option C) */
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -36,85 +48,62 @@
     .btn.primary{background:linear-gradient(90deg,var(--neon1),var(--neon2));color:#001018;border:0;box-shadow:0 0 10px var(--neon1),0 0 12px var(--neon2)}
     .status{margin-top:12px;color:var(--muted);font-size:13px}
     .people{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
-    .person{background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;min-width:140px}
+    .person{background:rgba(255,255,255,0.03);padding:10px;border-radius:8px;min-width:140px;display:flex;justify-content:space-between;align-items:center}
     .person.muted{opacity:0.5}
+    .person .name { font-weight:700; }
+    .person .meta { font-size:12px;color:var(--muted) }
 
     /* Ads */
     .ad-slot{margin:12px 0;padding:12px;border-radius:8px;background:linear-gradient(90deg, rgba(0,0,0,0.25), rgba(255,255,255,0.01));text-align:center}
 
     /* Arcade header */
-    .arcade-title{
-      color:var(--neon2);
-      text-shadow:0 0 12px var(--neon2);
-      font-size:20px;
-      margin:6px 0 14px 0;
-    }
+    .arcade-title{color:var(--neon2);text-shadow:0 0 12px var(--neon2);font-size:20px;margin:6px 0 14px 0}
 
-    /* Games grid (4-col) */
-    .games-grid{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:18px;
-      width:100%;
-    }
-
-    .game-card {
-      position: relative;
-      width: 100%;
-      padding-top: 56.25%; /* 16:9 aspect by padding trick */
-      border: 3px solid var(--neon2);
-      border-radius: 10px;
-      box-shadow: 0 0 18px var(--neon2);
-      background: linear-gradient(180deg,#000,#08020b);
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.18s, box-shadow 0.18s;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height:120px;
-    }
-
-    .game-card .content {
-      position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;
-    }
-
-    .game-thumb {
-      width:64px;height:64px;border-radius:8px;margin-bottom:8px;object-fit:cover;background:#111;border:2px solid rgba(255,255,255,0.04);
-    }
-
-    .game-title {
-      font-size:10px;text-align:center;color:var(--text);text-shadow:0 0 6px rgba(0,0,0,0.6);
-    }
-
+    /* Games grid with thumbnails */
+    .games-grid{display:grid;grid-template-columns: repeat(4, 1fr);gap:18px;width:100%}
+    .game-card{position:relative;width:100%;padding-top:56.25%;border:3px solid var(--neon2);border-radius:10px;background:linear-gradient(180deg,#000,#08020b);overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s;display:flex;align-items:center;justify-content:center;min-height:120px}
+    .game-card .content{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px}
+    .game-thumbnail{width:100%;height:60%;object-fit:cover;border-radius:6px;margin-bottom:8px;background:linear-gradient(45deg, #ff00e6, #00eaff);display:flex;align-items:center;justify-content:center;font-size:24px}
+    .game-icon-emoji{font-size:28px;margin-bottom:8px}
+    .game-title{font-size:11px;text-align:center;color:var(--text);text-shadow:0 0 6px rgba(0,0,0,0.6);padding:0 6px;line-height:1.3}
     .game-card:hover{transform:translateY(-4px);box-shadow:0 0 30px var(--neon2)}
 
     /* Popup Modal */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { position: relative; width: 90%; height: 90%; background: var(--panel); border-radius: 12px; border: 3px solid var(--neon1); box-shadow: 0 0 40px var(--neon1); overflow: hidden; }
-    .modal-close { position: absolute; top: 10px; right: 10px; background: var(--neon1); color: var(--text); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; z-index: 1001; font-weight: bold; }
-    .modal-iframe { width: 100%; height: 100%; border: none; }
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.9);z-index:1000;justify-content:center;align-items:center}
+    .modal-content{position:relative;width:90%;height:90%;background:var(--panel);border-radius:12px;border:3px solid var(--neon1);box-shadow:0 0 40px var(--neon1);overflow:hidden}
+    .modal-close{position:absolute;top:10px;right:10px;background:var(--neon1);color:var(--text);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;z-index:1001;font-weight:bold}
+    .modal-iframe{width:100%;height:100%;border:none}
 
     /* Username modal */
-    .username-modal { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.8); z-index:2000 }
-    .username-box { background:var(--panel); padding:20px; border-radius:12px; border: 3px solid var(--neon2); width:320px; text-align:center }
+    .username-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);z-index:2000}
+    .username-box{background:var(--panel);padding:20px;border-radius:12px;border:3px solid var(--neon2);width:320px;text-align:center}
     .username-box input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
 
     /* Chat rooms */
-    .rooms { display:flex; gap:8px; flex-wrap:wrap; margin: 12px 0 18px 0 }
-    .room-btn { background:transparent;border:2px solid rgba(255,255,255,0.03);color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer }
-    .room-btn.active{border-color:var(--neon1);box-shadow:0 0 12px var(--neon1) }
+    .rooms{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px 0}
+    .room-btn{background:transparent;border:2px solid rgba(255,255,255,0.03);color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer}
+    .room-btn.active{border-color:var(--neon1);box-shadow:0 0 12px var(--neon1)}
 
     /* Notification */
-    .notif { position: fixed; top: 18px; right: 18px; background: rgba(0,0,0,0.8); color: var(--text); padding:10px 14px; border-radius:10px; border:2px solid var(--neon1); box-shadow:0 0 16px var(--neon1); z-index:3000 }
+    .notif{position:fixed;top:18px;right:18px;background:rgba(0,0,0,0.8);color:var(--text);padding:10px 14px;border-radius:10px;border:2px solid var(--neon1);box-shadow:0 0 16px var(--neon1);z-index:3000}
+
+    /* Vote modal */
+    .vote-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:4000;display:flex;align-items:center;justify-content:center}
+    .vote-box{background:var(--panel);padding:18px;border-radius:10px;border:2px solid var(--neon2);width:420px;text-align:center}
+    .vote-buttons{display:flex;gap:12px;justify-content:center;margin-top:12px}
+
+    /* per-user menu */
+    .user-menu{display:flex;gap:6px;align-items:center}
+    .kick-btn{background:var(--neon1);border:0;padding:6px 8px;border-radius:6px;color:#001018;cursor:pointer}
+    .change-name{background:var(--neon2);border:0;padding:6px 8px;border-radius:6px;color:#001018;cursor:pointer}
 
     /* Responsive */
-    @media (max-width:1100px){ .games-grid{grid-template-columns: repeat(2, 1fr);} }
-    @media (max-width:700px){ .games-grid{grid-template-columns: 1fr;} .modal-content{width:96%;height:92%} }
+    @media (max-width:1100px){.games-grid{grid-template-columns: repeat(2, 1fr);}}
+    @media (max-width:700px){.games-grid{grid-template-columns: 1fr}.modal-content{width:96%;height:92%}}
 
-    /* Footer */
     .site-footer{margin:18px auto;text-align:center;color:var(--muted);font-size:12px}
-  </style></head>
+  </style>
+</head>
 <body>
   <!-- HEADER -->
   <header class="site-header">
@@ -126,238 +115,648 @@
       <div id="userCount">Users: 0</div>
       <div class="channel-name">Channel: <strong id="currentChannel">The Live Ones</strong></div>
     </div>
-  </header>  <main class="main-wrap"><!-- VOICE CHAT PANEL -->
-<section class="panel voice-panel">
-  <h2>Live Voice Chat</h2>
-  <p class="lead">Join the ongoing voice room — enter a username first.</p>
+  </header>
 
-  <div class="controls">
-    <button id="joinBtn" class="btn primary">Join Voice Room</button>
-    <button id="leaveBtn" class="btn" disabled>Leave</button>
-    <button id="muteBtn" class="btn" disabled>Mute</button>
-  </div>
+  <main class="main-wrap">
 
-  <div id="status" class="status">Status: Not connected</div>
-  <div id="people" class="people"></div>
+    <!-- VOICE CHAT PANEL -->
+    <section class="panel voice-panel">
+      <h2>Live Voice Chat</h2>
+      <p class="lead">Join the ongoing voice room — enter a username first.</p>
 
-  <div style="margin-top:14px">
-    <div class="rooms">
-      <button class="room-btn active" onclick="switchRoom('The Live Ones')">General</button>
-      <button class="room-btn" onclick="switchRoom('Roblox')">Roblox</button>
-      <button class="room-btn" onclick="switchRoom('Fortnite')">Fortnite</button>
-      <button class="room-btn" onclick="switchRoom('Minecraft')">Minecraft</button>
-      <button class="room-btn" onclick="switchRoom('Warzone')">Warzone</button>
-      <button class="room-btn" onclick="switchRoom('Music')">Music</button>
-      <button class="room-btn" onclick="switchRoom('Games')">Games</button>
-      <button class="room-btn" onclick="switchRoom('67')">67</button>
-      <button class="room-btn" onclick="switchRoom('Ellianas Room')">Elliana's Room</button>
+      <div class="controls">
+        <button id="joinBtn" class="btn primary">Join Voice Room</button>
+        <button id="leaveBtn" class="btn" disabled>Leave</button>
+        <button id="muteBtn" class="btn" disabled>Mute</button>
+      </div>
+
+      <div id="status" class="status">Status: Not connected</div>
+      <div id="people" class="people"></div>
+
+      <div style="margin-top:14px">
+        <div class="rooms">
+          <button class="room-btn active" onclick="switchRoom('The Live Ones')">General</button>
+          <button class="room-btn" onclick="switchRoom('Roblox')">Roblox</button>
+          <button class="room-btn" onclick="switchRoom('Fortnite')">Fortnite</button>
+          <button class="room-btn" onclick="switchRoom('Minecraft')">Minecraft</button>
+          <button class="room-btn" onclick="switchRoom('Warzone')">Warzone</button>
+          <button class="room-btn" onclick="switchRoom('Music')">Music</button>
+          <button class="room-btn" onclick="switchRoom('Games')">Games</button>
+          <button class="room-btn" onclick="switchRoom('67')">67</button>
+          <button class="room-btn" onclick="switchRoom('Group7')">Group7</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADSENSE AUTO AD SLOT -->
+    <section class="ad-slot">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-1184595877548269"
+           data-ad-slot=""
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </section>
+
+    <!-- Games area with thumbnails -->
+    <section class="panel arcade-panel">
+      <h2 class="arcade-title">🎮 Games</h2>
+      <div class="games-grid" id="gamesGrid">
+        <!-- cards inserted by JS -->
+      </div>
+    </section>
+
+    <!-- Game Popup Modal -->
+    <div id="gameModal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close" id="modalClose">X</button>
+        <iframe id="gameIframe" class="modal-iframe" allow="fullscreen"></iframe>
+      </div>
     </div>
-  </div>
-</section>
 
-<!-- ADSENSE AUTO AD SLOT -->
-<section class="ad-slot">
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-1184595877548269"
-       data-ad-slot=""
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</section>
+    <!-- Vote Modal (appears when voting session is active) -->
+    <div id="voteModal" class="vote-modal" style="display:none">
+      <div class="vote-box">
+        <div id="voteQuestion" style="font-size:14px"></div>
+        <div id="voteTimer" style="margin-top:8px;color:var(--muted);font-size:12px"></div>
+        <div class="vote-buttons">
+          <button id="voteYes" class="btn primary">YES</button>
+          <button id="voteNo" class="btn">NO</button>
+        </div>
+      </div>
+    </div>
 
-<!-- =============================== -->
+  </main>
 
-  <!-- 🎮 BEGIN GAME GRID (ICON CARDS) -->  <!-- =============================== -->  <section class="panel arcade-panel">
-    <h2 class="arcade-title">🎮 Games</h2><div class="games-grid" id="gamesGrid">
-  <!-- cards will be inserted here by JS -->
-</div>
-
-  </section>  <!-- END GAME GRID --><!-- Game Popup Modal -->
-<div id="gameModal" class="modal">
-  <div class="modal-content">
-    <button class="modal-close" id="modalClose">X</button>
-    <iframe id="gameIframe" class="modal-iframe" allow="fullscreen"></iframe>
-  </div>
-</div>
-
-  </main>  <!-- FOOTER -->  <footer class="site-footer">
+  <!-- FOOTER -->
+  <footer class="site-footer">
     <div>© The Live Ones — Arcade</div>
     <div class="credits">Built with Agora • Ads by Google</div>
-  </footer>  <script>
-    // --- Game list (converted from htmlgames embeds) ---
-    const GAMES = [
-      {slug:'AirportSniper', title:'Airport Sniper', thumb:'https://cdn.htmlgames.com/AirportSniper/cover.jpg', url:'https://cdn.htmlgames.com/AirportSniper/index.html'},
-      {slug:'GalaxyShooter', title:'Galaxy Shooter', thumb:'https://cdn.htmlgames.com/GalaxyShooter/cover.jpg', url:'https://cdn.htmlgames.com/GalaxyShooter/index.html'},
-      {slug:'Archer', title:'Archer', thumb:'https://cdn.htmlgames.com/Archer/cover.jpg', url:'https://cdn.htmlgames.com/Archer/index.html'},
-      {slug:'Bowling', title:'Bowling', thumb:'https://cdn.htmlgames.com/Bowling/cover.jpg', url:'https://cdn.htmlgames.com/Bowling/index.html'},
-      {slug:'RedAndGreen', title:'Red & Green', thumb:'https://cdn.htmlgames.com/RedAndGreen/cover.jpg', url:'https://cdn.htmlgames.com/RedAndGreen/index.html'},
-      {slug:'SoccerPinball', title:'Soccer Pinball', thumb:'https://cdn.htmlgames.com/SoccerPinball/cover.jpg', url:'https://cdn.htmlgames.com/SoccerPinball/index.html'},
-      {slug:'CatchTheThief', title:'Catch The Thief', thumb:'https://cdn.htmlgames.com/CatchTheThief/cover.jpg', url:'https://cdn.htmlgames.com/CatchTheThief/index.html'},
-      {slug:'NinjaDarts', title:'Ninja Darts', thumb:'https://cdn.htmlgames.com/NinjaDarts/cover.jpg', url:'https://cdn.htmlgames.com/NinjaDarts/index.html'},
-      {slug:'NeonBreaker', title:'Neon Breaker', thumb:'https://cdn.htmlgames.com/NeonBreaker/cover.jpg', url:'https://cdn.htmlgames.com/NeonBreaker/index.html'},
-      {slug:'NeonArkanoid', title:'Neon Arkanoid', thumb:'https://cdn.htmlgames.com/NeonArkanoid/cover.jpg', url:'https://cdn.htmlgames.com/NeonArkanoid/index.html'},
-      {slug:'NinjaBreakout', title:'Ninja Breakout', thumb:'https://cdn.htmlgames.com/NinjaBreakout/cover.jpg', url:'https://cdn.htmlgames.com/NinjaBreakout/index.html'},
-      {slug:'TheLostCrown', title:'The Lost Crown', thumb:'https://cdn.htmlgames.com/TheLostCrown/cover.jpg', url:'https://cdn.htmlgames.com/TheLostCrown/index.html'},
-    ];
+  </footer>
 
-    // populate grid as icon cards
-    const grid = document.getElementById('gamesGrid');
-    GAMES.forEach(g => {
-      const card = document.createElement('div');
-      card.className = 'game-card';
-      card.setAttribute('data-game', g.url);
-      card.setAttribute('data-title', g.title);
+  <script>
+    /*************************************************************************
+     * APP CONFIG & STATE
+     *************************************************************************/
+    const APP_ID = '966c8e41da614722a88d4372c3d95dba';
+    const VOTE_STARTERS_REQUIRED = 3;
+    const VOTE_YES_RATIO = 0.60;
+    const VOTE_DURATION_MS = 45_000;
+    const KICK_DURATION_MS = 10 * 60_000;
 
-      card.innerHTML = `\
-        <div class="content">\
-          <img class="game-thumb" src="${g.thumb}" alt="${g.title}" onerror="this.style.display='none'">\
-          <div class="game-title">${g.title}</div>\
-        </div>`;
+    // RTM & RTC
+    let rtmClient = null, rtmChannel = null;
+    let rtcClient = null, localAudioTrack = null;
 
-      card.addEventListener('click', () => openGame(g.url, g.title));
-      grid.appendChild(card);
-    });
+    // identity & presence
+    let UID = null;
+    let USERNAME = localStorage.getItem('tl_username') || null;
+    let CURRENT_ROOM = 'The Live Ones';
 
-    // modal open/close
-    const gameModal = document.getElementById('gameModal');
-    const gameIframe = document.getElementById('gameIframe');
-    const modalClose = document.getElementById('modalClose');
+    // presence maps & vote bookkeeping
+    const members = new Map();
+    const voteStarters = {};
+    const voteSessions = {};
+    const kickedUntil = new Map();
 
-    function openGame(url, title){
-      // try to open embed-friendly URL first
-      gameIframe.src = url;
-      gameModal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-    function closeModal(){
-      gameModal.style.display = 'none';
-      gameIframe.src = '';
-      document.body.style.overflow = 'auto';
-    }
-    modalClose.addEventListener('click', closeModal);
-    gameModal.addEventListener('click', (e)=>{ if(e.target===gameModal) closeModal(); });
-
-    // --- Username modal ---
-    function showUsernameModal(){
-      if(localStorage.getItem('tl_username')) return; // already set
-      const m = document.createElement('div');
-      m.className = 'username-modal';
-      m.id = 'usernameModal';
-      m.innerHTML = `<div class="username-box">\
-        <h3 style="margin:0 0 10px 0">Enter a display name</h3>\
-        <input id="usernameInput" placeholder="Your name..." maxlength="24" />\
-        <div style="margin-top:12px">\
-          <button class="btn primary" id="saveName">Enter</button>\
-        </div>\
-      </div>`;
-      document.body.appendChild(m);
-      document.getElementById('saveName').addEventListener('click', ()=>{
-        const v = document.getElementById('usernameInput').value.trim();
-        if(!v) return alert('Please enter a name');
-        localStorage.setItem('tl_username', v);
-        m.remove();
-      });
-    }
-    showUsernameModal();
-
-    // --- Chat rooms ---
-    let CHANNEL = 'The Live Ones';
-    function switchRoom(name){
-      CHANNEL = name;
-      document.getElementById('currentChannel').textContent = name;
-      // update active buttons
-      document.querySelectorAll('.room-btn').forEach(b=>b.classList.toggle('active', b.textContent===name));
-      // if connected, leave and rejoin new channel
-      if(client){
-        leaveChannel().then(()=>{
-          setTimeout(()=>joinChannel(),300);
-        });
-      }
-    }
-
-    // --- Notifications ---
-    function showNotification(text){
-      const n = document.createElement('div');
-      n.className = 'notif';
-      n.innerHTML = text;
-      document.body.appendChild(n);
-      setTimeout(()=>n.remove(),4000);
-    }
-
-    // --- Agora voice chat (test mode) ---
-    const APP_ID = '966c8e41da614722a88d4372c3d95dba'; // your test App ID
-    let client = null;
-    let localAudioTrack = null;
-
+    // DOM elements
     const joinBtn = document.getElementById('joinBtn');
     const leaveBtn = document.getElementById('leaveBtn');
     const muteBtn = document.getElementById('muteBtn');
     const statusEl = document.getElementById('status');
     const peopleEl = document.getElementById('people');
     const userCountEl = document.getElementById('userCount');
+    const gamesGrid = document.getElementById('gamesGrid');
+    const modal = document.getElementById('gameModal');
+    const modalClose = document.getElementById('modalClose');
+    const gameIframe = document.getElementById('gameIframe');
 
-    function setStatus(text){ if(statusEl) statusEl.textContent = 'Status: ' + text; }
+    const voteModal = document.getElementById('voteModal');
+    const voteQuestion = document.getElementById('voteQuestion');
+    const voteTimer = document.getElementById('voteTimer');
+    const voteYes = document.getElementById('voteYes');
+    const voteNo = document.getElementById('voteNo');
 
-    async function initClient(){
-      client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+    function setStatus(t){ if(statusEl) statusEl.textContent = 'Status: ' + t; }
+    function showNotification(html){ const n=document.createElement('div'); n.className='notif'; n.innerHTML=html; document.body.appendChild(n); setTimeout(()=>n.remove(),4500); }
 
-      client.on('user-published', async (user, mediaType)=>{
-        await client.subscribe(user, mediaType);
-        if(mediaType==='audio') user.audioTrack.play();
-        renderUsers();
-        // show notification for join
-        const name = user.uid || 'User';
-        showNotification(`<strong>${name}</strong> joined`);
+    /*************************************************************************
+     * GAMES: Manual thumbnail system
+     *************************************************************************/
+    
+    // Game emoji mapping - you can customize these!
+    const GAME_EMOJIS = {
+      'marvel': '🦸',
+      'sonic': '🦔',
+      'tekken': '🥋',
+      'dragon': '🐉',
+      'smash': '💥',
+      'racing': '🏎️',
+      'street': '👊',
+      'blazing': '🔥',
+      'crash': '💥',
+      'king of fighters': '👑',
+      'fatal fury': '⚡',
+      'strikers': '✈️',
+      'double dragon': '🐲',
+      'knights': '⚔️',
+      'metal slug': '🔫',
+      'x-men': '🧬',
+      'ballistic': '🎯',
+      'nba': '🏀',
+      'nfl': '🏈',
+      'nicktoons': '📺',
+      'tony hawk': '🛹',
+      'syphon': '🕵️',
+      'mega man': '🔫',
+      'test drive': '🚗',
+      'aces': '✈️',
+      'batman': '🦇',
+      'spyro': '🐲',
+      'spongebob': '🧽',
+      'mortal kombat': '💀',
+      'contra': '🔫',
+      'samurai': '🗡️',
+      'baseball': '⚾',
+      'silent hill': '🌫️',
+      'duke nukem': '💪',
+      'nightmare': '😱',
+      'wwf': '💪',
+      'arkanoid': '◼️',
+      '007': '🔫',
+      'after burner': '🛩️',
+      'sega': '🎮'
+    };
+
+    // Function to find appropriate emoji for a game title
+    function getGameEmoji(title) {
+      const lowerTitle = title.toLowerCase();
+      for (const [key, emoji] of Object.entries(GAME_EMOJIS)) {
+        if (lowerTitle.includes(key)) {
+          return emoji;
+        }
+      }
+      return '🎮'; // default emoji
+    }
+
+    const GAME_IFRAMES = [
+      { title: 'Marvel vs Capcom', url: 'https://www.retrogames.cc/embed/9123-marvel-vs-capcom-clash-of-super-heroes-980123-usa.html' },
+      { title: 'Silent Dragon', url: 'https://www.retrogames.cc/embed/9836-silent-dragon-world.html' },
+      { title: 'Sonic the Hedgehog', url: 'https://www.retrogames.cc/embed/30899-sonic-the-hedgehog-usa-europe.html' },
+      { title: 'Tekken 3', url: 'https://www.retrogames.cc/embed/40238-tekken-3.html' },
+      { title: 'Dragon Ball Z', url: 'https://www.retrogames.cc/embed/28096-dragon-ball-z-supersonic-warriors-k-projectg.html' },
+      { title: 'Super Smash Bros', url: 'https://www.retrogames.cc/embed/32117-super-smash-bros-usa.html' },
+      { title: 'Diddy Kong Racing', url: 'https://www.retrogames.cc/embed/32115-diddy-kong-racing-usa-en-fr.html' },
+      { title: 'Street Fighter II CE (bootleg)', url: 'https://www.retrogames.cc/embed/10042-street-fighter-ii-champion-edition-yyc-bootleg-set-2-920313-etc-bootleg.html' },
+      { title: 'Blazing Star', url: 'https://www.retrogames.cc/embed/7955-blazing-star.html' },
+      { title: 'Sonic 3', url: 'https://www.retrogames.cc/embed/30002-sonic-the-hedgehog-3-europe.html' },
+      { title: 'Crash Bandicoot', url: 'https://www.retrogames.cc/embed/40784-crash-bandicoot.html' },
+      { title: 'Crash Team Racing', url: 'https://www.retrogames.cc/embed/41687-crash-team-racing.html' },
+      { title: 'KOF 2002 (bootleg)', url: 'https://www.retrogames.cc/embed/10391-the-king-of-fighters-2002-super-bootleg-bootleg.html' },
+      { title: 'Street Fighter II CE (rainbow bootleg)', url: 'https://www.retrogames.cc/embed/10021-street-fighter-ii-champion-edition-rainbow-bootleg-set-3-920322-etc-bootleg.html' },
+      { title: 'Real Bout Fatal Fury Special', url: 'https://www.retrogames.cc/embed/9653-real-bout-fatal-fury-special-real-bout-garou-densetsu-special-korean-release.html' },
+      { title: 'Strikers 1945', url: 'https://www.retrogames.cc/embed/10111-strikers-1945-japan-unprotected.html' },
+      { title: 'Double Dragon', url: 'https://www.retrogames.cc/embed/8332-double-dragon-world-set-1.html' },
+      { title: 'Knights of the Round', url: 'https://www.retrogames.cc/embed/8912-knights-of-the-round-911127-etc.html' },
+      { title: 'Metal Slug', url: 'https://www.retrogames.cc/embed/9157-metal-slug-super-vehicle-001.html' },
+      { title: 'Sonic Generations 2', url: 'https://www.retrogames.cc/embed/42251-sonic-generations-2.html' },
+      { title: 'X-Men (arcade)', url: 'https://www.retrogames.cc/embed/16944-x-men-usa.html' },
+      { title: 'Ballistic', url: 'https://www.retrogames.cc/embed/40052-ballistic.html' },
+      { title: 'NBA Jam Extreme', url: 'https://www.retrogames.cc/embed/40094-nba-jam-extreme.html' },
+      { title: 'NBA Showtime', url: 'https://www.retrogames.cc/embed/40106-nba-showtime-nba-on-nbc.html' },
+      { title: 'NFL Blitz 2001', url: 'https://www.retrogames.cc/embed/40172-nfl-blitz-2001.html' },
+      { title: 'Nicktoons Racing', url: 'https://www.retrogames.cc/embed/45185-nicktoons-racing-usa.html' },
+      { title: 'Tony Hawk Pro Skater 3', url: 'https://www.retrogames.cc/embed/42331-tony-hawks-pro-skater-3.html' },
+      { title: 'Syphon Filter 3', url: 'https://www.retrogames.cc/embed/40806-syphon-filter-3.html' },
+      { title: 'Mega Man X6', url: 'https://www.retrogames.cc/embed/40780-mega-man-x6.html' },
+      { title: 'Street Fighter EX+α', url: 'https://www.retrogames.cc/embed/42185-street-fighter-ex-plus-alpha.html' },
+      { title: 'Test Drive Off-Road 2', url: 'https://www.retrogames.cc/embed/40142-test-drive-off-road-2.html' },
+      { title: 'Aces of the Air', url: 'https://www.retrogames.cc/embed/41527-aces-of-the-air.html' },
+      { title: 'All Star Racing', url: 'https://www.retrogames.cc/embed/41537-all-star-racing.html' },
+      { title: 'Batman Gotham City Racer', url: 'https://www.retrogames.cc/embed/41600-batman-gotham-city-racer.html' },
+      { title: 'Spyro 3', url: 'https://www.retrogames.cc/embed/40798-spyro-3-year-of-the-dragon.html' },
+      { title: 'SpongeBob Supersponge', url: 'https://www.retrogames.cc/embed/40063-spongebob-squarepants-supersponge.html' },
+      { title: 'Mortal Kombat 4', url: 'https://www.retrogames.cc/embed/40811-mortal-kombat-4.html' },
+      { title: 'C: The Contra Adventure', url: 'https://www.retrogames.cc/embed/41642-c-the-contra-adventure.html' },
+      { title: '5-Star Racing', url: 'https://www.retrogames.cc/embed/40803-5-star-racing.html' },
+      { title: 'Crash Bandicoot Warped', url: 'https://www.retrogames.cc/embed/40136-crash-bandicoot-warped.html' },
+      { title: 'Sammy Sosa Softball Slam', url: 'https://www.retrogames.cc/embed/40097-sammy-sosa-softball-slam.html' },
+      { title: 'Samurai Shodown III', url: 'https://www.retrogames.cc/embed/41520-samurai-shodown-iii-blades-of-blood.html' },
+      { title: 'KOF 98', url: 'https://www.retrogames.cc/embed/41954-king-of-fighters-98.html' },
+      { title: 'High Heat Baseball 2001', url: 'https://www.retrogames.cc/embed/40165-sammy-sosa-high-heat-baseball-2001.html' },
+      { title: 'Syphon Filter 2', url: 'https://www.retrogames.cc/embed/40804-syphon-filter-2.html' },
+      { title: 'Silent Hill', url: 'https://www.retrogames.cc/embed/41684-silent-hill.html' },
+      { title: 'Duke Nukem: Land of the Babes', url: 'https://www.retrogames.cc/embed/41745-duke-nukem-land-of-the-babes.html' },
+      { title: 'Nightmare Creatures', url: 'https://www.retrogames.cc/embed/44009-nightmare-creatures-usa.html' },
+      { title: 'Nightmare Creatures II', url: 'https://www.retrogames.cc/embed/44010-nightmare-creatures-ii-usa.html' },
+      { title: 'WWF In Your House', url: 'https://www.retrogames.cc/embed/40235-wwf-in-your-house.html' },
+      { title: 'Arkanoid R 2000', url: 'https://www.retrogames.cc/embed/41564-arkanoid-r-2000.html' },
+      { title: '007 The World Is Not Enough', url: 'https://www.retrogames.cc/embed/41522-007-the-world-is-not-enough.html' },
+      { title: 'After Burner III', url: 'https://www.retrogames.cc/embed/40675-after-burner-iii.html' },
+      { title: 'Sega Classics 4-in-1', url: 'https://www.retrogames.cc/embed/40745-sega-classics-4-in-1.html' }
+    ];
+
+    // Populate the grid with emoji thumbnails
+    function populateGames(){
+      gamesGrid.innerHTML = '';
+      GAME_IFRAMES.forEach(g=>{
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.dataset.game = g.url;
+        card.dataset.title = g.title;
+
+        const emoji = getGameEmoji(g.title);
+        
+        card.innerHTML = `
+          <div class="content">
+            <div class="game-thumbnail">${emoji}</div>
+            <div class="game-title">${escapeHtml(g.title)}</div>
+          </div>
+        `;
+        card.addEventListener('click', ()=>openGame(g.url, g.title));
+        gamesGrid.appendChild(card);
+      });
+    }
+    populateGames();
+
+    // open game modal
+    modalClose.addEventListener('click', closeGame);
+    function openGame(url, title){
+      gameIframe.src = url;
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      showNotification(`<strong>${escapeHtml(title)}</strong> loaded`);
+    }
+    function closeGame(){
+      modal.style.display = 'none';
+      gameIframe.src = '';
+      document.body.style.overflow = 'auto';
+    }
+
+    /*************************************************************************
+     * Agora RTM & RTC integration (FIXED)
+     *************************************************************************/
+    // helper: escape HTML
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]); }
+
+    // show username modal for entry
+    function showUsernameModal(){
+      if(localStorage.getItem('tl_username')) return;
+      const m = document.createElement('div'); m.className='username-modal'; m.id='usernameModal';
+      m.innerHTML = `
+        <div class="username-box">
+          <h3 style="margin:0 0 10px 0">Enter display name</h3>
+          <input id="usernameInput" placeholder="Your name..." maxlength="24" />
+          <div style="margin-top:12px">
+            <button class="btn primary" id="saveName">Enter</button>
+            <button class="btn" id="changeLater" style="margin-left:8px">Cancel</button>
+          </div>
+        </div>`;
+      document.body.appendChild(m);
+      document.getElementById('saveName').addEventListener('click', ()=>{
+        const v = document.getElementById('usernameInput').value.trim();
+        if(!v) return alert('Please enter a name');
+        localStorage.setItem('tl_username', v);
+        USERNAME = v;
+        m.remove();
+        initializeRTM();
+      });
+      document.getElementById('changeLater').addEventListener('click', ()=>{ m.remove(); initializeRTM(); });
+    }
+
+    // allow name change later
+    function promptChangeName(){
+      const newName = prompt('Change your display name (max 24 chars):', USERNAME || '');
+      if(newName && newName.trim()){
+        const v = newName.trim().slice(0,24);
+        localStorage.setItem('tl_username', v);
+        USERNAME = v;
+        showNotification('Name changed to ' + escapeHtml(USERNAME));
+        // announce update
+        if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'profile', uid:UID, name:USERNAME})});
+        renderMembers();
+      }
+    }
+
+    // initialize on load
+    if(!USERNAME) showUsernameModal(); else initializeRTM();
+
+    // RTM init & channel join - FIXED
+    async function initializeRTM(){
+      // Check if AgoraRTM is available
+      if (typeof AgoraRTM === 'undefined') {
+        console.error('AgoraRTM not loaded. Check script URL.');
+        showNotification('RTM failed to load. Check console.');
+        return;
+      }
+      
+      UID = 'u' + Date.now().toString(36) + Math.floor(Math.random()*1000).toString(36);
+      try{
+        rtmClient = AgoraRTM.createInstance(APP_ID);
+        await rtmClient.login({uid: UID});
+        
+        rtmClient.on('MessageFromPeer', ({text}, peerId)=>{ 
+          console.log('Peer message', peerId, text); 
+        });
+
+        // join initial room
+        await joinRTMChannel(CURRENT_ROOM);
+      }catch(err){
+        console.error('RTM init error', err);
+        showNotification('RTM failed — check console');
+      }
+    }
+
+    async function joinRTMChannel(roomName){
+      try{
+        if(rtmChannel){
+          try{ await rtmChannel.leave(); }catch(e){}
+        }
+        rtmChannel = rtmClient.createChannel(roomName);
+        rtmChannel.on('ChannelMessage', handleChannelMessage);
+        rtmChannel.on('MemberJoined', (memberId)=> {
+          rtmChannel.sendMessage({text: JSON.stringify({type:'request_profile'})});
+        });
+        rtmChannel.on('MemberLeft', (memberId)=> {
+          members.delete(memberId);
+          renderMembers();
+        });
+        await rtmChannel.join();
+        await rtmChannel.sendMessage({text: JSON.stringify({type:'join', uid:UID, name:USERNAME})});
+        await rtmChannel.sendMessage({text: JSON.stringify({type:'request_profiles'})});
+      }catch(err){ console.error('joinRTMChannel', err); }
+    }
+
+    // handle incoming RTM messages
+    async function handleChannelMessage(msg, memberId){
+      let data = null;
+      try{ data = JSON.parse(msg.text); } catch(e){ return; }
+
+      switch(data.type){
+        case 'join':
+          members.set(data.uid, {name:data.name});
+          renderMembers();
+          showNotification(`<strong>${escapeHtml(data.name)}</strong> joined ${CURRENT_ROOM}`);
+          break;
+
+        case 'profile':
+          members.set(data.uid, {name:data.name});
+          renderMembers();
+          break;
+
+        case 'request_profiles':
+          if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'profile', uid:UID, name:USERNAME})});
+          break;
+
+        case 'request_profile':
+          if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'profile', uid:UID, name:USERNAME})});
+          break;
+
+        case 'start_vote':
+          handleStartVote(data);
+          break;
+
+        case 'vote_session':
+          if(data.target && data.expires){
+            createVoteSession(data.target, data.expires, false);
+          }
+          break;
+
+        case 'vote':
+          handleIncomingVote(data);
+          break;
+
+        case 'kick':
+          if(data.target === UID){
+            showNotification('You were kicked from this room');
+            await leaveChannel();
+            kickedUntil.set(UID, Date.now() + KICK_DURATION_MS);
+          } else {
+            showNotification(`${escapeHtml(members.get(data.target)?.name || 'User')} was kicked`);
+            members.delete(data.target);
+            renderMembers();
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    /*************************************************************************
+     * Rest of your existing functions (vote system, RTC voice, etc.)
+     * These remain the same as in your original code
+     *************************************************************************/
+    
+    // [Include all your existing functions for voting, RTC voice, etc. here]
+    // They should work the same as before
+
+    function handleStartVote(data){
+      const {target, starter} = data;
+      if(!voteStarters[target]) voteStarters[target] = new Set();
+      voteStarters[target].add(starter);
+
+      renderMembers();
+
+      const startersCount = voteStarters[target].size;
+      showNotification(`${startersCount} / ${VOTE_STARTERS_REQUIRED} started a vote to kick ${escapeHtml(members.get(target)?.name || 'User')}`);
+
+      if(startersCount >= VOTE_STARTERS_REQUIRED && (!voteSessions[target] || voteSessions[target].expired)){
+        const expires = Date.now() + VOTE_DURATION_MS;
+        if(rtmChannel) {
+          rtmChannel.sendMessage({text: JSON.stringify({type:'vote_session', target, expires})});
+        }
+        createVoteSession(target, expires, true);
+      }
+    }
+
+    function createVoteSession(target, expires, local){
+      if(voteSessions[target] && voteSessions[target].timerId){
+        clearInterval(voteSessions[target].timerId);
+      }
+
+      voteSessions[target] = { yes: new Set(), no: new Set(), expires, timerId: null, expired:false };
+      openVoteModal(target);
+
+      voteSessions[target].timerId = setInterval(()=>{
+        const remaining = voteSessions[target].expires - Date.now();
+        if(remaining <= 0){
+          clearInterval(voteSessions[target].timerId);
+          voteSessions[target].expired = true;
+          finalizeVoteSession(target);
+        } else {
+          voteTimer.textContent = `Time left: ${Math.ceil(remaining/1000)}s`;
+        }
+      }, 300);
+    }
+
+    function openVoteModal(target){
+      voteQuestion.innerHTML = `Vote to kick <strong>${escapeHtml(members.get(target)?.name || 'User')}</strong>?`;
+      voteModal.style.display = 'flex';
+      voteYes.onclick = ()=>{ sendVote(target, true); };
+      voteNo.onclick = ()=>{ sendVote(target, false); };
+    }
+
+    async function sendVote(target, choice){
+      if(rtmChannel){
+        rtmChannel.sendMessage({text: JSON.stringify({type:'vote', target, voter:UID, choice})});
+      }
+      voteModal.style.display = 'none';
+      showNotification('Vote submitted');
+    }
+
+    function handleIncomingVote(data){
+      const {target, voter, choice} = data;
+      if(!voteSessions[target]) return;
+      if(choice) voteSessions[target].yes.add(voter); else voteSessions[target].no.add(voter);
+    }
+
+    function finalizeVoteSession(target){
+      const sess = voteSessions[target];
+      if(!sess) return;
+      const yesCount = sess.yes.size;
+      const noCount = sess.no.size;
+      const activeCount = Math.max(1, members.size + (localAudioTrack ? 1 : 0));
+      const needed = Math.ceil(activeCount * VOTE_YES_RATIO);
+      if(yesCount >= needed){
+        if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'kick', target})});
+        kickedUntil.set(target, Date.now() + KICK_DURATION_MS);
+      } else {
+        showNotification(`Vote failed — ${yesCount}/${needed} yes`);
+      }
+      delete voteStarters[target];
+      delete voteSessions[target];
+    }
+
+    function renderMembers(){
+      peopleEl.innerHTML = '';
+      const localDiv = document.createElement('div'); localDiv.className='person';
+      localDiv.innerHTML = `<div><div class="name">${escapeHtml(USERNAME || 'You')}</div><div class="meta">Local</div></div>
+                            <div style="display:flex;gap:8px;align-items:center">
+                              <button class="change-name" onclick="promptChangeName()">✎</button>
+                            </div>`;
+      peopleEl.appendChild(localDiv);
+
+      members.forEach((info, uid)=>{
+        if(uid === UID) return;
+        const bannedUntil = kickedUntil.get(uid) || 0;
+        if(Date.now() < bannedUntil) {
+          const bdiv = document.createElement('div'); bdiv.className='person';
+          bdiv.innerHTML = `<div><div class="name">${escapeHtml(info.name)} (kicked)</div><div class="meta">temporarily banned</div></div>`;
+          peopleEl.appendChild(bdiv);
+          return;
+        }
+
+        const div = document.createElement('div');
+        div.className='person';
+        const name = escapeHtml(info.name || ('User'+uid.slice(-4)));
+        div.innerHTML = `<div><div class="name">${name}</div><div class="meta">Remote</div></div>`;
+
+        const menu = document.createElement('div'); menu.className='user-menu';
+        const startBtn = document.createElement('button'); startBtn.className='kick-btn'; startBtn.textContent = 'Start Vote';
+        startBtn.addEventListener('click', ()=>{
+          if(!rtmChannel) return showNotification('Not connected to RTM');
+          if(uid === UID) return showNotification('You cannot start a vote against yourself');
+          const banned = kickedUntil.get(uid) || 0;
+          if(Date.now() < banned) return showNotification('User is currently banned');
+          rtmChannel.sendMessage({text: JSON.stringify({type:'start_vote', target:uid, starter:UID})});
+          handleStartVote({target:uid, starter:UID});
+        });
+        menu.appendChild(startBtn);
+        div.appendChild(menu);
+        peopleEl.appendChild(div);
       });
 
-      client.on('user-unpublished', (user)=>{ renderUsers(); });
-      client.on('user-left', (user)=>{ renderUsers(); showNotification(`<strong>User ${user.uid}</strong> left`); });
+      userCountEl.textContent = 'Users: ' + (members.size + (localAudioTrack?1:0));
+    }
+
+    async function initRTC(){
+      rtcClient = AgoraRTC.createClient({mode:'rtc', codec:'vp8'});
+      rtcClient.on('user-published', async (user, mediaType)=>{
+        await rtcClient.subscribe(user, mediaType);
+        if(mediaType === 'audio'){
+          user.audioTrack.play();
+        }
+        renderMembers();
+      });
+      rtcClient.on('user-unpublished', ()=>renderMembers());
+      rtcClient.on('user-left', ()=>renderMembers());
     }
 
     async function joinChannel(){
-      if(!client) await initClient();
+      const ban = kickedUntil.get(UID) || 0;
+      if(Date.now() < ban) {
+        const remain = Math.ceil((ban - Date.now())/1000);
+        return showNotification(`You are banned for ${remain}s`);
+      }
+      if(!rtmClient) await initializeRTM();
+      if(!rtcClient) await initRTC();
       try{
         setStatus('Requesting mic...');
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        setStatus('Joining ' + CHANNEL + '...');
-        await client.join(APP_ID, CHANNEL, null, null);
-        await client.publish([localAudioTrack]);
+        setStatus('Joining ' + CURRENT_ROOM + '...');
+        await rtcClient.join(APP_ID, CURRENT_ROOM, null, null);
+        await rtcClient.publish([localAudioTrack]);
         setStatus('Connected — you are live');
-        joinBtn.disabled=true; leaveBtn.disabled=false; muteBtn.disabled=false;
-        renderUsers();
-        // announce locally
-        const nick = localStorage.getItem('tl_username') || 'Guest';
-        showNotification(`You joined as <strong>${nick}</strong> in ${CHANNEL}`);
-      }catch(err){ console.error(err); setStatus('Error joining (see console)'); }
+        joinBtn.disabled = true; leaveBtn.disabled = false; muteBtn.disabled = false;
+        renderMembers();
+        if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'join', uid:UID, name:USERNAME})});
+      }catch(err){
+        console.error('joinChannel', err);
+        setStatus('Error joining (see console)');
+      }
     }
 
     async function leaveChannel(){
       try{
-        if(localAudioTrack){ await client.unpublish([localAudioTrack]); localAudioTrack.close(); localAudioTrack=null; }
-        if(client) await client.leave();
+        if(localAudioTrack){ await rtcClient.unpublish([localAudioTrack]); localAudioTrack.close(); localAudioTrack = null; }
+        if(rtcClient) await rtcClient.leave();
       }catch(e){ console.warn(e); }
-      setStatus('Not connected'); joinBtn.disabled=false; leaveBtn.disabled=true; muteBtn.disabled=true; peopleEl.innerHTML=''; renderUsers();
+      setStatus('Not connected'); joinBtn.disabled=false; leaveBtn.disabled=true; muteBtn.disabled=true;
+      renderMembers();
     }
 
-    function toggleMute(){ if(!localAudioTrack) return; const enabled = localAudioTrack.enabled; localAudioTrack.setEnabled(!enabled); muteBtn.textContent = enabled ? 'Unmute' : 'Mute'; setStatus(enabled ? 'You are muted' : 'You are live'); }
-
-    function renderUsers(){ if(!client) return; const remote = client.remoteUsers ? Object.values(client.remoteUsers) : []; peopleEl.innerHTML=''; if(localAudioTrack){ const d=document.createElement('div'); d.className='person'; d.innerHTML="<div style='font-weight:700'>You</div><div style='font-size:12px;color:var(--muted)'>Local</div>"; peopleEl.appendChild(d);} remote.forEach(u=>{ const div=document.createElement('div'); div.className='person'; div.id='u-'+u.uid; div.innerHTML = `<div style='font-weight:700'>User ${u.uid}</div><div style='font-size:12px;color:var(--muted)'>Remote</div>`; peopleEl.appendChild(div); }); userCountEl.textContent = 'Users: ' + (remote.length + (localAudioTrack?1:0)); }
+    function toggleMute(){
+      if(!localAudioTrack) return;
+      const enabled = localAudioTrack.enabled;
+      localAudioTrack.setEnabled(!enabled);
+      muteBtn.textContent = enabled ? 'Unmute' : 'Mute';
+      setStatus(enabled ? 'You are muted' : 'You are live');
+    }
 
     // wire buttons
     joinBtn.addEventListener('click', ()=>{
-      // ensure username set
-      if(!localStorage.getItem('tl_username')){ showNotification('Please enter a display name first'); showUsernameModal(); return; }
+      if(!USERNAME){ showNotification('Please enter a display name first'); showUsernameModal(); return; }
       joinChannel();
     });
-    leaveBtn.addEventListener('click', leaveChannel);
+    leaveBtn.addEventListener('click', async ()=>{
+      if(rtmChannel) rtmChannel.sendMessage({text: JSON.stringify({type:'leave', uid:UID, name:USERNAME})});
+      await leaveChannel();
+    });
     muteBtn.addEventListener('click', toggleMute);
 
-    // cleanup on unload
+    // switch rooms
+    async function switchRoom(name){
+      CURRENT_ROOM = name;
+      document.getElementById('currentChannel').textContent = name;
+      document.querySelectorAll('.room-btn').forEach(b=>b.classList.toggle('active', b.textContent===name));
+      if(rtmClient) await joinRTMChannel(name);
+      if(localAudioTrack){
+        await leaveChannel();
+        setTimeout(()=>joinChannel(), 300);
+      }
+    }
+
+    // helper to allow adding games later
+    window.addGame = function(title, url){
+      GAME_IFRAMES.push({title, url});
+      populateGames();
+    };
+
+    // clean up on unload
     window.addEventListener('beforeunload', async ()=>{ try{ await leaveChannel(); }catch(e){} });
 
-    // allow adding more games later (developer-friendly)
-    window.addGame = function(slug, title, thumb, url){ GAMES.push({slug,title,thumb,url}); const card = document.createElement('div'); card.className='game-card'; card.setAttribute('data-game', url); card.setAttribute('data-title',title); card.innerHTML = `<div class="content"><img class="game-thumb" src="${thumb}" /><div class="game-title">${title}</div></div>`; card.addEventListener('click', ()=>openGame(url,title)); grid.appendChild(card); }
-
-  </script></body>
+  </script>
+</body>
 </html>

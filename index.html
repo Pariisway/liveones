@@ -1,18 +1,17 @@
-
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Video Chat Club - Watch & Chat Live</title>
+  <title>House of Whispers - Watch & Chat Live</title>
 
   <!-- Google AdSense -->
   <meta name="google-adsense-account" content="ca-pub-1184595877548269">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
 
-  <!-- Agora Web SDKs -->
+  <!-- Agora Web SDKs - FIXED: Using correct CDN URLs -->
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-  <script src="https://download.agora.io/sdk/release/AgoraRTM_N.js"></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTM.js"></script>
 
   <!-- Hip Street Font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
@@ -42,6 +41,66 @@
       background: radial-gradient(circle at 50% 50%, #1a1a1a, #0a0a0a);
       color: var(--text);
       overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ANIMATED GRID BACKGROUND */
+    .grid-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 0, 51, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 51, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: -1;
+      opacity: 0;
+      animation: gridPulse 8s ease-in-out infinite;
+    }
+
+    @keyframes gridPulse {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* GLOWING TITLES */
+    .glowing-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      text-align: center;
+      animation: glowPulse 3s ease-in-out infinite alternate;
+    }
+
+    .title-large {
+      font-size: 48px;
+      color: var(--accent1);
+      text-shadow: 0 0 30px var(--accent1), 0 0 60px var(--accent1);
+      margin-bottom: 20px;
+    }
+
+    .title-medium {
+      font-size: 36px;
+      color: var(--accent2);
+      text-shadow: 0 0 20px var(--accent2), 0 0 40px var(--accent2);
+      margin-bottom: 15px;
+    }
+
+    .title-small {
+      font-size: 28px;
+      color: var(--accent3);
+      text-shadow: 0 0 15px var(--accent3), 0 0 30px var(--accent3);
+      margin-bottom: 10px;
+    }
+
+    @keyframes glowPulse {
+      0% {
+        text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+      }
+      100% {
+        text-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 0 80px currentColor;
+      }
     }
 
     /* HIP HEADER */
@@ -51,25 +110,6 @@
       border-bottom: 3px solid var(--accent1);
       background: rgba(0,0,0,0.8);
       backdrop-filter: blur(10px);
-    }
-
-    .logo {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 42px;
-      font-weight: 900;
-      color: var(--accent1);
-      text-shadow: var(--neon-glow) var(--accent1);
-      letter-spacing: 2px;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--accent2);
-      text-shadow: 0 0 10px var(--accent2);
-      letter-spacing: 1px;
     }
 
     /* CENTERED MAIN LAYOUT */
@@ -242,14 +282,6 @@
       background: #000;
     }
 
-    .video-controls {
-      display: flex;
-      gap: 15px;
-      justify-content: center;
-      margin: 20px 0;
-      flex-wrap: wrap;
-    }
-
     /* VIDEO ROOMS GRID */
     .video-rooms-grid {
       display: grid;
@@ -395,8 +427,9 @@
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-      .logo { font-size: 32px; }
-      .subtitle { font-size: 16px; }
+      .title-large { font-size: 36px; }
+      .title-medium { font-size: 28px; }
+      .title-small { font-size: 22px; }
       .panel { padding: 20px; }
       .whisper-rooms { grid-template-columns: 1fr; }
       .video-rooms-grid { grid-template-columns: 1fr; }
@@ -411,17 +444,32 @@
       letter-spacing: 1px;
     }
 
-    /* AD SENSE STYLING */
-    .ad-slot {
+    /* AD SENSE STYLING - FIXED */
+    .ad-container {
       margin: 20px 0;
-      padding: 15px;
-      border-radius: 10px;
+      width: 100%;
+      min-height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .ad-slot {
+      width: 728px;
+      height: 90px;
       background: rgba(255, 0, 51, 0.1);
       border: 1px solid var(--accent1);
-      min-height: 100px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+      .ad-slot {
+        width: 320px;
+        height: 100px;
+      }
     }
 
     /* HIDDEN SECTIONS */
@@ -450,19 +498,22 @@
   </style>
 </head>
 <body>
+  <!-- ANIMATED GRID BACKGROUND -->
+  <div class="grid-background"></div>
+
   <!-- HOME PAGE -->
   <div id="homePage">
     <!-- HIP HEADER -->
     <header class="site-header">
-      <div class="logo">VIDEO CHAT CLUB</div>
-      <div class="subtitle">WATCH VIRAL VIDEOS • LIVE VOICE CHAT • REAL CONNECTIONS</div>
+      <div class="glowing-title title-large">HOUSE OF WHISPERS</div>
+      <div class="glowing-title title-medium">WATCH VIRAL VIDEOS • LIVE VOICE CHAT • REAL CONNECTIONS</div>
     </header>
 
     <main class="main-wrap">
       
       <!-- USERNAME SETUP -->
       <div class="panel username-setup" id="usernameSetup">
-        <h2 style="color: var(--accent3); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">CHOOSE YOUR NAME</h2>
+        <h2 class="glowing-title title-medium">CHOOSE YOUR NAME</h2>
         <input type="text" class="username-input" id="usernameInput" placeholder="ENTER YOUR DISPLAY NAME" maxlength="20">
         <div style="margin: 20px 0;">
           <button class="btn primary" onclick="setUsername()">START CHATTING</button>
@@ -477,7 +528,7 @@
 
         <!-- NOW PLAYING VIDEO - FIRST SECTION -->
         <div class="panel">
-          <h2 style="color: var(--accent1); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">🎬 NOW PLAYING</h2>
+          <h2 class="glowing-title title-medium">🎬 NOW PLAYING</h2>
           <div class="video-container">
             <div class="video-player">
               <div id="videoPlaceholder" style="display: flex; align-items: center; justify-content: center; height: 400px; background: #000; color: white; border-radius: 12px;">
@@ -493,45 +544,40 @@
                       referrerpolicy="strict-origin-when-cross-origin">
               </iframe>
             </div>
-            <div class="video-controls">
-              <button class="btn" onclick="loadRandomVideo()">RANDOM VIDEO</button>
-              <button class="btn" onclick="skipVideo()">SKIP VIDEO</button>
-            </div>
           </div>
         </div>
 
         <!-- ADSENSE SLOT -->
-        <div class="ad-slot">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-1184595877548269"
-               data-ad-slot="1234567890"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
+        <div class="ad-container">
+          <div class="ad-slot">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-1184595877548269"
+                 data-ad-slot="1234567890"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+          </div>
         </div>
 
         <!-- COME WHISPER WITH US SECTION -->
         <div class="panel">
-          <h2 style="color: var(--accent2); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">💬 COME WHISPER WITH US</h2>
+          <h2 class="glowing-title title-medium">💬 COME WHISPER WITH US</h2>
           <p style="color: var(--muted); margin-bottom: 25px; font-size: 16px;">Join voice chat rooms and connect with others</p>
           
           <div class="whisper-rooms">
-            <div class="whisper-room" onclick="joinWhisperRoom('Did Yall Hear')">
+            <div class="whisper-room" onclick="joinWhisperRoom('hear')">
               <div class="room-icon">👂</div>
               <div>Did Y'all Hear</div>
             </div>
-            <div class="whisper-room" onclick="joinWhisperRoom('Bad Relationships')">
+            <div class="whisper-room" onclick="joinWhisperRoom('relationships')">
               <div class="room-icon">💔</div>
               <div>Bad Relationships</div>
             </div>
-            <div class="whisper-room" onclick="joinWhisperRoom('Drizzle Drizzle')">
+            <div class="whisper-room" onclick="joinWhisperRoom('drizzle')">
               <div class="room-icon">💧</div>
               <div>Drizzle Drizzle</div>
             </div>
-            <div class="whisper-room" onclick="joinWhisperRoom('Sprinkle Sprinkle')">
+            <div class="whisper-room" onclick="joinWhisperRoom('sprinkle')">
               <div class="room-icon">✨</div>
               <div>Sprinkle Sprinkle</div>
             </div>
@@ -547,7 +593,7 @@
           
           <!-- Live Users in Current Room -->
           <div style="margin-top: 25px;">
-            <h3 style="color: var(--accent1); margin-bottom: 15px; font-family: 'Orbitron', sans-serif;">LIVE IN THIS ROOM</h3>
+            <h3 class="glowing-title title-small">LIVE IN THIS ROOM</h3>
             <div class="users-grid" id="usersGrid">
               <!-- Users populated dynamically -->
             </div>
@@ -555,36 +601,47 @@
         </div>
 
         <!-- ADSENSE SLOT -->
-        <div class="ad-slot">
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-1184595877548269"
-               data-ad-slot="1234567890"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
+        <div class="ad-container">
+          <div class="ad-slot">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-1184595877548269"
+                 data-ad-slot="1234567890"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+          </div>
         </div>
 
         <!-- VIDEO ROOMS SELECTION -->
         <div class="panel">
-          <h2 style="color: var(--accent1); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">🎥 CHOOSE YOUR VIDEO ROOM</h2>
-          <p style="color: var(--muted); margin-bottom: 25px; font-size: 16px;">Each room has different viral videos and chat</p>
+          <h2 class="glowing-title title-medium">🎥 CHOOSE YOUR VIDEO ROOM</h2>
+          <p style="color: var(--muted); margin-bottom: 25px; font-size: 16px;">Each room has synchronized videos and chat</p>
           
           <div class="video-rooms-grid" id="videoRoomsGrid">
             <!-- Video rooms populated by JavaScript -->
           </div>
         </div>
 
+        <!-- ADSENSE SLOT - ADDED BETWEEN VIDEO ROOMS AND CHAT -->
+        <div class="ad-container">
+          <div class="ad-slot">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-1184595877548269"
+                 data-ad-slot="1234567890"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+          </div>
+        </div>
+
         <!-- LARGE TEXT CHAT SECTION -->
         <div class="panel">
-          <h2 style="color: var(--accent2); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">💬 LIVE TEXT CHAT</h2>
+          <h2 class="glowing-title title-medium">💬 LIVE TEXT CHAT</h2>
           <div class="large-chat-section">
             <div class="chat-messages" id="chatMessages">
               <div class="message">
                 <div class="message-sender">SYSTEM</div>
-                <div class="message-text">Welcome to VideoChat Hub! Choose a room and start chatting with others watching the same videos.</div>
+                <div class="message-text">Welcome to House of Whispers! Choose a room and start chatting with others watching the same videos.</div>
               </div>
             </div>
             <div class="chat-input-container">
@@ -602,7 +659,7 @@
   <div id="videoRoomPage" class="hidden">
     <header class="site-header">
       <div class="video-room-header">
-        <div class="logo" id="roomTitle">VIDEO ROOM</div>
+        <div class="glowing-title title-large" id="roomTitle">VIDEO ROOM</div>
         <button class="main-menu-btn" onclick="showHomePage()">🏠 MAIN MENU</button>
       </div>
     </header>
@@ -610,7 +667,7 @@
     <main class="main-wrap">
       <!-- VIDEO PLAYER -->
       <div class="panel">
-        <h2 style="color: var(--accent1); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;" id="roomVideoTitle">🎬 NOW PLAYING</h2>
+        <h2 class="glowing-title title-medium" id="roomVideoTitle">🎬 NOW PLAYING</h2>
         <div class="video-container">
           <div class="video-player">
             <iframe id="roomVideoIframe" width="100%" height="400" 
@@ -619,29 +676,24 @@
                     referrerpolicy="strict-origin-when-cross-origin">
             </iframe>
           </div>
-          <div class="video-controls">
-            <button class="btn" onclick="loadRandomRoomVideo()">RANDOM VIDEO</button>
-            <button class="btn" onclick="skipRoomVideo()">SKIP VIDEO</button>
-          </div>
         </div>
       </div>
 
       <!-- ADSENSE SLOT -->
-      <div class="ad-slot">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-1184595877548269"
-             data-ad-slot="1234567890"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+      <div class="ad-container">
+        <div class="ad-slot">
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-1184595877548269"
+               data-ad-slot="1234567890"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+        </div>
       </div>
 
       <!-- VOICE CHAT CONTROLS -->
       <div class="panel">
-        <h2 style="color: var(--accent2); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">💬 VOICE CHAT CONTROLS</h2>
+        <h2 class="glowing-title title-medium">💬 VOICE CHAT CONTROLS</h2>
         <div style="margin: 20px 0;">
           <button id="roomJoinBtn" class="btn primary">JOIN VOICE CHAT</button>
           <button id="roomLeaveBtn" class="btn" disabled>LEAVE CHAT</button>
@@ -651,16 +703,28 @@
         
         <!-- Live Users in Room -->
         <div style="margin-top: 25px;">
-          <h3 style="color: var(--accent1); margin-bottom: 15px; font-family: 'Orbitron', sans-serif;">LIVE IN THIS ROOM</h3>
+          <h3 class="glowing-title title-small">LIVE IN THIS ROOM</h3>
           <div class="users-grid" id="roomUsersGrid">
             <!-- Users populated dynamically -->
           </div>
         </div>
       </div>
 
+      <!-- ADSENSE SLOT - ADDED BETWEEN VOICE CHAT AND CHAT -->
+      <div class="ad-container">
+        <div class="ad-slot">
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-1184595877548269"
+               data-ad-slot="1234567890"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+        </div>
+      </div>
+
       <!-- LARGE TEXT CHAT SECTION -->
       <div class="panel">
-        <h2 style="color: var(--accent2); margin-bottom: 20px; font-family: 'Orbitron', sans-serif;">💬 ROOM TEXT CHAT</h2>
+        <h2 class="glowing-title title-medium">💬 ROOM TEXT CHAT</h2>
         <div class="large-chat-section">
           <div class="chat-messages" id="roomChatMessages">
             <div class="message">
@@ -678,7 +742,7 @@
   </div>
 
   <footer class="site-footer">
-    <div>VIDEOCHAT HUB © 2024 • LIVE SOCIAL VIDEO EXPERIENCE</div>
+    <div>HOUSE OF WHISPERS © 2024 • LIVE SOCIAL VIDEO EXPERIENCE</div>
     <div style="margin-top: 10px; font-size: 12px;">WATCH TOGETHER • CHAT TOGETHER • GROW TOGETHER</div>
   </footer>
 
@@ -688,60 +752,87 @@
      *************************************************************************/
     const APP_ID = '966c8e41da614722a88d4372c3d95dba';
 
-    // Video Rooms - YOU CAN EASILY UPDATE THESE!
+    // Video Rooms - FIXED: Shortened channel names to avoid INVALID_PARAMS error
     const VIDEO_ROOMS = {
-      '🔥 VIRAL TIKTOKS': [
-        { id: 'dQw4w9WgXcQ', title: 'Never Gonna Give You Up', views: '1.4B' },
-        { id: 'jfKfPfyJRdk', title: 'Lofi Hip Hop Radio', views: '125M' }
-      ],
-      '🎮 GAMING CLIPS': [
-        { id: 'L_jWHffIx5E', title: 'Epic Gaming Montage', views: '320M' },
-        { id: '9bZkp7q19f0', title: 'Gaming Fails', views: '110M' }
-      ],
-      '😂 FUNNY MOMENTS': [
-        { id: 'ZZ5LpwO-An4', title: 'Funny Cats', views: '210M' },
-        { id: '5NPBIwQyPWE', title: 'Epic Fails', views: '180M' }
-      ],
-      '💧 DRIZZLE DRIZZLE': [
-        { id: 'kJQP7kiw5Fk', title: 'Despacito', views: '7.8B' },
-        { id: '09R8_2nJtjg', title: 'Shape of You', views: '5.8B' }
-      ],
-      '✨ SPRINKLE SPRINKLE': [
-        { id: '60ItHLz5WEA', title: 'See You Again', views: '5.5B' },
-        { id: 'kffacxfA7G4', title: 'Trending Music', views: '89M' }
-      ],
-      '👀 DID YALL HEAR': [
-        { id: 'd9MyW72ELq0', title: 'Avengers Scene', views: '180M' },
-        { id: 'hA6hldpSTF8', title: 'Inception', views: '95M' }
-      ],
-      '💔 RELATIONSHIP TALK': [
-        { id: 'NaF7dQ4nls4', title: 'Dark Knight Scene', views: '87M' },
-        { id: '6ZfuNTqbHE8', title: 'Infinity War', views: '120M' }
-      ],
-      '🚀 TRENDING NOW': [
-        { id: '7TavVVLewx8', title: 'John Wick Scene', views: '65M' },
-        { id: 'gTUCn8lTdTs', title: 'Sports Moments', views: '120M' }
-      ]
+      'tiktoks': {
+        displayName: '🔥 VIRAL TIKTOKS',
+        videos: [
+          { id: 'dQw4w9WgXcQ', title: 'Never Gonna Give You Up' },
+          { id: 'jfKfPfyJRdk', title: 'Lofi Hip Hop Radio' }
+        ]
+      },
+      'gaming': {
+        displayName: '🎮 GAMING CLIPS', 
+        videos: [
+          { id: 'L_jWHffIx5E', title: 'Epic Gaming Montage' },
+          { id: '9bZkp7q19f0', title: 'Gaming Fails' }
+        ]
+      },
+      'funny': {
+        displayName: '😂 FUNNY MOMENTS',
+        videos: [
+          { id: 'ZZ5LpwO-An4', title: 'Funny Cats' },
+          { id: '5NPBIwQyPWE', title: 'Epic Fails' }
+        ]
+      },
+      'drizzle': {
+        displayName: '💧 DRIZZLE DRIZZLE',
+        videos: [
+          { id: 'kJQP7kiw5Fk', title: 'Despacito' },
+          { id: '09R8_2nJtjg', title: 'Shape of You' }
+        ]
+      },
+      'sprinkle': {
+        displayName: '✨ SPRINKLE SPRINKLE',
+        videos: [
+          { id: '60ItHLz5WEA', title: 'See You Again' },
+          { id: 'kffacxfA7G4', title: 'Trending Music' }
+        ]
+      },
+      'hear': {
+        displayName: '👀 DID YALL HEAR',
+        videos: [
+          { id: 'd9MyW72ELq0', title: 'Avengers Scene' },
+          { id: 'hA6hldpSTF8', title: 'Inception' }
+        ]
+      },
+      'relationships': {
+        displayName: '💔 RELATIONSHIP TALK',
+        videos: [
+          { id: 'NaF7dQ4nls4', title: 'Dark Knight Scene' },
+          { id: '6ZfuNTqbHE8', title: 'Infinity War' }
+        ]
+      },
+      'trending': {
+        displayName: '🚀 TRENDING NOW',
+        videos: [
+          { id: '7TavVVLewx8', title: 'John Wick Scene' },
+          { id: 'gTUCn8lTdTs', title: 'Sports Moments' }
+        ]
+      }
     };
 
-    // Whisper Rooms
-    const WHISPER_ROOMS = [
-      "Did Yall Hear",
-      "Bad Relationships", 
-      "Drizzle Drizzle",
-      "Sprinkle Sprinkle"
-    ];
+    // Whisper Rooms - FIXED: Shortened channel names
+    const WHISPER_ROOMS = {
+      'hear': 'Did Y\'all Hear',
+      'relationships': 'Bad Relationships', 
+      'drizzle': 'Drizzle Drizzle',
+      'sprinkle': 'Sprinkle Sprinkle'
+    };
 
     /*************************************************************************
      * GLOBAL VARIABLES
      *************************************************************************/
     let USERNAME = null;
-    let CURRENT_VIDEO_ROOM = null;
     let CURRENT_WHISPER_ROOM = null;
     let CURRENT_ROOM_PAGE = null;
+    let currentVideoIndex = 0;
+    let videoInterval = null;
 
     // Agora Variables
     let rtcClient = null;
+    let rtmClient = null;
+    let rtmChannel = null;
     let localAudioTrack = null;
     let currentChannel = null;
 
@@ -779,8 +870,22 @@
       if (savedName) {
         USERNAME = savedName;
         document.getElementById('usernameInput').value = USERNAME;
-        setUsername(); // Auto-login with saved name
+        setUsername();
       }
+    });
+
+    // Initialize AdSense properly
+    window.addEventListener('DOMContentLoaded', function() {
+      // Wait for DOM to be fully loaded before initializing ads
+      setTimeout(() => {
+        if (typeof adsbygoogle !== 'undefined') {
+          try {
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          } catch (e) {
+            console.log('AdSense initialization:', e);
+          }
+        }
+      }, 1000);
     });
 
     /*************************************************************************
@@ -789,42 +894,93 @@
     function showHomePage() {
       document.getElementById('homePage').classList.remove('hidden');
       document.getElementById('videoRoomPage').classList.add('hidden');
+      stopVideoPlaylist();
       if (localAudioTrack) {
         leaveVoiceChat();
       }
     }
 
-    function showVideoRoom(roomName) {
-      CURRENT_ROOM_PAGE = roomName;
+    function showVideoRoom(roomId) {
+      CURRENT_ROOM_PAGE = roomId;
       document.getElementById('homePage').classList.add('hidden');
       document.getElementById('videoRoomPage').classList.remove('hidden');
       
+      const roomData = VIDEO_ROOMS[roomId];
       // Update room title
-      document.getElementById('roomTitle').textContent = roomName;
-      document.getElementById('roomVideoTitle').textContent = `🎬 ${roomName} - NOW PLAYING`;
+      document.getElementById('roomTitle').textContent = roomData.displayName;
+      document.getElementById('roomVideoTitle').textContent = `🎬 ${roomData.displayName} - NOW PLAYING`;
       
-      // Load first video
-      loadRandomRoomVideo();
-      addRoomSystemMessage(`Welcome to ${roomName}!`);
+      // Start synchronized video playlist
+      startVideoPlaylist(roomId);
+      addRoomSystemMessage(`Welcome to ${roomData.displayName}! Videos will auto-advance.`);
       
       // Initialize voice chat for this room
       initializeRoomVoiceChat();
+      
+      // Initialize RTM for chat synchronization
+      initializeRTM(roomId);
+    }
+
+    /*************************************************************************
+     * SYNCHRONIZED VIDEO PLAYER SYSTEM
+     *************************************************************************/
+    function startVideoPlaylist(roomId) {
+      stopVideoPlaylist(); // Clear any existing interval
+      
+      const roomData = VIDEO_ROOMS[roomId];
+      currentVideoIndex = 0;
+      
+      // Play first video immediately
+      playRoomVideo(roomData.videos[currentVideoIndex].id, roomData.videos[currentVideoIndex].title);
+      
+      // Set up auto-advance (every 3 minutes)
+      videoInterval = setInterval(() => {
+        currentVideoIndex = (currentVideoIndex + 1) % roomData.videos.length;
+        const nextVideo = roomData.videos[currentVideoIndex];
+        playRoomVideo(nextVideo.id, nextVideo.title);
+        
+        // Broadcast video change to all users in room
+        if (rtmChannel) {
+          rtmChannel.sendMessage({
+            text: JSON.stringify({
+              type: 'video_change',
+              videoId: nextVideo.id,
+              title: nextVideo.title,
+              index: currentVideoIndex
+            })
+          });
+        }
+      }, 180000); // 3 minutes
+    }
+
+    function stopVideoPlaylist() {
+      if (videoInterval) {
+        clearInterval(videoInterval);
+        videoInterval = null;
+      }
+    }
+
+    function playRoomVideo(videoId, title) {
+      const iframe = document.getElementById('roomVideoIframe');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=0&rel=0`;
+      addRoomSystemMessage(`Now playing: ${title}`);
     }
 
     /*************************************************************************
      * WHISPER ROOMS SYSTEM
      *************************************************************************/
     
-    function joinWhisperRoom(roomName) {
-      CURRENT_WHISPER_ROOM = roomName;
+    function joinWhisperRoom(roomId) {
+      CURRENT_WHISPER_ROOM = roomId;
       
-      // Update active states - FIXED: Properly escape the room name
+      // Update active states
       document.querySelectorAll('.whisper-room').forEach(room => {
         const roomText = room.querySelector('div:last-child').textContent;
-        room.classList.toggle('active', roomText === roomName);
+        const roomDisplayName = WHISPER_ROOMS[roomId];
+        room.classList.toggle('active', roomText === roomDisplayName);
       });
       
-      addSystemMessage(`Joined whisper room: ${roomName}`);
+      addSystemMessage(`Joined whisper room: ${WHISPER_ROOMS[roomId]}`);
       updateUsersDisplay();
     }
 
@@ -836,60 +992,18 @@
       const grid = document.getElementById('videoRoomsGrid');
       grid.innerHTML = '';
       
-      Object.keys(VIDEO_ROOMS).forEach(roomName => {
+      Object.keys(VIDEO_ROOMS).forEach(roomId => {
+        const roomData = VIDEO_ROOMS[roomId];
         const room = document.createElement('div');
         room.className = `video-room-btn`;
-        room.textContent = roomName;
-        room.onclick = () => showVideoRoom(roomName);
+        room.textContent = roomData.displayName;
+        room.onclick = () => showVideoRoom(roomId);
         grid.appendChild(room);
       });
     }
 
-    // Home page video functions
-    function loadRandomVideo() {
-      if (!CURRENT_VIDEO_ROOM || !VIDEO_ROOMS[CURRENT_VIDEO_ROOM]) return;
-      
-      const videos = VIDEO_ROOMS[CURRENT_VIDEO_ROOM];
-      const randomVideo = videos[Math.floor(Math.random() * videos.length)];
-      playVideo(randomVideo.id, randomVideo.title);
-    }
-
-    function skipVideo() {
-      loadRandomVideo();
-    }
-
-    function playVideo(videoId, title) {
-      const iframe = document.getElementById('videoIframe');
-      const placeholder = document.getElementById('videoPlaceholder');
-      
-      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=0&rel=0`;
-      placeholder.style.display = 'none';
-      iframe.style.display = 'block';
-      
-      addSystemMessage(`Now playing: ${title}`);
-    }
-
-    // Room page video functions
-    function loadRandomRoomVideo() {
-      if (!CURRENT_ROOM_PAGE || !VIDEO_ROOMS[CURRENT_ROOM_PAGE]) return;
-      
-      const videos = VIDEO_ROOMS[CURRENT_ROOM_PAGE];
-      const randomVideo = videos[Math.floor(Math.random() * videos.length)];
-      playRoomVideo(randomVideo.id, randomVideo.title);
-    }
-
-    function skipRoomVideo() {
-      loadRandomRoomVideo();
-    }
-
-    function playRoomVideo(videoId, title) {
-      const iframe = document.getElementById('roomVideoIframe');
-      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=0&rel=0`;
-      addRoomSystemMessage(`Now playing: ${title}`);
-    }
-
     /*************************************************************************
-     * CHAT SYSTEM
+     * CHAT SYSTEM WITH RTM - FIXED
      *************************************************************************/
     
     // Home page chat
@@ -926,6 +1040,18 @@
       
       if (!message || !USERNAME) return;
       
+      // Send via RTM to sync across all users
+      if (rtmChannel) {
+        rtmChannel.sendMessage({
+          text: JSON.stringify({
+            type: 'chat_message',
+            user: USERNAME,
+            message: message,
+            timestamp: Date.now()
+          })
+        });
+      }
+      
       addRoomChatMessage(USERNAME, message);
       input.value = '';
     }
@@ -956,6 +1082,59 @@
     });
 
     /*************************************************************************
+     * RTM FOR CHAT SYNCHRONIZATION - FIXED
+     *************************************************************************/
+    async function initializeRTM(channelName) {
+      try {
+        // Check if AgoraRTM is available
+        if (typeof AgoraRTM === 'undefined') {
+          console.error('AgoraRTM SDK not loaded');
+          return;
+        }
+        
+        if (rtmClient) {
+          await rtmClient.logout();
+        }
+        
+        rtmClient = AgoraRTM.createInstance(APP_ID);
+        const uid = 'user_' + Math.random().toString(36).substr(2, 9);
+        await rtmClient.login({ uid: uid });
+        
+        if (rtmChannel) {
+          await rtmChannel.leave();
+        }
+        
+        rtmChannel = rtmClient.createChannel(channelName);
+        
+        rtmChannel.on('ChannelMessage', (message, memberId) => {
+          try {
+            const data = JSON.parse(message.text);
+            switch (data.type) {
+              case 'chat_message':
+                addRoomChatMessage(data.user, data.message);
+                break;
+              case 'video_change':
+                // Sync video changes across all users
+                const iframe = document.getElementById('roomVideoIframe');
+                iframe.src = `https://www.youtube-nocookie.com/embed/${data.videoId}?autoplay=1&mute=0&rel=0`;
+                currentVideoIndex = data.index;
+                addRoomSystemMessage(`Now playing: ${data.title}`);
+                break;
+            }
+          } catch (e) {
+            console.error('Error parsing RTM message:', e);
+          }
+        });
+        
+        await rtmChannel.join();
+        console.log('RTM connected to channel:', channelName);
+        
+      } catch (error) {
+        console.error('RTM initialization error:', error);
+      }
+    }
+
+    /*************************************************************************
      * USER MANAGEMENT
      *************************************************************************/
     
@@ -970,22 +1149,9 @@
       userCard.className = 'user-card you';
       userCard.innerHTML = `
         <div class="user-name">${escapeHtml(USERNAME)}</div>
-        <div class="user-status">YOU • IN VOICE CHAT</div>
+        <div class="user-status">YOU • READY TO CHAT</div>
       `;
       grid.appendChild(userCard);
-      
-      // Add simulated users based on current room
-      let fakeUsers = getFakeUsersForRoom(CURRENT_WHISPER_ROOM);
-      
-      fakeUsers.forEach(user => {
-        const card = document.createElement('div');
-        card.className = 'user-card';
-        card.innerHTML = `
-          <div class="user-name">${user}</div>
-          <div class="user-status">WHISPERING • IN CHAT</div>
-        `;
-        grid.appendChild(card);
-      });
     }
 
     function updateRoomUsersDisplay() {
@@ -999,40 +1165,13 @@
       userCard.className = 'user-card you';
       userCard.innerHTML = `
         <div class="user-name">${escapeHtml(USERNAME)}</div>
-        <div class="user-status">YOU • IN VOICE CHAT</div>
+        <div class="user-status">YOU • WATCHING</div>
       `;
       grid.appendChild(userCard);
-      
-      // Add simulated users for room
-      let fakeUsers = getFakeUsersForRoom(CURRENT_ROOM_PAGE);
-      
-      fakeUsers.forEach(user => {
-        const card = document.createElement('div');
-        card.className = 'user-card';
-        card.innerHTML = `
-          <div class="user-name">${user}</div>
-          <div class="user-status">WATCHING • IN CHAT</div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function getFakeUsersForRoom(roomName) {
-      if (roomName === "Did Yall Hear") {
-        return ['LISTENER_23', 'EAR_TO_EAR', 'SOUND_CHECK', 'AUDIO_QUEEN'];
-      } else if (roomName === "Bad Relationships") {
-        return ['HEART_BROKEN', 'LOVE_GURU', 'SINGLE_READY', 'EX_HAVER'];
-      } else if (roomName === "Drizzle Drizzle") {
-        return ['WATER_FLOW', 'RAIN_MAKER', 'DROP_IT', 'LIQUID_COOL'];
-      } else if (roomName === "Sprinkle Sprinkle") {
-        return ['MAGIC_DUST', 'SHIMMER_GIRL', 'GLITTER_BOSS', 'SPARKLE_KING'];
-      } else {
-        return ['COOL_USER_23', 'VIDEO_LOVER', 'CHAT_KING', 'STREAM_QUEEN'];
-      }
     }
 
     /*************************************************************************
-     * VOICE CHAT SYSTEM - FIXED WITH REAL AGORA IMPLEMENTATION
+     * VOICE CHAT SYSTEM - FIXED CHANNEL NAMES
      *************************************************************************/
     
     async function initializeVoiceChat() {
@@ -1089,10 +1228,15 @@
       });
     }
 
-    // Real Agora Voice Chat Implementation
+    // Real Agora Voice Chat Implementation with fixed channel names
     async function joinVoiceChat(channelName, statusEl) {
       try {
         console.log('Joining voice chat:', channelName);
+        
+        // Leave any existing channel first
+        if (rtcClient && currentChannel) {
+          await leaveVoiceChat();
+        }
         
         // Initialize Agora RTC
         rtcClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
@@ -1103,18 +1247,20 @@
           if (mediaType === 'audio') {
             user.audioTrack.play();
             console.log('Remote user audio started');
+            addSystemMessage('Someone joined the voice chat');
           }
         });
 
         rtcClient.on('user-unpublished', (user) => {
           console.log('User left:', user.uid);
+          addSystemMessage('Someone left the voice chat');
         });
 
         // Request microphone permission and create audio track
         localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         console.log('Microphone access granted');
 
-        // Join the channel
+        // Join the channel (using clean channel names)
         const uid = await rtcClient.join(APP_ID, channelName, null, null);
         console.log('Joined channel successfully:', uid);
 
@@ -1123,7 +1269,7 @@
         console.log('Local audio published');
 
         // Update UI
-        statusEl.textContent = `Status: Connected to ${channelName}`;
+        statusEl.textContent = `Status: Connected to ${getDisplayName(channelName)}`;
         document.getElementById('joinBtn').disabled = true;
         document.getElementById('leaveBtn').disabled = false;
         document.getElementById('muteBtn').disabled = false;
@@ -1131,7 +1277,7 @@
         document.getElementById('roomLeaveBtn').disabled = false;
         document.getElementById('roomMuteBtn').disabled = false;
 
-        addSystemMessage(`${USERNAME} joined voice chat in ${channelName}`);
+        addSystemMessage(`${USERNAME} joined voice chat`);
         if (CURRENT_ROOM_PAGE) {
           addRoomSystemMessage(`${USERNAME} joined voice chat`);
         }
@@ -1140,9 +1286,20 @@
 
       } catch (error) {
         console.error('Error joining voice chat:', error);
-        statusEl.textContent = 'Status: Failed to connect - ' + error.message;
-        alert('Failed to join voice chat: ' + error.message);
+        statusEl.textContent = 'Status: Failed to connect';
+        alert('Failed to join voice chat. Please check your microphone permissions.');
       }
+    }
+
+    function getDisplayName(channelId) {
+      // Get display name from either whisper rooms or video rooms
+      if (WHISPER_ROOMS[channelId]) {
+        return WHISPER_ROOMS[channelId];
+      }
+      if (VIDEO_ROOMS[channelId]) {
+        return VIDEO_ROOMS[channelId].displayName;
+      }
+      return channelId;
     }
 
     async function leaveVoiceChat() {
@@ -1159,6 +1316,14 @@
         
         console.log('Left voice chat successfully');
         currentChannel = null;
+
+        // Update UI
+        document.getElementById('joinBtn').disabled = false;
+        document.getElementById('leaveBtn').disabled = true;
+        document.getElementById('muteBtn').disabled = true;
+        document.getElementById('roomJoinBtn').disabled = false;
+        document.getElementById('roomLeaveBtn').disabled = true;
+        document.getElementById('roomMuteBtn').disabled = true;
 
       } catch (error) {
         console.error('Error leaving voice chat:', error);
@@ -1201,12 +1366,12 @@
       
       // Auto-join first whisper room
       if (!CURRENT_WHISPER_ROOM) {
-        joinWhisperRoom(WHISPER_ROOMS[0]);
+        joinWhisperRoom('hear');
       }
       
-      addSystemMessage(`Welcome ${USERNAME}! Start chatting in ${CURRENT_WHISPER_ROOM} whisper room.`);
+      addSystemMessage(`Welcome ${USERNAME}! Start chatting in whisper rooms.`);
     }
 
   </script>
 </body>
-</html>
+</html> 

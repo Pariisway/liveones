@@ -2,60 +2,68 @@
  * SHOOT YOUR SHOT DATING SYSTEM
  *************************************************************************/
 
-// Girl data
-const GIRLS_DATA = {
-    'sarah': {
-        name: 'Sarah, 24',
-        avatar: '🔥',
-        location: '📍 Los Angeles, CA',
-        bio: 'Adventure seeker and coffee lover! I\'m a psychology major who enjoys hiking, trying new restaurants, and deep conversations. Looking for someone genuine and spontaneous who can keep up with my energy!',
-        schedule: ['19:00-21:00'],
-        timezone: 'PST',
-        interests: ['Hiking', 'Coffee', 'Photography', 'Travel'],
-        verification: 'Verified ✅',
-        responseTime: 'Usually replies in 2 mins'
-    },
-    'maya': {
-        name: 'Maya, 22',
-        avatar: '💫', 
-        location: '📍 New York, NY',
-        bio: 'Creative soul and foodie! I work in digital marketing and love exploring the city, photography, and trying new recipes. Let\'s chat about our favorite hidden spots and maybe plan an adventure!',
-        schedule: ['16:00-18:00'],
-        timezone: 'EST',
-        interests: ['Art', 'Food', 'Exploring', 'Music'],
-        verification: 'Verified ✅',
-        responseTime: 'Usually replies in 1 min'
-    },
-    'chloe': {
-        name: 'Chloe, 25',
-        avatar: '🌟',
-        location: '📍 Miami, FL',
-        bio: 'Beach lover and artist! I\'m a freelance graphic designer who enjoys painting, yoga, and sunset walks. Looking for meaningful connections and good vibes. Tell me about your passions!',
-        schedule: ['20:00-22:00'],
-        timezone: 'EST',
-        interests: ['Art', 'Yoga', 'Beach', 'Design'],
-        verification: 'Verified ✅',
-        responseTime: 'Usually replies in 3 mins'
-    },
-    'jessica': {
-        name: 'Jessica, 23',
-        avatar: '✨',
-        location: '📍 Chicago, IL',
-        bio: 'Bookworm and travel enthusiast! I work in tech and love reading, planning my next trip, and coffee shop hopping. Let\'s share stories and adventures - I want to hear about your dreams!',
-        schedule: ['14:00-16:00'],
-        timezone: 'CST',
-        interests: ['Reading', 'Travel', 'Tech', 'Coffee'],
-        verification: 'Verified ✅',
-        responseTime: 'Usually replies in 2 mins'
+// Girl data management
+function getGirlsData() {
+    const adminGirls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
+    
+    // Fallback to default data if no admin data
+    if (Object.keys(adminGirls).length === 0) {
+        return {
+            'sarah': {
+                name: 'Sarah, 24',
+                avatar: '🔥',
+                location: '📍 Los Angeles, CA',
+                bio: 'Adventure seeker and coffee lover! I\'m a psychology major who enjoys hiking, trying new restaurants, and deep conversations.',
+                schedule: ['19:00-21:00'],
+                timezone: 'PST',
+                interests: ['Hiking', 'Coffee', 'Photography', 'Travel'],
+                verification: 'Verified ✅',
+                responseTime: 'Usually replies in 2 mins'
+            },
+            'maya': {
+                name: 'Maya, 22',
+                avatar: '💫', 
+                location: '📍 New York, NY',
+                bio: 'Creative soul and foodie! I work in digital marketing and love exploring the city, photography, and trying new recipes. Let\'s chat about our favorite hidden spots and maybe plan an adventure!',
+                schedule: ['16:00-18:00'],
+                timezone: 'EST',
+                interests: ['Art', 'Food', 'Exploring', 'Music'],
+                verification: 'Verified ✅',
+                responseTime: 'Usually replies in 1 min'
+            },
+            'chloe': {
+                name: 'Chloe, 25',
+                avatar: '🌟',
+                location: '📍 Miami, FL',
+                bio: 'Beach lover and artist! I\'m a freelance graphic designer who enjoys painting, yoga, and sunset walks. Looking for meaningful connections and good vibes. Tell me about your passions!',
+                schedule: ['20:00-22:00'],
+                timezone: 'EST',
+                interests: ['Art', 'Yoga', 'Beach', 'Design'],
+                verification: 'Verified ✅',
+                responseTime: 'Usually replies in 3 mins'
+            },
+            'jessica': {
+                name: 'Jessica, 23',
+                avatar: '✨',
+                location: '📍 Chicago, IL',
+                bio: 'Bookworm and travel enthusiast! I work in tech and love reading, planning my next trip, and coffee shop hopping. Let\'s share stories and adventures - I want to hear about your dreams!',
+                schedule: ['14:00-16:00'],
+                timezone: 'CST',
+                interests: ['Reading', 'Travel', 'Tech', 'Coffee'],
+                verification: 'Verified ✅',
+                responseTime: 'Usually replies in 2 mins'
+            }
+        };
     }
-};
+    
+    return adminGirls;
+}
 
-// Initialize girl profile page
+// Update initializeGirlProfile function:
 function initializeGirlProfile() {
-    // Get which girl from URL
     const urlParams = new URLSearchParams(window.location.search);
     const girlId = urlParams.get('girl') || 'sarah';
-    const girl = GIRLS_DATA[girlId];
+    const girl = getGirlsData()[girlId];
 
     if (!girl) {
         window.location.href = 'shoot-your-shot.html';
@@ -119,15 +127,13 @@ function checkSchedule(girl) {
     }
 }
 
-// Purchase function
+// Purchase function - UPDATED TO USE PAYMENTS PAGE
 function purchaseChat() {
     const urlParams = new URLSearchParams(window.location.search);
     const girlId = urlParams.get('girl');
     
-    // For now, just redirect to private chat
-    // Later you'll integrate Stripe here
-    alert('Payment processing would go here! Redirecting to chat...');
-    window.location.href = `private-chat.html?girl=${girlId}&user=${localStorage.getItem('username') || 'Guest'}`;
+    // Redirect to payment page instead of directly to chat
+    window.location.href = `payments.html?girl=${girlId}`;
 }
 
 // Initialize private chat
@@ -136,9 +142,17 @@ function initializePrivateChat() {
     const urlParams = new URLSearchParams(window.location.search);
     const girlId = urlParams.get('girl');
     const username = urlParams.get('user') || 'Guest';
+    const paid = urlParams.get('paid') === 'true';
 
     // Update title
     document.getElementById('chatTitle').textContent = `WITH ${(girlId || 'YOUR DATE').toUpperCase()}`;
+
+    // If not paid, redirect back
+    if (!paid) {
+        alert('Please complete payment first!');
+        window.location.href = `girl-profile.html?girl=${girlId}`;
+        return;
+    }
 
     // Simulate queue position (in real app, this would come from server)
     let queuePosition = Math.floor(Math.random() * 5) + 1;
@@ -275,6 +289,31 @@ function addDatingSection() {
     }
 }
 
+// Update shoot-your-shot.html to use dynamic data
+function populateGirlsGrid() {
+    const girlsGrid = document.querySelector('.girls-grid');
+    if (!girlsGrid) return;
+
+    const girlsData = getGirlsData();
+    girlsGrid.innerHTML = '';
+
+    Object.keys(girlsData).forEach(girlId => {
+        const girl = girlsData[girlId];
+        const girlCard = document.createElement('a');
+        girlCard.href = `girl-profile.html?girl=${girlId}`;
+        girlCard.className = 'girl-card';
+        girlCard.innerHTML = `
+            <div class="girl-image">${girl.avatar}</div>
+            <div class="girl-info">
+                <div class="girl-name">${girl.name}</div>
+                <div class="girl-schedule">🕐 ${girl.schedule[0] || 'Check schedule'} ${girl.timezone}</div>
+                <div class="girl-tag">5-min Chat: $15</div>
+            </div>
+        `;
+        girlsGrid.appendChild(girlCard);
+    });
+}
+
 // Initialize dating system when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Add dating section to main page
@@ -290,5 +329,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize private chat page
     if (window.location.pathname.endsWith('private-chat.html')) {
         initializePrivateChat();
+    }
+
+    // Populate girls grid on shoot-your-shot page
+    if (window.location.pathname.endsWith('shoot-your-shot.html')) {
+        populateGirlsGrid();
     }
 });

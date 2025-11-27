@@ -2,7 +2,7 @@
  * SHOOT YOUR SHOT DATING SYSTEM
  *************************************************************************/
 
-// Update getGirlsData to use Firebase
+// Girl data management with Firebase support
 async function getGirlsData() {
     try {
         if (window.platformManager && platformManager.initialized) {
@@ -34,17 +34,70 @@ async function getGirlsData() {
     // Fallback to localStorage or mock data
     return getFallbackGirlsData();
 }
-        };
+
+// Fallback data function
+function getFallbackGirlsData() {
+    // Check localStorage first
+    const adminGirls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
+    if (Object.keys(adminGirls).length > 0) {
+        return adminGirls;
     }
     
-    return adminGirls;
+    // Default mock data
+    return {
+        'sarah': {
+            name: 'Sarah, 24',
+            avatar: '🔥',
+            location: '📍 Los Angeles, CA',
+            bio: 'Adventure seeker and coffee lover! I\'m a psychology major who enjoys hiking, trying new restaurants, and deep conversations.',
+            schedule: ['19:00-21:00'],
+            timezone: 'PST',
+            interests: ['Hiking', 'Coffee', 'Photography', 'Travel'],
+            verification: 'Verified ✅',
+            responseTime: 'Usually replies in 2 mins'
+        },
+        'maya': {
+            name: 'Maya, 22',
+            avatar: '💫', 
+            location: '📍 New York, NY',
+            bio: 'Creative soul and foodie! I work in digital marketing and love exploring the city, photography, and trying new recipes.',
+            schedule: ['16:00-18:00'],
+            timezone: 'EST',
+            interests: ['Art', 'Food', 'Exploring', 'Music'],
+            verification: 'Verified ✅',
+            responseTime: 'Usually replies in 1 min'
+        },
+        'chloe': {
+            name: 'Chloe, 25',
+            avatar: '🌟',
+            location: '📍 Miami, FL',
+            bio: 'Beach lover and artist! I\'m a freelance graphic designer who enjoys painting, yoga, and sunset walks.',
+            schedule: ['20:00-22:00'],
+            timezone: 'EST',
+            interests: ['Art', 'Yoga', 'Beach', 'Design'],
+            verification: 'Verified ✅',
+            responseTime: 'Usually replies in 3 mins'
+        },
+        'jessica': {
+            name: 'Jessica, 23',
+            avatar: '✨',
+            location: '📍 Chicago, IL',
+            bio: 'Bookworm and travel enthusiast! I work in tech and love reading, planning my next trip, and coffee shop hopping.',
+            schedule: ['14:00-16:00'],
+            timezone: 'CST',
+            interests: ['Reading', 'Travel', 'Tech', 'Coffee'],
+            verification: 'Verified ✅',
+            responseTime: 'Usually replies in 2 mins'
+        }
+    };
 }
 
-// Update initializeGirlProfile function:
-function initializeGirlProfile() {
+// Update initializeGirlProfile function to be async
+async function initializeGirlProfile() {
     const urlParams = new URLSearchParams(window.location.search);
     const girlId = urlParams.get('girl') || 'sarah';
-    const girl = getGirlsData()[girlId];
+    const girlsData = await getGirlsData();
+    const girl = girlsData[girlId];
 
     if (!girl) {
         window.location.href = 'shoot-your-shot.html';
@@ -62,12 +115,16 @@ function initializeGirlProfile() {
     const scheduleContainer = document.getElementById('scheduleSlots');
     scheduleContainer.innerHTML = '';
     
-    girl.schedule.forEach(slot => {
-        const slotDiv = document.createElement('div');
-        slotDiv.className = 'time-slot';
-        slotDiv.textContent = slot;
-        scheduleContainer.appendChild(slotDiv);
-    });
+    if (girl.schedule && girl.schedule.length > 0) {
+        girl.schedule.forEach(slot => {
+            const slotDiv = document.createElement('div');
+            slotDiv.className = 'time-slot';
+            slotDiv.textContent = slot;
+            scheduleContainer.appendChild(slotDiv);
+        });
+    } else {
+        scheduleContainer.innerHTML = '<div style="color: var(--muted);">Schedule not set</div>';
+    }
 
     // Check if it's currently scheduled time
     checkSchedule(girl);
@@ -83,12 +140,15 @@ function checkSchedule(girl) {
                       now.getMinutes().toString().padStart(2, '0');
     
     let isActive = false;
-    girl.schedule.forEach(slot => {
-        const [start, end] = slot.split('-');
-        if (currentTime >= start && currentTime <= end) {
-            isActive = true;
-        }
-    });
+    
+    if (girl.schedule && girl.schedule.length > 0) {
+        girl.schedule.forEach(slot => {
+            const [start, end] = slot.split('-');
+            if (currentTime >= start && currentTime <= end) {
+                isActive = true;
+            }
+        });
+    }
 
     const purchaseBtn = document.getElementById('purchaseBtn');
     const queueInfo = document.getElementById('queueInfo');
@@ -271,28 +331,41 @@ function addDatingSection() {
 }
 
 // Update shoot-your-shot.html to use dynamic data
-function populateGirlsGrid() {
+async function populateGirlsGrid() {
     const girlsGrid = document.querySelector('.girls-grid');
     if (!girlsGrid) return;
 
-    const girlsData = getGirlsData();
-    girlsGrid.innerHTML = '';
+    // Show loading state
+    girlsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">Loading profiles...</div>';
 
-    Object.keys(girlsData).forEach(girlId => {
-        const girl = girlsData[girlId];
-        const girlCard = document.createElement('a');
-        girlCard.href = `girl-profile.html?girl=${girlId}`;
-        girlCard.className = 'girl-card';
-        girlCard.innerHTML = `
-            <div class="girl-image">${girl.avatar}</div>
-            <div class="girl-info">
-                <div class="girl-name">${girl.name}</div>
-                <div class="girl-schedule">🕐 ${girl.schedule[0] || 'Check schedule'} ${girl.timezone}</div>
-                <div class="girl-tag">5-min Chat: $15</div>
-            </div>
-        `;
-        girlsGrid.appendChild(girlCard);
-    });
+    try {
+        const girlsData = await getGirlsData();
+        girlsGrid.innerHTML = '';
+
+        if (Object.keys(girlsData).length === 0) {
+            girlsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">No profiles available yet.</div>';
+            return;
+        }
+
+        Object.keys(girlsData).forEach(girlId => {
+            const girl = girlsData[girlId];
+            const girlCard = document.createElement('a');
+            girlCard.href = `girl-profile.html?girl=${girlId}`;
+            girlCard.className = 'girl-card';
+            girlCard.innerHTML = `
+                <div class="girl-image">${girl.avatar}</div>
+                <div class="girl-info">
+                    <div class="girl-name">${girl.name}</div>
+                    <div class="girl-schedule">🕐 ${girl.schedule && girl.schedule[0] ? girl.schedule[0] + ' ' + girl.timezone : 'Check schedule'}</div>
+                    <div class="girl-tag">5-min Chat: $15</div>
+                </div>
+            `;
+            girlsGrid.appendChild(girlCard);
+        });
+    } catch (error) {
+        console.error('Error populating girls grid:', error);
+        girlsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">Error loading profiles. Please refresh.</div>';
+    }
 }
 
 // Initialize dating system when DOM is loaded
@@ -304,7 +377,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize girl profile page
     if (window.location.pathname.endsWith('girl-profile.html')) {
-        initializeGirlProfile();
+        // Use setTimeout to allow platformManager to initialize
+        setTimeout(() => {
+            initializeGirlProfile();
+        }, 500);
     }
     
     // Initialize private chat page
@@ -314,6 +390,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Populate girls grid on shoot-your-shot page
     if (window.location.pathname.endsWith('shoot-your-shot.html')) {
-        populateGirlsGrid();
+        // Use setTimeout to allow platformManager to initialize
+        setTimeout(() => {
+            populateGirlsGrid();
+        }, 500);
     }
 });

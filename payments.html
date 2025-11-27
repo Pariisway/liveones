@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Processing - House of Whispers</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dating.css">
+</head>
+<body class="fonts-loading">
+    <div class="cyber-background"></div>
+    <div class="grid-overlay"></div>
+    
+    <header class="site-header">
+        <div class="glowing-title title-large">PAYMENT PROCESSING</div>
+        <div class="glowing-title title-medium">💖 SECURE CHECKOUT</div>
+    </header>
+
+    <main class="main-wrap">
+        <div class="panel">
+            <div class="profile-header">
+                <div class="girl-avatar" id="paymentGirlAvatar">🔥</div>
+                <div class="girl-name" id="paymentGirlName">Sarah, 24</div>
+                <div class="price-tag">$15 for 5-Minute Private Chat</div>
+            </div>
+
+            <div id="payment-form">
+                <div class="info-section">
+                    <div class="section-title">💳 Payment Information</div>
+                    
+                    <!-- Stripe Elements will be inserted here -->
+                    <div id="card-element" style="
+                        background: rgba(0, 0, 0, 0.6);
+                        border: 2px solid var(--accent2);
+                        border-radius: 10px;
+                        padding: 15px;
+                        margin: 15px 0;
+                    ">
+                        <!-- Stripe card element will go here -->
+                    </div>
+                    
+                    <div id="card-errors" style="color: var(--accent1); margin: 10px 0;"></div>
+                </div>
+
+                <div class="purchase-section">
+                    <button id="submit-payment" class="purchase-btn">
+                        💳 PAY $15.00
+                    </button>
+                    <div style="margin-top: 15px; color: var(--muted); font-size: 14px;">
+                        🔒 Secure payment processed by Stripe
+                    </div>
+                </div>
+            </div>
+
+            <div id="payment-success" class="hidden">
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 80px; color: var(--accent2);">✅</div>
+                    <div class="glowing-title title-medium" style="color: var(--accent2);">PAYMENT SUCCESSFUL!</div>
+                    <div style="margin: 20px 0; font-size: 18px;">
+                        You're now in the queue for your private chat with <span id="success-girl-name" style="color: var(--accent2);"></span>
+                    </div>
+                    <div style="margin: 30px 0;">
+                        <div style="font-size: 14px; color: var(--muted);">
+                            Redirecting to private chat room...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="javascript:history.back()" class="back-btn">← Back to Profile</a>
+    </main>
+
+    <script>
+        // Get girl data from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const girlId = urlParams.get('girl');
+        const girlData = {
+            'sarah': { name: 'Sarah, 24', avatar: '🔥' },
+            'maya': { name: 'Maya, 22', avatar: '💫' },
+            'chloe': { name: 'Chloe, 25', avatar: '🌟' },
+            'jessica': { name: 'Jessica, 23', avatar: '✨' }
+        };
+
+        const girl = girlData[girlId] || girlData.sarah;
+        
+        // Update UI with girl info
+        document.getElementById('paymentGirlAvatar').textContent = girl.avatar;
+        document.getElementById('paymentGirlName').textContent = girl.name;
+        document.getElementById('success-girl-name').textContent = girl.name.split(',')[0];
+
+        // Initialize Stripe
+        const stripe = Stripe('pk_test_51...'); // Replace with your test publishable key
+        const elements = stripe.elements();
+
+        // Create card element
+        const cardElement = elements.create('card', {
+            style: {
+                base: {
+                    color: '#ffffff',
+                    fontFamily: '"Rajdhani", system-ui, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#888888'
+                    }
+                },
+                invalid: {
+                    color: '#ff0033',
+                    iconColor: '#ff0033'
+                }
+            }
+        });
+
+        cardElement.mount('#card-element');
+
+        // Handle form submission
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-payment');
+        const cardErrors = document.getElementById('card-errors');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+
+            // For demo purposes - in production, you'd create a payment intent on your server
+            try {
+                // Simulate payment processing
+                setTimeout(() => {
+                    // Show success message
+                    document.getElementById('payment-form').classList.add('hidden');
+                    document.getElementById('payment-success').classList.remove('hidden');
+                    
+                    // Redirect to private chat after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = `private-chat.html?girl=${girlId}&user=${localStorage.getItem('username') || 'Guest'}&paid=true`;
+                    }, 3000);
+                }, 2000);
+
+            } catch (error) {
+                cardErrors.textContent = error.message;
+                submitButton.disabled = false;
+                submitButton.textContent = '💳 PAY $15.00';
+            }
+        });
+
+        // Font loading
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                document.body.classList.remove('fonts-loading');
+                document.body.classList.add('fonts-loaded');
+            });
+        }
+    </script>
+</body>
+</html>

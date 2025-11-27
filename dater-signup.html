@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dater Signup - House of Whispers</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dating.css">
+    <style>
+        .signup-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            background: rgba(255, 0, 51, 0.1);
+            border: 1px solid var(--accent1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-section-title {
+            color: var(--accent1);
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--accent1);
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body class="fonts-loading">
+    <div class="cyber-background"></div>
+    <div class="grid-overlay"></div>
+    
+    <header class="site-header">
+        <div class="glowing-title title-large">DATER SIGNUP</div>
+        <div class="glowing-title title-medium">💖 CREATE YOUR PROFILE</div>
+    </header>
+
+    <main class="main-wrap">
+        <div class="panel">
+            <form id="daterSignupForm" class="signup-form">
+                <div class="form-section">
+                    <div class="form-section-title">👤 Basic Information</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Username *</label>
+                        <input type="text" class="form-control" id="daterUsername" required placeholder="Choose a unique username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Display Name *</label>
+                        <input type="text" class="form-control" id="daterDisplayName" required placeholder="e.g., Sarah, 24">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="daterEmail" required placeholder="your@email.com">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">📍 Profile Details</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Location *</label>
+                        <input type="text" class="form-control" id="daterLocation" required placeholder="e.g., Los Angeles, CA">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Avatar Emoji *</label>
+                        <input type="text" class="form-control" id="daterAvatar" required placeholder="e.g., 🔥, 💫, 🌟">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bio *</label>
+                        <textarea class="form-control" id="daterBio" rows="4" required placeholder="Tell people about yourself..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Interests</label>
+                        <input type="text" class="form-control" id="daterInterests" placeholder="e.g., Hiking, Coffee, Travel, Music">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">🕐 Availability</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Timezone *</label>
+                        <select class="form-control" id="daterTimezone" required>
+                            <option value="">Select your timezone</option>
+                            <option value="PST">PST - Pacific Time</option>
+                            <option value="EST">EST - Eastern Time</option>
+                            <option value="CST">CST - Central Time</option>
+                            <option value="MST">MST - Mountain Time</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Chat Schedule *</label>
+                        <div class="schedule-inputs">
+                            <div>
+                                <label style="color: var(--muted); font-size: 12px;">Start Time (24h)</label>
+                                <input type="time" class="form-control" id="scheduleStart" required>
+                            </div>
+                            <div>
+                                <label style="color: var(--muted); font-size: 12px;">End Time (24h)</label>
+                                <input type="time" class="form-control" id="scheduleEnd" required>
+                            </div>
+                            <button type="button" class="add-schedule-btn" id="addScheduleBtn">+ Add</button>
+                        </div>
+                        <div class="schedule-list" id="scheduleList"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title">💰 Payment Terms</div>
+                    <div style="background: rgba(0, 255, 153, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 18px; color: var(--accent2); margin-bottom: 10px;">Earnings Breakdown</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <div style="font-size: 14px; color: var(--muted);">Chat Price</div>
+                                    <div style="color: var(--accent2);">$15.00</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 14px; color: var(--muted);">Platform Fee</div>
+                                    <div style="color: var(--accent1);">$3.75 (25%)</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 14px; color: var(--muted);">Your Earnings</div>
+                                    <div style="color: var(--accent3);">$11.25 (75%)</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 14px; color: var(--muted);">Payout</div>
+                                    <div style="color: gold;">Weekly</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: start; gap: 10px; margin-bottom: 15px;">
+                        <input type="checkbox" id="agreeTerms" required style="margin-top: 3px;">
+                        <label for="agreeTerms" style="color: var(--text); font-size: 14px;">
+                            I agree to the <a href="#" style="color: var(--accent2);">Terms of Service</a> and understand I'll receive 75% ($11.25) of each $15 chat session.
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn primary" style="width: 100%; font-size: 18px; padding: 20px;">
+                    🚀 CREATE DATER PROFILE
+                </button>
+            </form>
+        </div>
+
+        <a href="become-a-dater.html" class="back-btn">← Back</a>
+    </main>
+
+    <script src="js/platform-manager.js"></script>
+    <script>
+        let schedules = [];
+
+        // Add schedule
+        document.getElementById('addScheduleBtn').addEventListener('click', function() {
+            const start = document.getElementById('scheduleStart').value;
+            const end = document.getElementById('scheduleEnd').value;
+            
+            if (start && end) {
+                const scheduleString = `${start}-${end}`;
+                schedules.push(scheduleString);
+                updateScheduleList();
+                
+                // Clear inputs
+                document.getElementById('scheduleStart').value = '';
+                document.getElementById('scheduleEnd').value = '';
+            }
+        });
+
+        function updateScheduleList() {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = '';
+            
+            schedules.forEach((schedule, index) => {
+                const item = document.createElement('div');
+                item.className = 'schedule-item';
+                item.innerHTML = `
+                    ${schedule}
+                    <button type="button" class="remove-schedule" onclick="removeSchedule(${index})">×</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function removeSchedule(index) {
+            schedules.splice(index, 1);
+            updateScheduleList();
+        }
+
+        // Form submission
+        document.getElementById('daterSignupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const daterData = {
+                type: 'dater',
+                username: document.getElementById('daterUsername').value,
+                displayName: document.getElementById('daterDisplayName').value,
+                email: document.getElementById('daterEmail').value,
+                location: document.getElementById('daterLocation').value,
+                avatar: document.getElementById('daterAvatar').value,
+                bio: document.getElementById('daterBio').value,
+                interests: document.getElementById('daterInterests').value.split(',').map(i => i.trim()).filter(i => i),
+                timezone: document.getElementById('daterTimezone').value,
+                schedule: [...schedules],
+                verification: 'Pending Verification',
+                earnings: 0,
+                totalChats: 0,
+                rating: 0,
+                joinDate: new Date().toISOString()
+            };
+            
+            // Save dater profile
+            if (window.platformManager) {
+                platformManager.addDater(daterData);
+                alert('Dater profile created successfully! You can now receive paid chat requests.');
+                window.location.href = 'shoot-your-shot.html';
+            } else {
+                alert('Profile created! System initializing...');
+                window.location.href = 'shoot-your-shot.html';
+            }
+        });
+
+        // Font loading
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                document.body.classList.remove('fonts-loading');
+                document.body.classList.add('fonts-loaded');
+            });
+        }
+    </script>
+</body>
+</html>

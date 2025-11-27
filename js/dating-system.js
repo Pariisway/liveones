@@ -2,57 +2,38 @@
  * SHOOT YOUR SHOT DATING SYSTEM
  *************************************************************************/
 
-// Girl data management
-function getGirlsData() {
-    const adminGirls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
-    
-    // Fallback to default data if no admin data
-    if (Object.keys(adminGirls).length === 0) {
-        return {
-            'sarah': {
-                name: 'Sarah, 24',
-                avatar: '🔥',
-                location: '📍 Los Angeles, CA',
-                bio: 'Adventure seeker and coffee lover! I\'m a psychology major who enjoys hiking, trying new restaurants, and deep conversations.',
-                schedule: ['19:00-21:00'],
-                timezone: 'PST',
-                interests: ['Hiking', 'Coffee', 'Photography', 'Travel'],
-                verification: 'Verified ✅',
-                responseTime: 'Usually replies in 2 mins'
-            },
-            'maya': {
-                name: 'Maya, 22',
-                avatar: '💫', 
-                location: '📍 New York, NY',
-                bio: 'Creative soul and foodie! I work in digital marketing and love exploring the city, photography, and trying new recipes. Let\'s chat about our favorite hidden spots and maybe plan an adventure!',
-                schedule: ['16:00-18:00'],
-                timezone: 'EST',
-                interests: ['Art', 'Food', 'Exploring', 'Music'],
-                verification: 'Verified ✅',
-                responseTime: 'Usually replies in 1 min'
-            },
-            'chloe': {
-                name: 'Chloe, 25',
-                avatar: '🌟',
-                location: '📍 Miami, FL',
-                bio: 'Beach lover and artist! I\'m a freelance graphic designer who enjoys painting, yoga, and sunset walks. Looking for meaningful connections and good vibes. Tell me about your passions!',
-                schedule: ['20:00-22:00'],
-                timezone: 'EST',
-                interests: ['Art', 'Yoga', 'Beach', 'Design'],
-                verification: 'Verified ✅',
-                responseTime: 'Usually replies in 3 mins'
-            },
-            'jessica': {
-                name: 'Jessica, 23',
-                avatar: '✨',
-                location: '📍 Chicago, IL',
-                bio: 'Bookworm and travel enthusiast! I work in tech and love reading, planning my next trip, and coffee shop hopping. Let\'s share stories and adventures - I want to hear about your dreams!',
-                schedule: ['14:00-16:00'],
-                timezone: 'CST',
-                interests: ['Reading', 'Travel', 'Tech', 'Coffee'],
-                verification: 'Verified ✅',
-                responseTime: 'Usually replies in 2 mins'
+// Update getGirlsData to use Firebase
+async function getGirlsData() {
+    try {
+        if (window.platformManager && platformManager.initialized) {
+            const daters = await platformManager.getAllDaters();
+            const girlsData = {};
+            
+            daters.forEach(dater => {
+                girlsData[dater.id || dater.username] = {
+                    name: dater.displayName,
+                    avatar: dater.avatar,
+                    location: dater.location,
+                    bio: dater.bio,
+                    schedule: dater.schedule || [],
+                    timezone: dater.timezone,
+                    interests: dater.interests || [],
+                    verification: dater.verification || 'Verified ✅',
+                    responseTime: 'Usually replies in 2 mins'
+                };
+            });
+            
+            if (Object.keys(girlsData).length > 0) {
+                return girlsData;
             }
+        }
+    } catch (error) {
+        console.error('Error getting daters:', error);
+    }
+    
+    // Fallback to localStorage or mock data
+    return getFallbackGirlsData();
+}
         };
     }
     

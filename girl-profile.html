@@ -303,13 +303,14 @@
         checkSchedule();
         setInterval(checkSchedule, 60000);
 
-        // Purchase function
-        function purchaseChat() {
-            // For now, just redirect to private chat
-            // Later you'll integrate Stripe here
-            alert('Payment processing would go here! Redirecting to chat...');
-            window.location.href = `private-chat.html?girl=${girlId}&user=${localStorage.getItem('username') || 'Guest'}`;
-        }
+        // Replace the existing purchaseChat function with:
+function purchaseChat() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const girlId = urlParams.get('girl');
+    
+    // Redirect to payment page
+    window.location.href = `payments.html?girl=${girlId}`;
+}
     </script>
 </body>
 </html>

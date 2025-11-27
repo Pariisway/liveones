@@ -7,6 +7,35 @@
     <script src="https://js.stripe.com/v3/"></script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dating.css">
+    <style>
+        /* Additional payment-specific styles */
+        .StripeElement {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--accent2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: var(--text);
+            font-family: 'Rajdhani', system-ui, sans-serif;
+            font-size: 16px;
+        }
+        
+        .StripeElement--focus {
+            border-color: var(--accent1);
+            box-shadow: 0 0 15px var(--accent1);
+        }
+        
+        .StripeElement--invalid {
+            border-color: var(--accent1);
+        }
+        
+        .payment-loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--accent2);
+        }
+    </style>
 </head>
 <body class="fonts-loading">
     <div class="cyber-background"></div>
@@ -29,28 +58,27 @@
                 <div class="info-section">
                     <div class="section-title">💳 Payment Information</div>
                     
-                    <!-- Stripe Elements will be inserted here -->
-                    <div id="card-element" style="
-                        background: rgba(0, 0, 0, 0.6);
-                        border: 2px solid var(--accent2);
-                        border-radius: 10px;
-                        padding: 15px;
-                        margin: 15px 0;
-                    ">
-                        <!-- Stripe card element will go here -->
+                    <!-- Stripe Card Element will be inserted here -->
+                    <div id="card-element">
+                        <!-- Stripe will inject the card element here -->
                     </div>
                     
-                    <div id="card-errors" style="color: var(--accent1); margin: 10px 0;"></div>
+                    <div id="card-errors" role="alert" style="color: var(--accent1); margin: 10px 0; min-height: 20px;"></div>
                 </div>
 
                 <div class="purchase-section">
-                    <button id="submit-payment" class="purchase-btn">
+                    <button id="submit-payment" class="purchase-btn" type="button">
                         💳 PAY $15.00
                     </button>
                     <div style="margin-top: 15px; color: var(--muted); font-size: 14px;">
                         🔒 Secure payment processed by Stripe
                     </div>
                 </div>
+            </div>
+
+            <div id="payment-loading" class="payment-loading">
+                <div style="font-size: 40px; margin-bottom: 20px;">⏳</div>
+                <div>Processing your payment...</div>
             </div>
 
             <div id="payment-success" class="hidden">
@@ -73,11 +101,11 @@
     </main>
 
     <script>
-        // Get girl data from URL - UPDATED TO USE DYNAMIC DATA
+        // Get girl data from URL
         const urlParams = new URLSearchParams(window.location.search);
         const girlId = urlParams.get('girl');
         
-        // Function to get girl data from localStorage or fallback
+        // Function to get girl data
         function getGirlData(girlId) {
             const adminGirls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
             
@@ -103,85 +131,107 @@
         document.getElementById('paymentGirlName').textContent = girl.name;
         document.getElementById('success-girl-name').textContent = girl.name.split(',')[0];
 
-        // Initialize Stripe - USE TEST MODE FIRST
-        const stripe = Stripe('pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I'); // Replace with your test publishable key
-        const elements = stripe.elements();
+        // Initialize Stripe - MAKE SURE TO USE YOUR ACTUAL TEST KEY
+        const stripe = Stripe('pk_test_51...'); // REPLACE WITH YOUR KEY
+        let elements;
+        let cardElement;
 
-        // Create card element
-        const cardElement = elements.create('card', {
-            style: {
-                base: {
-                    color: '#ffffff',
-                    fontFamily: '"Rajdhani", system-ui, sans-serif',
-                    fontSmoothing: 'antialiased',
-                    fontSize: '16px',
-                    '::placeholder': {
-                        color: '#888888'
+        try {
+            elements = stripe.elements();
+            
+            // Create card element with better styling
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        color: '#ffffff',
+                        fontFamily: '"Rajdhani", system-ui, sans-serif',
+                        fontSmoothing: 'antialiased',
+                        fontSize: '16px',
+                        '::placeholder': {
+                            color: '#888888',
+                            fontSize: '14px'
+                        },
+                        ':-webkit-autofill': {
+                            color: '#ffffff',
+                        },
+                    },
+                    invalid: {
+                        color: '#ff0033',
+                        iconColor: '#ff0033'
                     }
                 },
-                invalid: {
-                    color: '#ff0033',
-                    iconColor: '#ff0033'
-                }
-            }
-        });
+                hidePostalCode: true
+            });
 
-        cardElement.mount('#card-element');
+            // Mount card element
+            cardElement.mount('#card-element');
+
+        } catch (error) {
+            console.error('Stripe initialization error:', error);
+            document.getElementById('card-errors').textContent = 'Payment system initialization failed. Please refresh the page.';
+        }
 
         // Handle real-time validation errors
-        cardElement.on('change', ({error}) => {
+        cardElement.on('change', function(event) {
             const displayError = document.getElementById('card-errors');
-            if (error) {
-                displayError.textContent = error.message;
+            const submitButton = document.getElementById('submit-payment');
+            
+            if (event.error) {
+                displayError.textContent = event.error.message;
+                submitButton.disabled = true;
+                submitButton.style.opacity = '0.6';
             } else {
                 displayError.textContent = '';
+                submitButton.disabled = false;
+                submitButton.style.opacity = '1';
             }
         });
 
         // Handle form submission
-        const form = document.getElementById('payment-form');
-        const submitButton = document.getElementById('submit-payment');
-        const cardErrors = document.getElementById('card-errors');
-
-        form.addEventListener('submit', async (event) => {
+        document.getElementById('submit-payment').addEventListener('click', async function(event) {
             event.preventDefault();
             
+            const submitButton = document.getElementById('submit-payment');
+            const cardErrors = document.getElementById('card-errors');
+            const paymentForm = document.getElementById('payment-form');
+            const paymentLoading = document.getElementById('payment-loading');
+            
+            // Show loading state
             submitButton.disabled = true;
             submitButton.textContent = 'Processing...';
+            paymentForm.style.opacity = '0.6';
+            paymentLoading.style.display = 'block';
 
-            // For demo purposes - in production, you'd create a payment intent on your server
             try {
-                // Validate card first
-                const {error, paymentMethod} = await stripe.createPaymentMethod({
-                    type: 'card',
-                    card: cardElement,
-                });
-
-                if (error) {
-                    cardErrors.textContent = error.message;
-                    submitButton.disabled = false;
-                    submitButton.textContent = '💳 PAY $15.00';
-                    return;
-                }
-
-                // Simulate payment processing (2 seconds)
+                // For demo purposes - simulate payment processing
+                // In production, you'd use stripe.confirmCardPayment() with a PaymentIntent
+                
+                console.log('Starting payment simulation...');
+                
+                // Simulate API call to create payment intent
                 setTimeout(() => {
-                    // Show success message
-                    document.getElementById('payment-form').classList.add('hidden');
+                    // Simulate successful payment
+                    paymentLoading.style.display = 'none';
+                    paymentForm.classList.add('hidden');
                     document.getElementById('payment-success').classList.remove('hidden');
+                    
+                    console.log('Payment simulation successful');
                     
                     // Redirect to private chat after 3 seconds
                     setTimeout(() => {
                         const username = localStorage.getItem('videohub_username') || 'Guest';
                         window.location.href = `private-chat.html?girl=${girlId}&user=${username}&paid=true`;
                     }, 3000);
+                    
                 }, 2000);
 
             } catch (error) {
-                cardErrors.textContent = 'An unexpected error occurred. Please try again.';
+                console.error('Payment error:', error);
+                cardErrors.textContent = 'Payment failed. Please try again.';
                 submitButton.disabled = false;
                 submitButton.textContent = '💳 PAY $15.00';
-                console.error('Payment error:', error);
+                paymentForm.style.opacity = '1';
+                paymentLoading.style.display = 'none';
             }
         });
 
@@ -197,6 +247,12 @@
                 document.body.classList.add('fonts-loaded');
             }, 1000);
         }
+
+        // Make sure the button is enabled when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitButton = document.getElementById('submit-payment');
+            submitButton.disabled = false;
+        });
     </script>
 </body>
 </html>

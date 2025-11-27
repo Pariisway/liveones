@@ -73,24 +73,37 @@
     </main>
 
     <script>
-        // Get girl data from URL
+        // Get girl data from URL - UPDATED TO USE DYNAMIC DATA
         const urlParams = new URLSearchParams(window.location.search);
         const girlId = urlParams.get('girl');
-        const girlData = {
-            'sarah': { name: 'Sarah, 24', avatar: '🔥' },
-            'maya': { name: 'Maya, 22', avatar: '💫' },
-            'chloe': { name: 'Chloe, 25', avatar: '🌟' },
-            'jessica': { name: 'Jessica, 23', avatar: '✨' }
-        };
+        
+        // Function to get girl data from localStorage or fallback
+        function getGirlData(girlId) {
+            const adminGirls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
+            
+            if (adminGirls[girlId]) {
+                return adminGirls[girlId];
+            }
+            
+            // Fallback data
+            const fallbackGirls = {
+                'sarah': { name: 'Sarah, 24', avatar: '🔥' },
+                'maya': { name: 'Maya, 22', avatar: '💫' },
+                'chloe': { name: 'Chloe, 25', avatar: '🌟' },
+                'jessica': { name: 'Jessica, 23', avatar: '✨' }
+            };
+            
+            return fallbackGirls[girlId] || fallbackGirls.sarah;
+        }
 
-        const girl = girlData[girlId] || girlData.sarah;
+        const girl = getGirlData(girlId);
         
         // Update UI with girl info
         document.getElementById('paymentGirlAvatar').textContent = girl.avatar;
         document.getElementById('paymentGirlName').textContent = girl.name;
         document.getElementById('success-girl-name').textContent = girl.name.split(',')[0];
 
-        // Initialize Stripe
+        // Initialize Stripe - USE TEST MODE FIRST
         const stripe = Stripe('pk_test_51...'); // Replace with your test publishable key
         const elements = stripe.elements();
 
@@ -115,6 +128,16 @@
 
         cardElement.mount('#card-element');
 
+        // Handle real-time validation errors
+        cardElement.on('change', ({error}) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
         // Handle form submission
         const form = document.getElementById('payment-form');
         const submitButton = document.getElementById('submit-payment');
@@ -128,7 +151,20 @@
 
             // For demo purposes - in production, you'd create a payment intent on your server
             try {
-                // Simulate payment processing
+                // Validate card first
+                const {error, paymentMethod} = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                });
+
+                if (error) {
+                    cardErrors.textContent = error.message;
+                    submitButton.disabled = false;
+                    submitButton.textContent = '💳 PAY $15.00';
+                    return;
+                }
+
+                // Simulate payment processing (2 seconds)
                 setTimeout(() => {
                     // Show success message
                     document.getElementById('payment-form').classList.add('hidden');
@@ -136,14 +172,16 @@
                     
                     // Redirect to private chat after 3 seconds
                     setTimeout(() => {
-                        window.location.href = `private-chat.html?girl=${girlId}&user=${localStorage.getItem('username') || 'Guest'}&paid=true`;
+                        const username = localStorage.getItem('videohub_username') || 'Guest';
+                        window.location.href = `private-chat.html?girl=${girlId}&user=${username}&paid=true`;
                     }, 3000);
                 }, 2000);
 
             } catch (error) {
-                cardErrors.textContent = error.message;
+                cardErrors.textContent = 'An unexpected error occurred. Please try again.';
                 submitButton.disabled = false;
                 submitButton.textContent = '💳 PAY $15.00';
+                console.error('Payment error:', error);
             }
         });
 
@@ -153,6 +191,11 @@
                 document.body.classList.remove('fonts-loading');
                 document.body.classList.add('fonts-loaded');
             });
+        } else {
+            setTimeout(() => {
+                document.body.classList.remove('fonts-loading');
+                document.body.classList.add('fonts-loaded');
+            }, 1000);
         }
     </script>
 </body>

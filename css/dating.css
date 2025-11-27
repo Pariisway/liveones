@@ -1,0 +1,257 @@
+/* SHOOT YOUR SHOT DATING SYSTEM STYLES */
+
+/* Girls Grid */
+.girls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.girl-card {
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border: 3px solid var(--accent1);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.girl-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 30px var(--accent1);
+}
+
+.girl-image {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(45deg, #ff0080, #ff0033);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+}
+
+.girl-info {
+    padding: 20px;
+    text-align: center;
+}
+
+.girl-name {
+    color: var(--accent2);
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.girl-schedule {
+    color: var(--accent3);
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.girl-tag {
+    background: rgba(255, 0, 51, 0.2);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    display: inline-block;
+}
+
+.back-btn {
+    display: block;
+    width: 200px;
+    margin: 30px auto;
+    padding: 15px;
+    background: linear-gradient(145deg, var(--accent1), #ff3366);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+
+/* Profile Page Styles */
+.profile-container {
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border: 3px solid var(--accent1);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.girl-avatar {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.girl-name {
+    color: var(--accent2);
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.girl-location {
+    color: var(--muted);
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.info-section {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    color: var(--accent3);
+    font-size: 20px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--accent3);
+    padding-bottom: 5px;
+}
+
+.bio-text {
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.schedule-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.time-slot {
+    background: rgba(255, 0, 51, 0.2);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid var(--accent1);
+}
+
+.time-slot.active {
+    background: rgba(0, 255, 153, 0.2);
+    border-color: var(--accent2);
+}
+
+.purchase-section {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid var(--accent1);
+}
+
+.price-tag {
+    font-size: 24px;
+    color: gold;
+    margin-bottom: 15px;
+}
+
+.purchase-btn {
+    background: linear-gradient(145deg, var(--accent1), #ff3366);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.purchase-btn:disabled {
+    background: var(--muted);
+    cursor: not-allowed;
+}
+
+.queue-info {
+    margin-top: 15px;
+    color: var(--muted);
+}
+
+/* Chat Room Styles */
+.chat-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border: 3px solid var(--accent1);
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.waiting-room, .active-chat {
+    text-align: center;
+}
+
+.countdown {
+    font-size: 100px;
+    color: var(--accent2);
+    margin: 50px 0;
+    text-shadow: 0 0 30px var(--accent2);
+}
+
+.status-message {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: var(--accent3);
+}
+
+.queue-position {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 20px;
+}
+
+.timer {
+    font-size: 48px;
+    color: var(--accent1);
+    margin: 30px 0;
+    text-shadow: 0 0 20px var(--accent1);
+}
+
+.chat-controls {
+    margin-top: 30px;
+}
+
+/* Dating Section on Main Page */
+.dating-section {
+    border: 3px solid var(--accent1);
+    background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+}
+
+.dating-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.dating-feature {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255,0,51,0.1);
+    border-radius: 10px;
+}
+
+.dating-feature-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.dating-feature-title {
+    color: var(--accent2);
+    font-weight: bold;
+}
+
+.dating-feature-desc {
+    font-size: 14px;
+    color: var(--muted);
+}

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - House of Whispers</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dating.css">
+    <style>
+        .admin-panel {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .admin-section {
+            background: linear-gradient(145deg, #1a1a1a, #222222);
+            border: 2px solid var(--accent1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: var(--accent2);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid var(--accent2);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 16px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent1);
+            box-shadow: 0 0 15px var(--accent1);
+        }
+        
+        .schedule-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        
+        .add-schedule-btn {
+            background: var(--accent2);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .schedule-list {
+            margin-top: 15px;
+        }
+        
+        .schedule-item {
+            background: rgba(255, 0, 51, 0.1);
+            border: 1px solid var(--accent1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-schedule {
+            background: var(--accent1);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .girls-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .girl-admin-card {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 2px solid var(--accent2);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .girl-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-edit {
+            background: var(--accent3);
+            color: #000;
+        }
+        
+        .btn-delete {
+            background: var(--accent1);
+            color: white;
+        }
+    </style>
+</head>
+<body class="fonts-loading">
+    <div class="cyber-background"></div>
+    <div class="grid-overlay"></div>
+    
+    <header class="site-header">
+        <div class="glowing-title title-large">ADMIN PANEL</div>
+        <div class="glowing-title title-medium">👑 MANAGE DATING PROFILES</div>
+    </header>
+
+    <main class="main-wrap">
+        <div class="admin-panel">
+            <!-- Add New Girl Form -->
+            <div class="admin-section">
+                <h2 class="glowing-title title-medium">➕ ADD NEW GIRL PROFILE</h2>
+                
+                <form id="addGirlForm">
+                    <div class="form-group">
+                        <label class="form-label">Girl ID (URL Slug)</label>
+                        <input type="text" class="form-control" id="girlId" required placeholder="e.g., sarah, maya, chloe">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="girlName" required placeholder="e.g., Sarah, 24">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Avatar Emoji</label>
+                        <input type="text" class="form-control" id="girlAvatar" required placeholder="e.g., 🔥, 💫, 🌟">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" id="girlLocation" required placeholder="e.g., 📍 Los Angeles, CA">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-control" id="girlBio" rows="4" required placeholder="Enter a compelling bio..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Chat Schedule</label>
+                        <div class="schedule-inputs">
+                            <div>
+                                <label style="color: var(--muted); font-size: 12px;">Start Time (24h)</label>
+                                <input type="time" class="form-control" id="scheduleStart" required>
+                            </div>
+                            <div>
+                                <label style="color: var(--muted); font-size: 12px;">End Time (24h)</label>
+                                <input type="time" class="form-control" id="scheduleEnd" required>
+                            </div>
+                            <button type="button" class="add-schedule-btn" id="addScheduleBtn">+ Add</button>
+                        </div>
+                        <div class="schedule-list" id="scheduleList"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Timezone</label>
+                        <select class="form-control" id="girlTimezone" required>
+                            <option value="PST">PST - Pacific Time</option>
+                            <option value="EST">EST - Eastern Time</option>
+                            <option value="CST">CST - Central Time</option>
+                            <option value="MST">MST - Mountain Time</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Interests (comma separated)</label>
+                        <input type="text" class="form-control" id="girlInterests" placeholder="e.g., Hiking, Coffee, Travel">
+                    </div>
+                    
+                    <button type="submit" class="btn primary" style="width: 100%;">➕ ADD GIRL PROFILE</button>
+                </form>
+            </div>
+
+            <!-- Existing Girls List -->
+            <div class="admin-section">
+                <h2 class="glowing-title title-medium">👥 MANAGED PROFILES</h2>
+                <div class="girls-list" id="girlsList">
+                    <!-- Girls will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-btn">← Back to Main Site</a>
+    </main>
+
+    <script>
+        // Admin functionality
+        let schedules = [];
+        let girls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
+
+        // Add schedule
+        document.getElementById('addScheduleBtn').addEventListener('click', function() {
+            const start = document.getElementById('scheduleStart').value;
+            const end = document.getElementById('scheduleEnd').value;
+            
+            if (start && end) {
+                const scheduleString = `${start}-${end}`;
+                schedules.push(scheduleString);
+                updateScheduleList();
+                
+                // Clear inputs
+                document.getElementById('scheduleStart').value = '';
+                document.getElementById('scheduleEnd').value = '';
+            }
+        });
+
+        function updateScheduleList() {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = '';
+            
+            schedules.forEach((schedule, index) => {
+                const item = document.createElement('div');
+                item.className = 'schedule-item';
+                item.innerHTML = `
+                    ${schedule}
+                    <button type="button" class="remove-schedule" onclick="removeSchedule(${index})">×</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function removeSchedule(index) {
+            schedules.splice(index, 1);
+            updateScheduleList();
+        }
+
+        // Add girl form submission
+        document.getElementById('addGirlForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const girlData = {
+                id: document.getElementById('girlId').value,
+                name: document.getElementById('girlName').value,
+                avatar: document.getElementById('girlAvatar').value,
+                location: document.getElementById('girlLocation').value,
+                bio: document.getElementById('girlBio').value,
+                schedule: [...schedules],
+                timezone: document.getElementById('girlTimezone').value,
+                interests: document.getElementById('girlInterests').value.split(',').map(i => i.trim()).filter(i => i),
+                verification: 'Verified ✅',
+                responseTime: 'Usually replies in 2 mins'
+            };
+            
+            // Save to localStorage (in production, this would be a database)
+            girls[girlData.id] = girlData;
+            localStorage.setItem('admin_girls', JSON.stringify(girls));
+            
+            // Reset form
+            this.reset();
+            schedules = [];
+            updateScheduleList();
+            
+            // Update girls list
+            updateGirlsList();
+            
+            alert('Girl profile added successfully!');
+        });
+
+        function updateGirlsList() {
+            const list = document.getElementById('girlsList');
+            list.innerHTML = '';
+            
+            Object.values(girls).forEach(girl => {
+                const card = document.createElement('div');
+                card.className = 'girl-admin-card';
+                card.innerHTML = `
+                    <div style="font-size: 40px;">${girl.avatar}</div>
+                    <div>
+                        <div style="color: var(--accent2); font-weight: bold; font-size: 18px;">${girl.name}</div>
+                        <div style="color: var(--muted); font-size: 14px;">${girl.location}</div>
+                        <div style="color: var(--muted); font-size: 12px; margin-top: 5px;">ID: ${girl.id}</div>
+                    </div>
+                    <div class="girl-actions">
+                        <button class="btn btn-edit" onclick="editGirl('${girl.id}')">✏️ Edit</button>
+                        <button class="btn btn-delete" onclick="deleteGirl('${girl.id}')">🗑️ Delete</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function editGirl(girlId) {
+            const girl = girls[girlId];
+            if (girl) {
+                document.getElementById('girlId').value = girl.id;
+                document.getElementById('girlName').value = girl.name;
+                document.getElementById('girlAvatar').value = girl.avatar;
+                document.getElementById('girlLocation').value = girl.location;
+                document.getElementById('girlBio').value = girl.bio;
+                document.getElementById('girlTimezone').value = girl.timezone;
+                document.getElementById('girlInterests').value = girl.interests.join(', ');
+                
+                schedules = [...girl.schedule];
+                updateScheduleList();
+                
+                // Scroll to form
+                document.getElementById('addGirlForm').scrollIntoView();
+            }
+        }
+
+        function deleteGirl(girlId) {
+            if (confirm(`Are you sure you want to delete ${girls[girlId]?.name}?`)) {
+                delete girls[girlId];
+                localStorage.setItem('admin_girls', JSON.stringify(girls));
+                updateGirlsList();
+            }
+        }
+
+        // Initialize
+        updateGirlsList();
+
+        // Font loading
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                document.body.classList.remove('fonts-loading');
+                document.body.classList.add('fonts-loaded');
+            });
+        }
+    </script>
+</body>
+</html>

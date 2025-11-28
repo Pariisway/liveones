@@ -1,63 +1,82 @@
+require('dotenv').config();
 const express = require('express');
-const stripe = require('stripe')('pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I'); // Your secret key
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); // ← From .env
+const cors = require('cors');
+
 const app = express();
 
+// Middleware
+app.use(cors());
 app.use(express.json());
+
+// Serve static files (your HTML, CSS, JS)
+app.use(express.static('.'));
 
 // Create payment intent
 app.post('/api/create-payment-intent', async (req, res) => {
     try {
-        const { paymentMethodId, daterId, amount, currency } = req.body;
+        const { daterId } = req.body;
         
-        // Create payment intent
+        // Create payment intent - $15.00 = 1500 cents
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount, // 1500 = $15.00
-            currency: currency,
-            payment_method: paymentMethodId,
-            confirm: true,
-            return_url: 'https://yourdomain.com/payment-success.html',
+            amount: 1500,
+            currency: 'usd',
+            automatic_payment_methods: {
+                enabled: true,
+            },
             metadata: {
-                dater_id: daterId
+                dater_id: daterId,
+                product: '5_min_chat'
             }
         });
-        
+
         res.json({
             success: true,
-            paymentIntentId: paymentIntent.id,
-            clientSecret: paymentIntent.client_secret
+            clientSecret: paymentIntent.client_secret,
+            paymentIntentId: paymentIntent.id
         });
         
     } catch (error) {
-        res.json({
+        console.error('Payment intent error:', error);
+        res.status(500).json({
             success: false,
             error: error.message
         });
     }
 });
 
-// Webhook for payment confirmation (optional but recommended)
-app.post('/api/webhook', async (req, res) => {
+// Webhook endpoint (for production)
+app.post('/api/webhook', express.raw({type: 'application/json'}), async (req, res) => {
     const sig = req.headers['stripe-signature'];
-    let event;
-
+    
     try {
-        event = stripe.webhooks.constructEvent(req.body, sig, 'wh_your_webhook_secret');
-    } catch (err) {
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    // Handle successful payment
-    if (event.type === 'payment_intent.succeeded') {
-        const paymentIntent = event.data.object;
-        const daterId = paymentIntent.metadata.dater_id;
+        const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
         
-        // Record payment in your database
-        console.log(`Payment successful for dater: ${daterId}`);
+        if (event.type === 'payment_intent.succeeded') {
+            const paymentIntent = event.data.object;
+            const daterId = paymentIntent.metadata.dater_id;
+            
+            // Here you would update your database
+            console.log(`💰 Payment successful for dater: ${daterId}`);
+            console.log(`💵 Amount: $${paymentIntent.amount / 100}`);
+            
+            // You could call platformManager here to record the payment
+        }
+        
+        res.json({received: true});
+    } catch (err) {
+        console.log(`❌ Webhook error: ${err.message}`);
+        res.status(400).send(`Webhook Error: ${err.message}`);
     }
-
-    res.json({received: true});
 });
 
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+// Basic health check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', message: 'House of Whispers API is running' });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`💳 Stripe mode: ${process.env.STRIPE_SECRET_KEY ? 'TEST' : 'NOT CONFIGURED'}`);
 });

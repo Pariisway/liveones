@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Girl Profile - House of Whispers</title>
     <style>
-        /* Copy the same CSS from shoot-your-shot.html */
+        /* Your existing CSS stays the same */
         :root {
             --bg: #0a0a0a;
             --panel: #1a1a1a;
@@ -50,6 +50,12 @@
             color: var(--accent1);
             text-shadow: 0 0 30px var(--accent1);
             margin-bottom: 10px;
+        }
+        
+        .title-medium {
+            font-size: 24px;
+            color: var(--accent2);
+            text-shadow: 0 0 20px var(--accent2);
         }
         
         .profile-container {
@@ -167,108 +173,182 @@
             text-align: center;
             text-decoration: none;
         }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: var(--accent1);
+        }
     </style>
 </head>
 <body>
     <header class="site-header">
         <div class="glowing-title title-large">SHOOT YOUR SHOT</div>
-        <div class="glowing-title title-medium" id="pageTitle">MEET THE GIRL</div>
+        <div class="glowing-title title-medium" id="pageTitle">LOADING PROFILE...</div>
     </header>
 
-    <div class="profile-container">
-        <div class="profile-header">
-            <div class="girl-avatar" id="girlAvatar">🔥</div>
-            <div class="girl-name" id="girlName">Loading...</div>
-            <div class="girl-location" id="girlLocation">📍 City, State</div>
+    <div class="profile-container" id="profileContainer">
+        <div class="loading" id="loadingMessage">
+            <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
+            <h3>Loading Profile...</h3>
+            <p>Please wait while we load the dater profile</p>
         </div>
+        
+        <div id="profileContent" style="display: none;">
+            <div class="profile-header">
+                <div class="girl-avatar" id="girlAvatar">👤</div>
+                <div class="girl-name" id="girlName">Loading...</div>
+                <div class="girl-location" id="girlLocation">📍 Loading...</div>
+            </div>
 
-        <div class="info-section">
-            <div class="section-title">💬 About Me</div>
-            <div class="bio-text" id="girlBio">
-                Loading biography...
+            <div class="info-section">
+                <div class="section-title">About Me</div>
+                <div class="bio-text" id="girlBio">Loading...</div>
+            </div>
+
+            <div class="info-section">
+                <div class="section-title">Chat Schedule</div>
+                <div class="schedule-slots" id="scheduleSlots">
+                    <!-- Schedule will load here -->
+                </div>
+            </div>
+
+            <div class="purchase-section">
+                <div class="price-tag">$15 for 5-Minute Private Chat</div>
+                <button class="purchase-btn" id="purchaseBtn" onclick="purchaseChat()" disabled>
+                    Purchase Private Chat
+                </button>
+                <div class="queue-info" id="queueInfo">
+                    Loading schedule...
+                </div>
             </div>
         </div>
-
-        <div class="info-section">
-            <div class="section-title">🕐 Chat Schedule</div>
-            <div class="schedule-slots" id="scheduleSlots">
-                <!-- Schedule slots will be filled by JavaScript -->
-            </div>
-        </div>
-
-        <div class="purchase-section">
-            <div class="price-tag">$15 for 5-Minute Private Chat</div>
-            <button class="purchase-btn" id="purchaseBtn" onclick="purchaseChat()" disabled>
-                Purchase Private Chat
+        
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+            <h3>Profile Not Found</h3>
+            <p>This dater profile is no longer available or doesn't exist.</p>
+            <button class="purchase-btn" onclick="window.location.href='shoot-your-shot.html'" style="margin-top: 20px;">
+                ← Back to Available Daters
             </button>
-            <div class="queue-info" id="queueInfo">
-                Purchase available only during scheduled hours
-            </div>
         </div>
     </div>
 
     <a href="shoot-your-shot.html" class="back-btn">← Back to Girls</a>
-
+    <!-- Add before platform-manager.js -->
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+    authDomain: "house-of-whispers.firebaseapp.com",
+    projectId: "house-of-whispers",
+    storageBucket: "house-of-whispers.firebasestorage.app",
+    messagingSenderId: "1063333130646",
+    appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7", 
+    measurementId: "G-06QR5LFKJ9"
+};
+</script>
+    <!-- Load Platform Manager -->
+    <script src="js/platform-manager.js"></script>
+    
     <script>
-        // Girl data
-        const girls = {
-            'sarah': {
-                name: 'Sarah, 24',
-                avatar: '🔥',
-                location: '📍 Los Angeles, CA',
-                bio: 'Adventure seeker and coffee lover! I\'m a college student studying psychology who enjoys hiking, trying new restaurants, and deep conversations. Looking for someone genuine and spontaneous!',
-                schedule: ['19:00-21:00'], // 7PM-9PM
-                timezone: 'PST'
-            },
-            'maya': {
-                name: 'Maya, 22', 
-                avatar: '💫',
-                location: '📍 New York, NY',
-                bio: 'Creative soul and foodie! I work in marketing and love exploring the city, photography, and trying new recipes. Let\'s chat about our favorite hidden spots!',
-                schedule: ['16:00-18:00'], // 4PM-6PM
-                timezone: 'EST'
-            },
-            'chloe': {
-                name: 'Chloe, 25',
-                avatar: '🌟',
-                location: '📍 Miami, FL',
-                bio: 'Beach lover and artist! I\'m a freelance graphic designer who enjoys painting, yoga, and sunset walks. Looking for meaningful connections and good vibes!',
-                schedule: ['20:00-22:00'], // 8PM-10PM
-                timezone: 'EST'
-            },
-            'jessica': {
-                name: 'Jessica, 23',
-                avatar: '✨',
-                location: '📍 Chicago, IL',
-                bio: 'Bookworm and travel enthusiast! I work in tech and love reading, planning my next trip, and coffee shop hopping. Let\'s share stories and adventures!',
-                schedule: ['14:00-16:00'], // 2PM-4PM
-                timezone: 'CST'
+        // Simple, robust girl profile loader
+        async function loadGirlProfile() {
+            console.log('🔍 Starting profile load...');
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const girlId = urlParams.get('girl');
+            
+            if (!girlId) {
+                showError('No profile ID provided');
+                return;
             }
-        };
-
-        // Get which girl from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const girlId = urlParams.get('girl') || 'sarah';
-        const girl = girls[girlId];
-
-        // Update page with girl info
-        document.getElementById('pageTitle').textContent = `MEET ${girl.name.split(',')[0].toUpperCase()}`;
-        document.getElementById('girlAvatar').textContent = girl.avatar;
-        document.getElementById('girlName').textContent = girl.name;
-        document.getElementById('girlLocation').textContent = girl.location;
-        document.getElementById('girlBio').textContent = girl.bio;
-
-        // Create schedule slots
-        const scheduleContainer = document.getElementById('scheduleSlots');
-        girl.schedule.forEach(slot => {
-            const slotDiv = document.createElement('div');
-            slotDiv.className = 'time-slot';
-            slotDiv.textContent = slot;
-            scheduleContainer.appendChild(slotDiv);
-        });
-
-        // Check if it's currently scheduled time
-        function checkSchedule() {
+            
+            try {
+                // Wait for platform manager
+                if (typeof platformManager === 'undefined') {
+                    console.log('⏳ Platform manager not ready, waiting...');
+                    setTimeout(loadGirlProfile, 500);
+                    return;
+                }
+                
+                console.log('📡 Fetching daters from platform...');
+                const daters = await platformManager.getAllDaters();
+                console.log('📊 Found daters:', daters);
+                
+                // Find the specific girl
+                const girl = daters.find(d => d.id === girlId);
+                console.log('🎯 Looking for girl ID:', girlId);
+                console.log('🔎 Found girl:', girl);
+                
+                if (!girl) {
+                    showError('Profile not found. This dater may have been removed.');
+                    return;
+                }
+                
+                // Display the profile
+                displayProfile(girl);
+                
+            } catch (error) {
+                console.error('💥 Error loading profile:', error);
+                showError('Error loading profile: ' + error.message);
+            }
+        }
+        
+        function displayProfile(girl) {
+            console.log('🎨 Displaying profile:', girl);
+            
+            // Hide loading, show content
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Update profile information
+            document.getElementById('pageTitle').textContent = `MEET ${girl.displayName?.split(',')[0]?.toUpperCase() || 'DATER'}`;
+            document.getElementById('girlAvatar').textContent = girl.avatar || '👤';
+            document.getElementById('girlName').textContent = girl.displayName || 'Unknown Dater';
+            document.getElementById('girlLocation').textContent = `📍 ${girl.location || 'Location not set'}`;
+            document.getElementById('girlBio').textContent = girl.bio || 'No bio provided.';
+            
+            // Update schedule
+            const scheduleContainer = document.getElementById('scheduleSlots');
+            scheduleContainer.innerHTML = '';
+            
+            if (girl.schedule && girl.schedule.length > 0) {
+                girl.schedule.forEach(slot => {
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'time-slot';
+                    slotDiv.textContent = slot;
+                    scheduleContainer.appendChild(slotDiv);
+                });
+                // Start schedule checking
+                checkSchedule(girl);
+                setInterval(() => checkSchedule(girl), 60000);
+            } else {
+                scheduleContainer.innerHTML = '<div style="color: var(--muted);">Schedule not set</div>';
+                document.getElementById('purchaseBtn').disabled = true;
+                document.getElementById('queueInfo').textContent = 'Schedule not available';
+            }
+            
+            console.log('✅ Profile displayed successfully');
+        }
+        
+        function showError(message) {
+            console.error('🚨 Showing error:', message);
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('profileContent').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('pageTitle').textContent = 'PROFILE ERROR';
+        }
+        
+        function checkSchedule(girl) {
+            if (!girl.schedule) return;
+            
             const now = new Date();
             const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
                               now.getMinutes().toString().padStart(2, '0');
@@ -280,14 +360,13 @@
                     isActive = true;
                 }
             });
-
+            
             const purchaseBtn = document.getElementById('purchaseBtn');
             const queueInfo = document.getElementById('queueInfo');
             
             if (isActive) {
                 purchaseBtn.disabled = false;
-                queueInfo.textContent = 'Chat is LIVE! Join the queue now.';
-                // Add active class to current time slot
+                queueInfo.textContent = 'Chat is LIVE! Join now.';
                 document.querySelectorAll('.time-slot').forEach(slot => {
                     if (slot.textContent.includes(currentTime.substring(0,2))) {
                         slot.classList.add('active');
@@ -295,22 +374,21 @@
                 });
             } else {
                 purchaseBtn.disabled = true;
-                queueInfo.textContent = 'Purchase available only during scheduled hours';
+                queueInfo.textContent = 'Available during scheduled hours only';
             }
         }
-
-        // Check schedule every minute
-        checkSchedule();
-        setInterval(checkSchedule, 60000);
-
-        // Replace the existing purchaseChat function with:
-function purchaseChat() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const girlId = urlParams.get('girl');
-    
-    // Redirect to payment page
-    window.location.href = `payments.html?girl=${girlId}`;
-}
+        
+        function purchaseChat() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const girlId = urlParams.get('girl');
+            window.location.href = `payments.html?girl=${girlId}`;
+        }
+        
+        // Initialize when ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Starting girl profile page...');
+            loadGirlProfile();
+        });
     </script>
 </body>
 </html>

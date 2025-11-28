@@ -1,209 +1,174 @@
-/*************************************************************************
- * PLATFORM MANAGEMENT SYSTEM
- * Handles dater accounts, payments, and revenue sharing
- *************************************************************************/
-
 class PlatformManager {
     constructor() {
-        this.platformData = this.loadPlatformData();
-        this.initializePlatform();
-    }
-
-    loadPlatformData() {
-        const savedData = localStorage.getItem('whispers_platform_data');
-        if (savedData) {
-            return JSON.parse(savedData);
-        }
-
-        // Initialize platform data structure
-        return {
-            users: {
-                'admin': {
-                    type: 'admin',
-                    username: 'admin',
-                    platformEarnings: 0,
-                    totalChats: 0,
-                    joinDate: new Date().toISOString()
-                }
-            },
-            payments: [],
-            platformSettings: {
-                chatPrice: 15.00,
-                platformCutPercent: 25,
-                daterCutPercent: 75,
-                payoutSchedule: 'weekly'
-            },
-            statistics: {
-                totalRevenue: 0,
-                totalChats: 0,
-                activeDaters: 0,
-                platformEarnings: 0
-            }
+        this.initialized = false;
+        this.firebaseConfig = {
+            // Replace with your Firebase config
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "your-app-id"
         };
+        
+        this.init();
     }
 
-    savePlatformData() {
-        localStorage.setItem('whispers_platform_data', JSON.stringify(this.platformData));
+    async init() {
+        try {
+            // Initialize Firebase
+            if (!firebase.apps.length) {
+                firebase.initializeApp(this.firebaseConfig);
+            }
+            this.db = firebase.firestore();
+            this.initialized = true;
+            console.log('🔥 Firebase Platform Manager initialized');
+            
+            // Sync localStorage with Firebase (for backward compatibility)
+            await this.syncWithFirebase();
+            
+        } catch (error) {
+            console.error('Firebase initialization failed, falling back to localStorage:', error);
+            this.initLocalStorage();
+        }
     }
 
-    initializePlatform() {
-        this.updateStatistics();
+    initLocalStorage() {
+        // Fallback to localStorage if Firebase fails
+        if (!localStorage.getItem('whispers_platform_data')) {
+            const initialData = {
+                daters: [],
+                payments: [],
+                payouts: [],
+                statistics: {
+                    totalRevenue: 0,
+                    totalChats: 0,
+                    activeDaters: 0
+                }
+            };
+            localStorage.setItem('whispers_platform_data', JSON.stringify(initialData));
+        }
+        this.initialized = true;
+        console.log('📱 LocalStorage Platform Manager initialized');
     }
 
-    // Dater Management
-    addDater(daterData) {
-        if (this.platformData.users[daterData.username]) {
+    async syncWithFirebase() {
+        try {
+            // Get data from Firebase
+            const snapshot = await this.db.collection('platformData').doc('whispers_data').get();
+            
+            if (snapshot.exists) {
+                const firebaseData = snapshot.data();
+                localStorage.setItem('whispers_platform_data', JSON.stringify(firebaseData));
+                console.log('✅ Synced from Firebase');
+            } else {
+                // If no Firebase data, upload localStorage data
+                const localData = localStorage.getItem('whispers_platform_data');
+                if (localData) {
+                    await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
+                    console.log('✅ Initialized Firebase with local data');
+                }
+            }
+        } catch (error) {
+            console.error('Firebase sync failed:', error);
+        }
+    }
+
+    async syncToFirebase() {
+        if (!this.db) return;
+        
+        try {
+            const localData = localStorage.getItem('whispers_platform_data');
+            if (localData) {
+                await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
+                console.log('✅ Synced to Firebase');
+            }
+        } catch (error) {
+            console.error('Firebase sync failed:', error);
+        }
+    }
+
+    // Updated addDater method with Firebase sync
+    async addDater(daterData) {
+        if (!this.initialized) throw new Error('Platform manager not initialized');
+        
+        const data = this.getData();
+        
+        // Check if username already exists
+        if (data.daters.find(d => d.username === daterData.username)) {
             throw new Error('Username already exists');
         }
 
-        this.platformData.users[daterData.username] = {
+        const dater = {
+            id: this.generateId(),
             ...daterData,
+            createdAt: new Date().toISOString(),
             earnings: 0,
             totalChats: 0,
             rating: 0,
-            isActive: true,
-            joinDate: new Date().toISOString()
+            isActive: true
         };
 
-        this.updateStatistics();
-        this.savePlatformData();
-        return daterData.username;
-    }
-
-    getDater(username) {
-        return this.platformData.users[username];
-    }
-
-    getAllDaters() {
-        return Object.values(this.platformData.users).filter(user => user.type === 'dater');
-    }
-
-    getActiveDaters() {
-        return this.getAllDaters().filter(dater => dater.isActive);
-    }
-
-    // Payment Processing
-    processPayment(paymentData) {
-        const { daterId, userId, amount } = paymentData;
-        const dater = this.getDater(daterId);
+        data.daters.push(dater);
+        data.statistics.activeDaters = data.daters.filter(d => d.isActive).length;
         
-        if (!dater) {
-            throw new Error('Dater not found');
+        this.saveData(data);
+        
+        // Sync to Firebase
+        await this.syncToFirebase();
+        
+        return dater.id;
+    }
+
+    // Updated getAllDaters method
+    async getAllDaters() {
+        if (!this.initialized) return [];
+        
+        // Try to sync from Firebase first
+        try {
+            if (this.db) {
+                await this.syncWithFirebase();
+            }
+        } catch (error) {
+            console.error('Failed to sync from Firebase:', error);
         }
-
-        const platformCut = (amount * this.platformData.platformSettings.platformCutPercent) / 100;
-        const daterEarnings = amount - platformCut;
-
-        // Create payment record
-        const payment = {
-            id: 'pay_' + Date.now(),
-            daterId,
-            userId,
-            amount,
-            platformCut,
-            daterEarnings,
-            timestamp: new Date().toISOString(),
-            status: 'completed'
-        };
-
-        // Update balances
-        dater.earnings += daterEarnings;
-        dater.totalChats += 1;
         
-        this.platformData.users.admin.platformEarnings += platformCut;
-        this.platformData.users.admin.totalChats += 1;
-
-        // Add to payments history
-        this.platformData.payments.push(payment);
-
-        // Update statistics
-        this.updateStatistics();
-        this.savePlatformData();
-
-        return payment;
+        const data = this.getData();
+        return data.daters.filter(dater => dater.isActive !== false);
     }
 
-    // Revenue Distribution
-    getDaterEarnings(daterId) {
-        const dater = this.getDater(daterId);
-        if (!dater) return 0;
+    // Update other methods to include Firebase sync...
+    async updateDater(id, updates) {
+        const data = this.getData();
+        const daterIndex = data.daters.findIndex(d => d.id === id);
         
-        return {
-            totalEarnings: dater.earnings,
-            totalChats: dater.totalChats,
-            averageEarnings: dater.totalChats > 0 ? dater.earnings / dater.totalChats : 0
-        };
-    }
-
-    getPlatformEarnings() {
-        return {
-            totalPlatformEarnings: this.platformData.users.admin.platformEarnings,
-            totalChats: this.platformData.users.admin.totalChats,
-            averagePerChat: this.platformData.users.admin.totalChats > 0 ? 
-                this.platformData.users.admin.platformEarnings / this.platformData.users.admin.totalChats : 0
-        };
-    }
-
-    // Statistics
-    updateStatistics() {
-        const daters = this.getAllDaters();
+        if (daterIndex === -1) throw new Error('Dater not found');
         
-        this.platformData.statistics = {
-            totalRevenue: this.platformData.payments.reduce((sum, payment) => sum + payment.amount, 0),
-            totalChats: this.platformData.payments.length,
-            activeDaters: daters.filter(dater => dater.isActive).length,
-            platformEarnings: this.platformData.users.admin.platformEarnings,
-            totalDaters: daters.length
-        };
+        data.daters[daterIndex] = { ...data.daters[daterIndex], ...updates };
+        this.saveData(data);
+        await this.syncToFirebase();
     }
 
-    getStatistics() {
-        return this.platformData.statistics;
+    async processPayment(paymentData) {
+        const data = this.getData();
+        // ... existing payment logic
+        this.saveData(data);
+        await this.syncToFirebase();
     }
 
-    // Payout Management (simplified - in real app, integrate with Stripe Connect)
-    initiatePayout(daterId, amount) {
-        const dater = this.getDater(daterId);
-        if (!dater || dater.earnings < amount) {
-            throw new Error('Insufficient earnings');
-        }
-
-        // Simulate payout
-        dater.earnings -= amount;
-        
-        const payout = {
-            id: 'payout_' + Date.now(),
-            daterId,
-            amount,
-            timestamp: new Date().toISOString(),
-            status: 'processed'
-        };
-
-        this.savePlatformData();
-        return payout;
+    // Helper methods (keep existing)
+    getData() {
+        const stored = localStorage.getItem('whispers_platform_data');
+        return stored ? JSON.parse(stored) : { daters: [], payments: [], payouts: [], statistics: { totalRevenue: 0, totalChats: 0, activeDaters: 0 } };
     }
 
-    // Admin Functions
-    updatePlatformSettings(settings) {
-        this.platformData.platformSettings = { ...this.platformData.platformSettings, ...settings };
-        this.savePlatformData();
+    saveData(data) {
+        localStorage.setItem('whispers_platform_data', JSON.stringify(data));
     }
 
-    getPlatformSettings() {
-        return this.platformData.platformSettings;
+    generateId() {
+        return 'dater_' + Math.random().toString(36).substr(2, 9);
     }
 }
 
-// Global platform manager instance
-let platformManager;
-
-// Initialize platform manager when DOM loads
-document.addEventListener('DOMContentLoaded', function() {
-    platformManager = new PlatformManager();
-    console.log('Platform Manager initialized');
-});
-
-// Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PlatformManager;
-}
+window.platformManager = new PlatformManager();

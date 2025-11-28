@@ -3,256 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Processing - House of Whispers</title>
-    <script src="https://js.stripe.com/v3/"></script>
+    <title>Payment - House of Whispers</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dating.css">
-    <style>
-        /* Additional payment-specific styles */
-        .StripeElement {
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid var(--accent2);
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            color: var(--text);
-            font-family: 'Rajdhani', system-ui, sans-serif;
-            font-size: 16px;
-        }
-        
-        .StripeElement--focus {
-            border-color: var(--accent1);
-            box-shadow: 0 0 15px var(--accent1);
-        }
-        
-        .StripeElement--invalid {
-            border-color: var(--accent1);
-        }
-        
-        .payment-loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: var(--accent2);
-        }
-    </style>
+    <!-- Load Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="fonts-loading">
     <div class="cyber-background"></div>
     <div class="grid-overlay"></div>
     
     <header class="site-header">
-        <div class="glowing-title title-large">PAYMENT PROCESSING</div>
-        <div class="glowing-title title-medium">💖 SECURE CHECKOUT</div>
+        <div class="glowing-title title-large">PAYMENT</div>
+        <div class="glowing-title title-medium">💳 COMPLETE YOUR PURCHASE</div>
     </header>
 
     <main class="main-wrap">
         <div class="panel">
-            <div class="profile-header">
-                <div class="girl-avatar" id="paymentGirlAvatar">🔥</div>
-                <div class="girl-name" id="paymentGirlName">Sarah, 24</div>
-                <div class="price-tag">$15 for 5-Minute Private Chat</div>
-            </div>
-
-            <div id="payment-form">
-                <div class="info-section">
-                    <div class="section-title">💳 Payment Information</div>
-                    
-                    <!-- Stripe Card Element will be inserted here -->
-                    <div id="card-element">
-                        <!-- Stripe will inject the card element here -->
-                    </div>
-                    
-                    <div id="card-errors" role="alert" style="color: var(--accent1); margin: 10px 0; min-height: 20px;"></div>
-                </div>
-
-                <div class="purchase-section">
-                    <button id="submit-payment" class="purchase-btn" type="button">
-                        💳 PAY $15.00
-                    </button>
-                    <div style="margin-top: 15px; color: var(--muted); font-size: 14px;">
-                        🔒 Secure payment processed by Stripe
-                    </div>
-                </div>
-            </div>
-
-            <div id="payment-loading" class="payment-loading">
-                <div style="font-size: 40px; margin-bottom: 20px;">⏳</div>
-                <div>Processing your payment...</div>
-            </div>
-
-            <div id="payment-success" class="hidden">
-                <div style="text-align: center; padding: 40px;">
-                    <div style="font-size: 80px; color: var(--accent2);">✅</div>
-                    <div class="glowing-title title-medium" style="color: var(--accent2);">PAYMENT SUCCESSFUL!</div>
-                    <div style="margin: 20px 0; font-size: 18px;">
-                        You're now in the queue for your private chat with <span id="success-girl-name" style="color: var(--accent2);"></span>
-                    </div>
-                    <div style="margin: 30px 0;">
-                        <div style="font-size: 14px; color: var(--muted);">
-                            Redirecting to private chat room...
+            <div id="paymentSection">
+                <div class="payment-summary">
+                    <h3>Chat Session Purchase</h3>
+                    <div class="payment-details">
+                        <div class="payment-item">
+                            <span>5-minute video chat with:</span>
+                            <span id="daterName">Loading...</span>
+                        </div>
+                        <div class="payment-item">
+                            <span>Price:</span>
+                            <span>$15.00</span>
+                        </div>
+                        <div class="payment-item">
+                            <span>Platform Fee (25%):</span>
+                            <span>$3.75</span>
+                        </div>
+                        <div class="payment-item total">
+                            <span><strong>Total:</strong></span>
+                            <span><strong>$15.00</strong></span>
                         </div>
                     </div>
                 </div>
+
+                <!-- Stripe Payment Form -->
+                <form id="payment-form">
+                    <div class="form-group">
+                        <label class="form-label">Card Information</label>
+                        <div id="card-element" class="form-control">
+                            <!-- Stripe Elements will create form elements here -->
+                        </div>
+                        <div id="card-errors" role="alert" style="color: var(--accent1); margin-top: 10px;"></div>
+                    </div>
+                    
+                    <button type="submit" id="submit-button" class="btn primary" style="width: 100%; padding: 20px; font-size: 18px;">
+                        💳 PAY $15.00
+                    </button>
+                </form>
+                
+                <div id="payment-success" class="hidden" style="text-align: center; padding: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+                    <h3>Payment Successful!</h3>
+                    <p>Redirecting to your chat session...</p>
+                </div>
             </div>
         </div>
-
-        <a href="javascript:history.back()" class="back-btn">← Back to Profile</a>
     </main>
 
+    <!-- Load scripts in correct order -->
+    <script src="js/platform-manager.js"></script>
     <script>
-        // Get girl data from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const girlId = urlParams.get('girl');
+        // Stripe configuration
+        const stripe = Stripe('pk_your_publishable_key_here'); // Replace with your key
+        const elements = stripe.elements();
         
-        // Function to get girl data
-        function getGirlData(girlId) {
-            const adminGirls = JSON.parse(localStorage.getItem('admin_girls') || '{}');
+        let cardElement;
+        let daterId;
+        let daterName;
+
+        // Initialize payment page
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Get dater info from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            daterId = urlParams.get('girl');
             
-            if (adminGirls[girlId]) {
-                return adminGirls[girlId];
+            if (!daterId) {
+                alert('No dater selected');
+                window.location.href = 'shoot-your-shot.html';
+                return;
             }
             
-            // Fallback data
-            const fallbackGirls = {
-                'sarah': { name: 'Sarah, 24', avatar: '🔥' },
-                'maya': { name: 'Maya, 22', avatar: '💫' },
-                'chloe': { name: 'Chloe, 25', avatar: '🌟' },
-                'jessica': { name: 'Jessica, 23', avatar: '✨' }
-            };
+            // Load dater info
+            await loadDaterInfo(daterId);
             
-            return fallbackGirls[girlId] || fallbackGirls.sarah;
+            // Setup Stripe elements
+            setupStripe();
+        });
+
+        async function loadDaterInfo(daterId) {
+            try {
+                const daters = await platformManager.getAllDaters();
+                const dater = daters.find(d => d.id === daterId);
+                
+                if (dater) {
+                    document.getElementById('daterName').textContent = dater.displayName;
+                    daterName = dater.displayName;
+                } else {
+                    alert('Dater not found');
+                    window.location.href = 'shoot-your-shot.html';
+                }
+            } catch (error) {
+                console.error('Error loading dater info:', error);
+                alert('Error loading dater information');
+            }
         }
 
-        const girl = getGirlData(girlId);
-        
-        // Update UI with girl info
-        document.getElementById('paymentGirlAvatar').textContent = girl.avatar;
-        document.getElementById('paymentGirlName').textContent = girl.name;
-        document.getElementById('success-girl-name').textContent = girl.name.split(',')[0];
-
-        // Initialize Stripe - MAKE SURE TO USE YOUR ACTUAL TEST KEY
-        const stripe = Stripe('pk_test_51...'); // REPLACE WITH YOUR KEY
-        let elements;
-        let cardElement;
-
-        try {
-            elements = stripe.elements();
-            
-            // Create card element with better styling
-            cardElement = elements.create('card', {
-                style: {
-                    base: {
-                        color: '#ffffff',
-                        fontFamily: '"Rajdhani", system-ui, sans-serif',
-                        fontSmoothing: 'antialiased',
-                        fontSize: '16px',
-                        '::placeholder': {
-                            color: '#888888',
-                            fontSize: '14px'
-                        },
-                        ':-webkit-autofill': {
-                            color: '#ffffff',
-                        },
-                    },
-                    invalid: {
-                        color: '#ff0033',
-                        iconColor: '#ff0033'
+        function setupStripe() {
+            // Create card element
+            const style = {
+                base: {
+                    color: '#ffffff',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder': {
+                        color: '#aab7c4'
                     }
                 },
-                hidePostalCode: true
-            });
+                invalid: {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            };
 
-            // Mount card element
+            cardElement = elements.create('card', { style: style });
             cardElement.mount('#card-element');
 
-        } catch (error) {
-            console.error('Stripe initialization error:', error);
-            document.getElementById('card-errors').textContent = 'Payment system initialization failed. Please refresh the page.';
+            // Handle real-time validation errors
+            cardElement.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            // Handle form submission
+            const form = document.getElementById('payment-form');
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const submitButton = document.getElementById('submit-button');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Processing...';
+                
+                try {
+                    await processPayment();
+                } catch (error) {
+                    console.error('Payment error:', error);
+                    alert('Payment failed: ' + error.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = '💳 PAY $15.00';
+                }
+            });
         }
 
-        // Handle real-time validation errors
-        cardElement.on('change', function(event) {
-            const displayError = document.getElementById('card-errors');
-            const submitButton = document.getElementById('submit-payment');
-            
-            if (event.error) {
-                displayError.textContent = event.error.message;
-                submitButton.disabled = true;
-                submitButton.style.opacity = '0.6';
-            } else {
-                displayError.textContent = '';
-                submitButton.disabled = false;
-                submitButton.style.opacity = '1';
-            }
-        });
-
-        // Handle form submission
-        document.getElementById('submit-payment').addEventListener('click', async function(event) {
-            event.preventDefault();
-            
-            const submitButton = document.getElementById('submit-payment');
-            const cardErrors = document.getElementById('card-errors');
-            const paymentForm = document.getElementById('payment-form');
-            const paymentLoading = document.getElementById('payment-loading');
-            
-            // Show loading state
-            submitButton.disabled = true;
-            submitButton.textContent = 'Processing...';
-            paymentForm.style.opacity = '0.6';
-            paymentLoading.style.display = 'block';
-
+        async function processPayment() {
             try {
-                // For demo purposes - simulate payment processing
-                // In production, you'd use stripe.confirmCardPayment() with a PaymentIntent
+                // Create payment method
+                const { paymentMethod, error } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: {
+                        name: document.getElementById('daterName').textContent,
+                    },
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                // Create payment intent on your server
+                const paymentResult = await createPaymentIntent(paymentMethod.id, daterId);
                 
-                console.log('Starting payment simulation...');
-                
-                // Simulate API call to create payment intent
-                setTimeout(() => {
-                    // Simulate successful payment
-                    paymentLoading.style.display = 'none';
-                    paymentForm.classList.add('hidden');
+                if (paymentResult.success) {
+                    // Show success and redirect to chat
+                    document.getElementById('payment-form').classList.add('hidden');
                     document.getElementById('payment-success').classList.remove('hidden');
                     
-                    console.log('Payment simulation successful');
+                    // Record payment in platform manager
+                    await platformManager.processPayment({
+                        daterId: daterId,
+                        amount: 15.00,
+                        paymentMethod: 'stripe',
+                        paymentIntentId: paymentResult.paymentIntentId
+                    });
                     
-                    // Redirect to private chat after 3 seconds
+                    // Redirect to private chat
                     setTimeout(() => {
-                        const username = localStorage.getItem('videohub_username') || 'Guest';
-                        window.location.href = `private-chat.html?girl=${girlId}&user=${username}&paid=true`;
-                    }, 3000);
+                        window.location.href = `private-chat.html?girl=${daterId}&paid=true`;
+                    }, 2000);
                     
-                }, 2000);
-
+                } else {
+                    throw new Error(paymentResult.error);
+                }
+                
             } catch (error) {
-                console.error('Payment error:', error);
-                cardErrors.textContent = 'Payment failed. Please try again.';
-                submitButton.disabled = false;
-                submitButton.textContent = '💳 PAY $15.00';
-                paymentForm.style.opacity = '1';
-                paymentLoading.style.display = 'none';
+                throw error;
             }
-        });
-
-        // Font loading
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(() => {
-                document.body.classList.remove('fonts-loading');
-                document.body.classList.add('fonts-loaded');
-            });
-        } else {
-            setTimeout(() => {
-                document.body.classList.remove('fonts-loading');
-                document.body.classList.add('fonts-loaded');
-            }, 1000);
         }
 
-        // Make sure the button is enabled when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            const submitButton = document.getElementById('submit-payment');
-            submitButton.disabled = false;
-        });
+        // This function calls your backend - you'll need to create this
+        async function createPaymentIntent(paymentMethodId, daterId) {
+            // For now, we'll simulate success
+            // In production, you need a backend server for this
+            return {
+                success: true,
+                paymentIntentId: 'pi_' + Math.random().toString(36).substr(2, 14)
+            };
+            
+            /* 
+            // REAL IMPLEMENTATION (requires backend):
+            const response = await fetch('/api/create-payment-intent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    paymentMethodId: paymentMethodId,
+                    daterId: daterId,
+                    amount: 1500, // $15.00 in cents
+                    currency: 'usd'
+                }),
+            });
+            return await response.json();
+            */
+        }
     </script>
 </body>
 </html>

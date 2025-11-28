@@ -1,4 +1,4 @@
-// platform-manager.js - COMPLETE WORKING VERSION
+// platform-manager.js - COMPLETE FIXED VERSION
 (function() {
     // Global protection - only run once
     if (window.PlatformManager) {
@@ -79,7 +79,43 @@
             console.log('📱 LocalStorage Platform Manager initialized');
         }
 
-        // ✅ MUST HAVE THIS METHOD - Data management
+        // ✅ ADD THIS MISSING METHOD
+        async syncWithFirebase() {
+            try {
+                if (!this.db) return;
+                
+                const snapshot = await this.db.collection('platformData').doc('whispers_data').get();
+                
+                if (snapshot.exists) {
+                    const firebaseData = snapshot.data();
+                    localStorage.setItem('whispers_platform_data', JSON.stringify(firebaseData));
+                    console.log('✅ Synced from Firebase');
+                } else {
+                    const localData = localStorage.getItem('whispers_platform_data');
+                    if (localData) {
+                        await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
+                        console.log('✅ Initialized Firebase with local data');
+                    }
+                }
+            } catch (error) {
+                console.error('Firebase sync failed:', error);
+            }
+        }
+
+        async syncToFirebase() {
+            if (!this.db) return;
+            
+            try {
+                const localData = localStorage.getItem('whispers_platform_data');
+                if (localData) {
+                    await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
+                    console.log('✅ Synced to Firebase');
+                }
+            } catch (error) {
+                console.error('Firebase sync failed:', error);
+            }
+        }
+
         getData() {
             try {
                 const stored = localStorage.getItem('whispers_platform_data');
@@ -115,7 +151,7 @@
             return 'dater_' + Math.random().toString(36).substr(2, 9);
         }
 
-        // ✅ MUST HAVE THIS METHOD - Add Dater
+        // ✅ ADD THIS MISSING METHOD
         async addDater(daterData) {
             console.log('🔄 addDater called with:', daterData);
             
@@ -156,7 +192,6 @@
             return dater.id;
         }
 
-        // ✅ MUST HAVE THIS METHOD - Get all daters
         async getAllDaters() {
             if (!this.initialized) return [];
             
@@ -173,43 +208,6 @@
             return daters.filter(dater => dater.isActive !== false);
         }
 
-        async syncWithFirebase() {
-            try {
-                if (!this.db) return;
-                
-                const snapshot = await this.db.collection('platformData').doc('whispers_data').get();
-                
-                if (snapshot.exists) {
-                    const firebaseData = snapshot.data();
-                    localStorage.setItem('whispers_platform_data', JSON.stringify(firebaseData));
-                    console.log('✅ Synced from Firebase');
-                } else {
-                    const localData = localStorage.getItem('whispers_platform_data');
-                    if (localData) {
-                        await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
-                        console.log('✅ Initialized Firebase with local data');
-                    }
-                }
-            } catch (error) {
-                console.error('Firebase sync failed:', error);
-            }
-        }
-
-        async syncToFirebase() {
-            if (!this.db) return;
-            
-            try {
-                const localData = localStorage.getItem('whispers_platform_data');
-                if (localData) {
-                    await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
-                    console.log('✅ Synced to Firebase');
-                }
-            } catch (error) {
-                console.error('Firebase sync failed:', error);
-            }
-        }
-
-        // Other methods...
         async updateDater(id, updates) {
             const data = this.getData();
             const daterIndex = data.daters.findIndex(d => d.id === id);
@@ -267,6 +265,6 @@
     if (!window.platformManager) {
         window.platformManager = new PlatformManager();
         window.PlatformManager = PlatformManager;
-        console.log('✅ PlatformManager initialized with addDater method');
+        console.log('✅ PlatformManager initialized with ALL methods');
     }
 })();

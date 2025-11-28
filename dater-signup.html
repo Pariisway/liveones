@@ -30,7 +30,7 @@
         
         .schedule-item {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             padding: 8px 12px;
             background: rgba(255, 255, 255, 0.1);
@@ -47,6 +47,13 @@
             height: 20px;
             cursor: pointer;
             margin-left: auto;
+        }
+        
+        .schedule-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
         }
     </style>
 </head>
@@ -121,16 +128,19 @@
                     
                     <div class="form-group">
                         <label class="form-label">Chat Schedule *</label>
-                        <div class="schedule-inputs" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end;">
+                        <div class="schedule-inputs">
                             <div>
                                 <label style="color: var(--muted); font-size: 12px;">Start Time (24h)</label>
-                                <input type="time" class="form-control" id="scheduleStart" required>
+                                <input type="time" class="form-control" id="scheduleStart">
                             </div>
                             <div>
                                 <label style="color: var(--muted); font-size: 12px;">End Time (24h)</label>
-                                <input type="time" class="form-control" id="scheduleEnd" required>
+                                <input type="time" class="form-control" id="scheduleEnd">
                             </div>
-                            <button type="button" class="add-schedule-btn" id="addScheduleBtn" style="background: var(--accent2); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">+ Add</button>
+                            <button type="button" class="add-schedule-btn" id="addScheduleBtn" style="background: var(--accent2); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">+ Add Time Slot</button>
+                        </div>
+                        <div style="color: var(--muted); font-size: 12px; margin-top: 5px;">
+                            Add at least one time slot when you're available for chats
                         </div>
                         <div class="schedule-list" id="scheduleList" style="margin-top: 10px;"></div>
                     </div>
@@ -190,12 +200,16 @@
             
             if (start && end) {
                 const scheduleString = `${start}-${end}`;
-                schedules.push(scheduleString);
-                updateScheduleList();
-                
-                // Clear inputs
-                document.getElementById('scheduleStart').value = '';
-                document.getElementById('scheduleEnd').value = '';
+                if (!schedules.includes(scheduleString)) {
+                    schedules.push(scheduleString);
+                    updateScheduleList();
+                    
+                    // Clear inputs
+                    document.getElementById('scheduleStart').value = '';
+                    document.getElementById('scheduleEnd').value = '';
+                } else {
+                    alert('This time slot is already added');
+                }
             } else {
                 alert('Please select both start and end times');
             }
@@ -214,7 +228,7 @@
                 const item = document.createElement('div');
                 item.className = 'schedule-item';
                 item.innerHTML = `
-                    ${schedule}
+                    <span>${schedule}</span>
                     <button type="button" class="remove-schedule" onclick="removeSchedule(${index})">×</button>
                 `;
                 list.appendChild(item);
@@ -232,19 +246,24 @@
             console.log('Form submission started...');
             
             // Validate required fields
-            const requiredFields = ['daterUsername', 'daterDisplayName', 'daterEmail', 'daterLocation', 'daterAvatar', 'daterBio', 'daterTimezone'];
+            const requiredFields = [
+                'daterUsername', 'daterDisplayName', 'daterEmail', 
+                'daterLocation', 'daterAvatar', 'daterBio', 'daterTimezone'
+            ];
+            
             for (let field of requiredFields) {
                 const element = document.getElementById(field);
                 if (!element.value.trim()) {
-                    alert(`Please fill in the ${element.previousElementSibling.textContent} field`);
+                    const fieldName = element.previousElementSibling.textContent.replace('*', '').trim();
+                    alert(`Please fill in the ${fieldName} field`);
                     element.focus();
                     return;
                 }
             }
 
-            // Validate schedule
+            // Validate schedule - FIXED: Only require at least one schedule
             if (schedules.length === 0) {
-                alert('Please add at least one schedule slot');
+                alert('Please add at least one schedule slot when you are available for chats');
                 return;
             }
 
@@ -282,7 +301,13 @@
                 
             } catch (error) {
                 console.error('Error adding dater:', error);
-                alert('Error creating profile: ' + error.message);
+                if (error.message.includes('already exists')) {
+                    alert('Username already exists. Please choose a different username.');
+                    document.getElementById('daterUsername').focus();
+                    document.getElementById('daterUsername').select();
+                } else {
+                    alert('Error creating profile: ' + error.message);
+                }
             }
         });
 
@@ -297,6 +322,9 @@
                 alert(`Found ${daters.length} daters in system. Check console for details.`);
             }
         };
+
+        // Initialize schedule list
+        updateScheduleList();
 
         // Font loading
         if (document.fonts && document.fonts.ready) {

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Platform Manager Test</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646", 
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+    </script>
+    <script src="platform-manager.js"></script>
+</head>
+<body>
+    <h1>Platform Manager Test</h1>
+    <button onclick="testPlatform()">Test Platform Manager</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testPlatform() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                // Wait for platform manager to be ready
+                await new Promise(resolve => {
+                    const check = setInterval(() => {
+                        if (window.platformManager && window.platformManager.initialized) {
+                            clearInterval(check);
+                            resolve();
+                        }
+                    }, 100);
+                    
+                    setTimeout(() => {
+                        clearInterval(check);
+                        resolve();
+                    }, 5000);
+                });
+                
+                const debugInfo = platformManager.debug();
+                result.innerHTML = `
+                    <h3>Platform Manager Status:</h3>
+                    <pre>${JSON.stringify(debugInfo, null, 2)}</pre>
+                `;
+                
+                console.log('Platform Manager Debug:', debugInfo);
+                
+                // Test adding a dater
+                const testDater = {
+                    username: 'testuser',
+                    displayName: 'Test User',
+                    email: 'test@example.com',
+                    location: 'Test City',
+                    avatar: '😊',
+                    bio: 'This is a test bio',
+                    schedule: ['Monday 2-4 PM'],
+                    timezone: 'EST'
+                };
+                
+                const daterId = await platformManager.addDater(testDater);
+                result.innerHTML += `<p>✅ Successfully added dater with ID: ${daterId}</p>`;
+                
+                // Test getting daters
+                const daters = await platformManager.getAllDaters();
+                result.innerHTML += `<p>✅ Retrieved ${daters.length} daters</p>`;
+                
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                console.error('Test error:', error);
+            }
+        }
+        
+        // Auto-test on load
+        setTimeout(testPlatform, 1000);
+    </script>
+</body>
+</html>

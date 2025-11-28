@@ -3,15 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Load Firebase SDK first -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-<!-- Load your Firebase config -->
-<script src="js/firebase-config.js"></script>
-
-<!-- Then load your platform manager -->
-<script src="js/platform-manager.js"></script>
   <title>Shoot Your Shot - House of Whispers</title>
   <meta name="description" content="Private 5-minute video chats with local singles. Make your move and connect with verified singles in your area.">
   
@@ -87,130 +78,149 @@
   <footer class="site-footer">
     <div>HOUSE OF WHISPERS © 2024 • SHOOT YOUR SHOT DATING</div>
   </footer>
-  <!-- Add before platform-manager.js -->
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-    authDomain: "house-of-whispers.firebaseapp.com",
-    projectId: "house-of-whispers",
-    storageBucket: "house-of-whispers.firebasestorage.app",
-    messagingSenderId: "1063333130646", 
-    appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-    measurementId: "G-06QR5LFKJ9"
-};
-</script>
-<script src="js/platform-manager.js"></script>
 
-  <!-- Load platform manager FIRST -->
+  <!-- ✅ FIXED: CORRECT SCRIPT LOADING ORDER (NO DUPLICATES) -->
+  <!-- 1. Firebase SDK FIRST -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <!-- 2. Firebase Config SECOND -->
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+        authDomain: "house-of-whispers.firebaseapp.com",
+        projectId: "house-of-whispers",
+        storageBucket: "house-of-whispers.firebasestorage.app",
+        messagingSenderId: "1063333130646", 
+        appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+        measurementId: "G-06QR5LFKJ9"
+    };
+    
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+  </script>
+
+  <!-- 3. Platform Manager THIRD (ONLY ONCE) -->
   <script src="js/platform-manager.js"></script>
+
   <script>
     // Debug function
-    window.debugPlatform = function() {
+    window.debugPlatform = async function() {
         console.log('=== DEBUG PLATFORM MANAGER ===');
         console.log('Platform Manager:', window.platformManager);
         
         const statusElement = document.getElementById('debugStatus');
         
-        if (window.platformManager) {
-            const daters = platformManager.getAllDaters();
-            console.log('Total Daters:', daters.length);
-            console.log('Daters:', daters);
-            
-            statusElement.innerHTML = `
-                <strong>Platform Status:</strong> ✅ LOADED<br>
-                <strong>Total Daters:</strong> ${daters.length}<br>
-                <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
-            `;
-            
-            alert(`Found ${daters.length} daters in system. Check console for details.`);
-            
-            // Refresh the display
-            loadDatersDirectly();
+        if (window.platformManager && typeof window.platformManager.getAllDaters === 'function') {
+            try {
+                const daters = await platformManager.getAllDaters();
+                console.log('Total Daters:', daters.length);
+                console.log('Daters:', daters);
+                
+                statusElement.innerHTML = `
+                    <strong>Platform Status:</strong> ✅ LOADED<br>
+                    <strong>Total Daters:</strong> ${daters.length}<br>
+                    <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+                `;
+                
+                alert(`✅ Platform Manager Working!\nFound ${daters.length} daters in system.`);
+                
+                // Refresh the display
+                loadDatersDirectly();
+            } catch (error) {
+                console.error('Debug error:', error);
+                statusElement.innerHTML = `
+                    <strong>Platform Status:</strong> ❌ ERROR<br>
+                    <strong>Error:</strong> ${error.message}
+                `;
+                alert('❌ Platform Manager Error: ' + error.message);
+            }
         } else {
             statusElement.innerHTML = `
                 <strong>Platform Status:</strong> ❌ NOT FOUND<br>
                 Check if platform-manager.js is loaded
             `;
-            alert('Platform manager not found! Check if platform-manager.js is loaded.');
+            alert('❌ Platform manager not found or not properly initialized!');
         }
     };
 
-    // FIXED: Make this function async
-async function loadDatersDirectly() {
-    console.log('🔄 Loading daters directly from platform manager...');
-    const grid = document.getElementById('datersGrid');
-    const statusElement = document.getElementById('debugStatus');
-    
-    if (typeof platformManager === 'undefined') {
-        grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
-                <h3>❌ Platform System Error</h3>
-                <p>Platform manager not loaded. Please refresh the page.</p>
-                <button onclick="location.reload()" class="btn primary">Refresh Page</button>
-            </div>
-        `;
-        if (statusElement) {
-            statusElement.innerHTML = '<strong>Status:</strong> ❌ Platform Manager Not Found';
-        }
-        return;
-    }
-    
-    try {
-        // FIXED: Wait for the Promise to resolve
-        const daters = await platformManager.getAllDaters();
-        console.log('📊 Retrieved daters:', daters);
+    // Load daters from platform manager
+    async function loadDatersDirectly() {
+        console.log('🔄 Loading daters directly from platform manager...');
+        const grid = document.getElementById('datersGrid');
+        const statusElement = document.getElementById('debugStatus');
         
-        if (statusElement) {
-            statusElement.innerHTML = `
-                <strong>Platform Status:</strong> ✅ LOADED<br>
-                <strong>Total Daters:</strong> ${daters.length}<br>
-                <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
-            `;
-        }
-        
-        if (daters.length === 0) {
+        if (typeof platformManager === 'undefined' || typeof platformManager.getAllDaters !== 'function') {
             grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <div style="color: var(--muted); margin-bottom: 20px; font-size: 18px;">
-                        🌟 No daters available yet. Be the first to sign up!
-                    </div>
-                    <a href="dater-signup.html" class="btn primary" style="background: var(--accent2); font-size: 16px; padding: 15px 30px;">
-                        💖 Become a Dater and Earn Money
-                    </a>
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
+                    <h3>❌ Platform System Error</h3>
+                    <p>Platform manager not loaded properly. Please refresh the page.</p>
+                    <button onclick="location.reload()" class="btn primary">Refresh Page</button>
                 </div>
             `;
+            if (statusElement) {
+                statusElement.innerHTML = '<strong>Status:</strong> ❌ Platform Manager Not Found';
+            }
             return;
         }
         
-        grid.innerHTML = '';
-        daters.forEach(dater => {
-            const daterCard = document.createElement('a');
-            daterCard.href = `girl-profile.html?girl=${dater.id}`;
-            daterCard.className = 'girl-card';
-            daterCard.innerHTML = `
-                <div class="girl-image">${dater.avatar || '👤'}</div>
-                <div class="girl-info">
-                    <div class="girl-name">${dater.displayName}</div>
-                    <div class="girl-location">📍 ${dater.location}</div>
-                    <div class="girl-bio">${dater.bio ? (dater.bio.substring(0, 80) + (dater.bio.length > 80 ? '...' : '')) : 'No bio provided'}</div>
-                    <div class="girl-schedule">🕐 ${dater.schedule && dater.schedule[0] ? dater.schedule[0] + ' ' + dater.timezone : 'Check schedule'}</div>
-                    <div class="girl-tag">5-min Chat: $15</div>
+        try {
+            const daters = await platformManager.getAllDaters();
+            console.log('📊 Retrieved daters:', daters);
+            
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <strong>Platform Status:</strong> ✅ LOADED<br>
+                    <strong>Total Daters:</strong> ${daters.length}<br>
+                    <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+                `;
+            }
+            
+            if (daters.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                        <div style="color: var(--muted); margin-bottom: 20px; font-size: 18px;">
+                            🌟 No daters available yet. Be the first to sign up!
+                        </div>
+                        <a href="dater-signup.html" class="btn primary" style="background: var(--accent2); font-size: 16px; padding: 15px 30px;">
+                            💖 Become a Dater and Earn Money
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = '';
+            daters.forEach(dater => {
+                const daterCard = document.createElement('a');
+                daterCard.href = `girl-profile.html?girl=${dater.id}`;
+                daterCard.className = 'girl-card';
+                daterCard.innerHTML = `
+                    <div class="girl-image">${dater.avatar || '👤'}</div>
+                    <div class="girl-info">
+                        <div class="girl-name">${dater.displayName}</div>
+                        <div class="girl-location">📍 ${dater.location}</div>
+                        <div class="girl-bio">${dater.bio ? (dater.bio.substring(0, 80) + (dater.bio.length > 80 ? '...' : '')) : 'No bio provided'}</div>
+                        <div class="girl-schedule">🕐 ${dater.schedule && dater.schedule[0] ? dater.schedule[0] + ' ' + dater.timezone : 'Check schedule'}</div>
+                        <div class="girl-tag">5-min Chat: $15</div>
+                    </div>
+                `;
+                grid.appendChild(daterCard);
+            });
+            
+        } catch (error) {
+            console.error('❌ Error loading daters:', error);
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
+                    <h3>Error Loading Profiles</h3>
+                    <p>${error.message}</p>
+                    <button onclick="loadDatersDirectly()" class="btn primary">Try Again</button>
                 </div>
             `;
-            grid.appendChild(daterCard);
-        });
-        
-    } catch (error) {
-        console.error('❌ Error loading daters:', error);
-        grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
-                <h3>Error Loading Profiles</h3>
-                <p>${error.message}</p>
-                <button onclick="loadDatersDirectly()" class="btn primary">Try Again</button>
-            </div>
-        `;
+        }
     }
-}
     
     // Load daters when page loads
     document.addEventListener('DOMContentLoaded', function() {
@@ -218,20 +228,20 @@ async function loadDatersDirectly() {
         
         // Wait for platform manager to initialize
         const checkPlatform = setInterval(() => {
-            if (window.platformManager) {
+            if (window.platformManager && typeof window.platformManager.getAllDaters === 'function') {
                 clearInterval(checkPlatform);
-                console.log('Platform manager found, loading daters...');
+                console.log('✅ Platform manager found and ready, loading daters...');
                 loadDatersDirectly();
             }
         }, 100);
         
-        // Timeout after 3 seconds
+        // Timeout after 5 seconds
         setTimeout(() => {
-            if (!window.platformManager) {
-                console.error('Platform manager not found after 3 seconds');
+            if (!window.platformManager || typeof window.platformManager.getAllDaters !== 'function') {
+                console.error('❌ Platform manager not found after 5 seconds');
                 loadDatersDirectly(); // Still try to load
             }
-        }, 3000);
+        }, 5000);
     });
 
     // Font loading

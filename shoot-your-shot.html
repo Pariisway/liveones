@@ -19,8 +19,21 @@
   <meta name="google-adsense-account" content="ca-pub-1184595877548269">
   
   <!-- CSS Files -->
-  <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
-  <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dating.css">
+  <style>
+    .debug-info {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 1000;
+    }
+  </style>
 </head>
 <body class="fonts-loading">
   <div class="cyber-background"></div>
@@ -38,11 +51,18 @@
   </header>
 
   <main class="main-wrap">
-    <!-- Debug Button -->
-    <div style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
-        <button onclick="debugPlatform()" style="background: #ff4444; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 12px;">
+    <!-- Debug Info -->
+    <div class="debug-info">
+        <button onclick="debugPlatform()" style="background: #ff4444; color: white; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; margin-bottom: 5px;">
             🔧 Debug Platform
         </button>
+        <div id="debugStatus">Loading...</div>
+    </div>
+
+    <div class="panel" style="text-align: center; margin-bottom: 20px;">
+        <a href="dater-signup.html" class="btn primary" style="background: var(--accent2);">
+            💖 Become a Dater and Earn Money
+        </a>
     </div>
 
     <div class="girls-grid" id="datersGrid">
@@ -61,60 +81,74 @@
 
   <!-- Load platform manager FIRST -->
   <script src="js/platform-manager.js"></script>
-  <script src="js/dating-system.js"></script>
   <script>
     // Debug function
     window.debugPlatform = function() {
         console.log('=== DEBUG PLATFORM MANAGER ===');
         console.log('Platform Manager:', window.platformManager);
+        
+        const statusElement = document.getElementById('debugStatus');
+        
         if (window.platformManager) {
             const daters = platformManager.getAllDaters();
             console.log('Total Daters:', daters.length);
             console.log('Daters:', daters);
+            
+            statusElement.innerHTML = `
+                <strong>Platform Status:</strong> ✅ LOADED<br>
+                <strong>Total Daters:</strong> ${daters.length}<br>
+                <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+            `;
+            
             alert(`Found ${daters.length} daters in system. Check console for details.`);
             
-            // Also show stored data
-            const stored = localStorage.getItem('whispers_platform_data');
-            console.log('Stored Data:', stored ? JSON.parse(stored) : 'NO DATA');
+            // Refresh the display
+            loadDatersDirectly();
         } else {
+            statusElement.innerHTML = `
+                <strong>Platform Status:</strong> ❌ NOT FOUND<br>
+                Check if platform-manager.js is loaded
+            `;
             alert('Platform manager not found! Check if platform-manager.js is loaded.');
         }
     };
 
-    // Load daters when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, initializing shoot-your-shot...');
-        
-        // Wait a bit for platform manager to initialize
-        setTimeout(() => {
-            if (typeof populateGirlsGrid === 'function') {
-                populateGirlsGrid();
-            } else {
-                console.error('populateGirlsGrid function not found!');
-                // Fallback: try to load daters directly
-                loadDatersDirectly();
-            }
-        }, 500);
-    });
-
-    // Fallback function if dating-system.js doesn't work
+    // Load daters directly from platform manager
     function loadDatersDirectly() {
-        console.log('Loading daters directly...');
+        console.log('Loading daters directly from platform manager...');
         const grid = document.getElementById('datersGrid');
+        const statusElement = document.getElementById('debugStatus');
         
         if (typeof platformManager === 'undefined') {
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">Error: Platform system not loaded</div>';
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
+                    <h3>❌ Platform System Error</h3>
+                    <p>Platform manager not loaded. Please refresh the page.</p>
+                    <button onclick="location.reload()" class="btn primary">Refresh Page</button>
+                </div>
+            `;
+            statusElement.innerHTML = '<strong>Status:</strong> ❌ Platform Manager Not Found';
             return;
         }
         
         const daters = platformManager.getAllDaters();
         console.log('Retrieved daters:', daters);
         
+        statusElement.innerHTML = `
+            <strong>Platform Status:</strong> ✅ LOADED<br>
+            <strong>Total Daters:</strong> ${daters.length}<br>
+            <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+        `;
+        
         if (daters.length === 0) {
             grid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <div style="color: var(--muted); margin-bottom: 20px;">No daters available yet.</div>
-                    <a href="dater-signup.html" class="btn primary" style="background: var(--accent2);">Be the first to sign up!</a>
+                    <div style="color: var(--muted); margin-bottom: 20px; font-size: 18px;">
+                        🌟 No daters available yet. Be the first to sign up!
+                    </div>
+                    <a href="dater-signup.html" class="btn primary" style="background: var(--accent2); font-size: 16px; padding: 15px 30px;">
+                        💖 Become a Dater and Earn Money
+                    </a>
                 </div>
             `;
             return;
@@ -129,8 +163,8 @@
                 <div class="girl-image">${dater.avatar || '👤'}</div>
                 <div class="girl-info">
                     <div class="girl-name">${dater.displayName}</div>
-                    <div class="girl-location">${dater.location}</div>
-                    <div class="girl-bio">${dater.bio ? (dater.bio.substring(0, 60) + '...') : 'No bio provided'}</div>
+                    <div class="girl-location">📍 ${dater.location}</div>
+                    <div class="girl-bio">${dater.bio ? (dater.bio.substring(0, 80) + (dater.bio.length > 80 ? '...' : '')) : 'No bio provided'}</div>
                     <div class="girl-schedule">🕐 ${dater.schedule && dater.schedule[0] ? dater.schedule[0] + ' ' + dater.timezone : 'Check schedule'}</div>
                     <div class="girl-tag">5-min Chat: $15</div>
                 </div>
@@ -138,6 +172,28 @@
             grid.appendChild(daterCard);
         });
     }
+
+    // Load daters when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing shoot-your-shot...');
+        
+        // Wait for platform manager to initialize
+        const checkPlatform = setInterval(() => {
+            if (window.platformManager) {
+                clearInterval(checkPlatform);
+                console.log('Platform manager found, loading daters...');
+                loadDatersDirectly();
+            }
+        }, 100);
+        
+        // Timeout after 3 seconds
+        setTimeout(() => {
+            if (!window.platformManager) {
+                console.error('Platform manager not found after 3 seconds');
+                loadDatersDirectly(); // Still try to load
+            }
+        }, 3000);
+    });
 
     // Font loading
     if (document.fonts && document.fonts.ready) {

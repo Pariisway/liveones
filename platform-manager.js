@@ -53,14 +53,16 @@ class PlatformManager {
                 // Fallback to localStorage
                 const daters = this.getLocalStorageDaters();
                 const daterId = 'local_' + Date.now();
-                daters.push({
+                const newDater = {
                     id: daterId,
                     ...daterData,
                     createdAt: new Date().toISOString(),
                     status: 'active'
-                });
+                };
+                daters.push(newDater);
                 localStorage.setItem('daters', JSON.stringify(daters));
                 console.log('✅ Dater added to localStorage with ID:', daterId);
+                console.log('📝 Dater data:', newDater);
                 return daterId;
             }
         } catch (error) {
@@ -94,8 +96,10 @@ class PlatformManager {
             } else {
                 // Fallback to localStorage
                 const daters = this.getLocalStorageDaters();
-                console.log(`📊 Retrieved ${daters.length} daters from localStorage`);
-                return daters.filter(dater => dater.status === 'active');
+                const activeDaters = daters.filter(dater => dater.status === 'active');
+                console.log(`📊 Retrieved ${activeDaters.length} daters from localStorage`);
+                console.log('📝 All localStorage daters:', daters);
+                return activeDaters;
             }
         } catch (error) {
             console.error('❌ Error getting daters from Firebase:', error);
@@ -168,6 +172,16 @@ class PlatformManager {
         }
     }
 
+    // Clear all daters (for testing)
+    clearAllDaters() {
+        if (!this.useLocalStorage) {
+            console.warn('⚠️ clearAllDaters only works in localStorage mode');
+            return;
+        }
+        localStorage.removeItem('daters');
+        console.log('✅ All daters cleared from localStorage');
+    }
+
     // Debug method to check platform status
     debug() {
         return {
@@ -180,7 +194,8 @@ class PlatformManager {
                 getAllDaters: typeof this.getAllDaters,
                 getDater: typeof this.getDater,
                 updateDater: typeof this.updateDater
-            }
+            },
+            localStorageDaters: this.getLocalStorageDaters().length
         };
     }
 }

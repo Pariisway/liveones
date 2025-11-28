@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <title>Dater Signup - House of Whispers</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dating.css">
@@ -192,7 +189,27 @@
         <a href="become-a-dater.html" class="back-btn">← Back</a>
     </main>
 
+    <!-- ✅ FIXED: Add Firebase Config BEFORE platform-manager.js -->
+    <script>
+        // Embedded Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+    </script>
+
+    <!-- ✅ FIXED: Load Firebase SDK AFTER config -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <!-- ✅ FIXED: Load platform manager AFTER Firebase -->
     <script src="js/platform-manager.js"></script>
+    
     <script>
         let schedules = [];
 
@@ -243,8 +260,8 @@
             updateScheduleList();
         }
 
-        // Form submission - FIXED VERSION
-        document.getElementById('daterSignupForm').addEventListener('submit', function(e) {
+        // ✅ FIXED: Form submission with proper async/await
+        document.getElementById('daterSignupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             console.log('Form submission started...');
             
@@ -264,7 +281,7 @@
                 }
             }
 
-            // Validate schedule - FIXED: Only require at least one schedule
+            // Validate schedule
             if (schedules.length === 0) {
                 alert('Please add at least one schedule slot when you are available for chats');
                 return;
@@ -285,17 +302,19 @@
             
             console.log('Dater data prepared:', daterData);
             
-            // Check if platformManager exists
-            if (typeof platformManager === 'undefined') {
-                console.error('platformManager is not defined!');
+            // ✅ FIXED: Better platform manager check
+            if (typeof platformManager === 'undefined' || !platformManager.addDater) {
+                console.error('Platform manager not properly loaded:', platformManager);
                 alert('Error: Platform system not loaded. Please refresh the page.');
                 return;
             }
             
             try {
                 console.log('Attempting to add dater to platform manager...');
-                platformManager.addDater(daterData);
-                console.log('Dater added successfully!');
+                
+                // ✅ FIXED: Wait for the async operation
+                const daterId = await platformManager.addDater(daterData);
+                console.log('Dater added successfully! ID:', daterId);
                 
                 alert('🎉 Dater profile created successfully! You can now receive paid chat requests.');
                 setTimeout(() => {
@@ -314,17 +333,48 @@
             }
         });
 
-        // Debug function
-        window.debugPlatform = function() {
+        // ✅ FIXED: Enhanced debug function
+        window.debugPlatform = async function() {
             console.log('=== DEBUG PLATFORM MANAGER ===');
             console.log('Platform Manager:', window.platformManager);
-            if (window.platformManager) {
-                const daters = platformManager.getAllDaters();
-                console.log('Total Daters:', daters.length);
-                console.log('Daters:', daters);
-                alert(`Found ${daters.length} daters in system. Check console for details.`);
+            console.log('addDater method:', typeof window.platformManager?.addDater);
+            
+            if (window.platformManager && window.platformManager.addDater) {
+                try {
+                    const daters = await platformManager.getAllDaters();
+                    console.log('Total Daters:', daters.length);
+                    console.log('Daters:', daters);
+                    alert(`✅ Platform Manager Working!\nFound ${daters.length} daters in system.`);
+                } catch (error) {
+                    console.error('Debug error:', error);
+                    alert('❌ Platform Manager Error: ' + error.message);
+                }
+            } else {
+                alert('❌ Platform Manager not properly initialized');
             }
         };
+
+        // ✅ FIXED: Wait for platform manager to initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, checking platform manager...');
+            
+            // Wait for platform manager to be ready
+            const checkPlatform = setInterval(() => {
+                if (window.platformManager && typeof window.platformManager.addDater === 'function') {
+                    clearInterval(checkPlatform);
+                    console.log('✅ Platform manager ready with addDater method');
+                    updateScheduleList();
+                }
+            }, 100);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                if (!window.platformManager || !window.platformManager.addDater) {
+                    console.error('❌ Platform manager failed to initialize');
+                    alert('Warning: Platform system may not be working properly.');
+                }
+            }, 5000);
+        });
 
         // Initialize schedule list
         updateScheduleList();

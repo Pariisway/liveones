@@ -52,6 +52,12 @@
             margin-bottom: 10px;
         }
         
+        .title-medium {
+            font-size: 24px;
+            color: var(--accent2);
+            text-shadow: 0 0 20px var(--accent2);
+        }
+        
         .profile-container {
             background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
             border: 3px solid var(--accent1);
@@ -167,6 +173,35 @@
             text-align: center;
             text-decoration: none;
         }
+
+        /* Image upload styles */
+        .avatar-upload {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .avatar-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent2);
+            margin-bottom: 10px;
+        }
+        
+        .upload-btn {
+            background: var(--accent3);
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .upload-input {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -177,23 +212,35 @@
 
     <div class="profile-container">
         <div class="profile-header">
-            <div class="girl-avatar" id="girlAvatar">🔥</div>
+            <!-- Avatar Section with Image Upload Option -->
+            <div class="avatar-upload">
+                <img id="girlImage" class="avatar-image" src="" alt="Profile" style="display: none;">
+                <div class="girl-avatar" id="girlAvatar">🔥</div>
+                <input type="file" id="imageUpload" class="upload-input" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('imageUpload').click()">
+                    📷 Upload Photo
+                </button>
+            </div>
+            
             <div class="girl-name" id="girlName">Loading...</div>
-            <div class="girl-location" id="girlLocation">📍 City, State</div>
+            <div class="girl-location" id="girlLocation">📍 Loading...</div>
         </div>
 
         <div class="info-section">
-            <div class="section-title">💬 About Me</div>
-            <div class="bio-text" id="girlBio">
-                Loading biography...
-            </div>
+            <div class="section-title">About Me</div>
+            <div class="bio-text" id="girlBio">Loading profile...</div>
         </div>
 
         <div class="info-section">
-            <div class="section-title">🕐 Chat Schedule</div>
+            <div class="section-title">Chat Schedule</div>
             <div class="schedule-slots" id="scheduleSlots">
-                <!-- Schedule slots will be filled by JavaScript -->
+                <!-- Schedule slots will be loaded dynamically -->
             </div>
+        </div>
+
+        <div class="info-section">
+            <div class="section-title">Verification</div>
+            <div class="bio-text" id="girlVerification">✅ Verified Member</div>
         </div>
 
         <div class="purchase-section">
@@ -209,77 +256,103 @@
 
     <a href="shoot-your-shot.html" class="back-btn">← Back to Girls</a>
 
+    <!-- Load Platform Manager First -->
+    <script src="js/platform-manager.js"></script>
+    
     <script>
-        // Girl data
-        const girls = {
-            'sarah': {
-                name: 'Sarah, 24',
-                avatar: '🔥',
-                location: '📍 Los Angeles, CA',
-                bio: 'Adventure seeker and coffee lover! I\'m a college student studying psychology who enjoys hiking, trying new restaurants, and deep conversations. Looking for someone genuine and spontaneous!',
-                schedule: ['19:00-21:00'], // 7PM-9PM
-                timezone: 'PST'
-            },
-            'maya': {
-                name: 'Maya, 22', 
-                avatar: '💫',
-                location: '📍 New York, NY',
-                bio: 'Creative soul and foodie! I work in marketing and love exploring the city, photography, and trying new recipes. Let\'s chat about our favorite hidden spots!',
-                schedule: ['16:00-18:00'], // 4PM-6PM
-                timezone: 'EST'
-            },
-            'chloe': {
-                name: 'Chloe, 25',
-                avatar: '🌟',
-                location: '📍 Miami, FL',
-                bio: 'Beach lover and artist! I\'m a freelance graphic designer who enjoys painting, yoga, and sunset walks. Looking for meaningful connections and good vibes!',
-                schedule: ['20:00-22:00'], // 8PM-10PM
-                timezone: 'EST'
-            },
-            'jessica': {
-                name: 'Jessica, 23',
-                avatar: '✨',
-                location: '📍 Chicago, IL',
-                bio: 'Bookworm and travel enthusiast! I work in tech and love reading, planning my next trip, and coffee shop hopping. Let\'s share stories and adventures!',
-                schedule: ['14:00-16:00'], // 2PM-4PM
-                timezone: 'CST'
+        // Load girl profile from platform manager
+        async function loadGirlProfile() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const girlId = urlParams.get('girl');
+            
+            console.log('🔄 Loading girl profile for:', girlId);
+            
+            if (!girlId) {
+                console.error('❌ No girl ID provided');
+                window.location.href = 'shoot-your-shot.html';
+                return;
             }
-        };
+            
+            try {
+                // Wait for platform manager to be ready
+                if (typeof platformManager === 'undefined') {
+                    console.error('❌ Platform manager not available');
+                    setTimeout(loadGirlProfile, 500);
+                    return;
+                }
 
-        // Get which girl from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const girlId = urlParams.get('girl') || 'sarah';
-        const girl = girls[girlId];
+                const daters = await platformManager.getAllDaters();
+                console.log('📊 Available daters:', daters);
+                
+                const girl = daters.find(d => d.id === girlId);
+                console.log('🎯 Found girl:', girl);
+                
+                if (!girl) {
+                    console.error('❌ Girl not found with ID:', girlId);
+                    alert('Profile not found. This dater may no longer be available.');
+                    window.location.href = 'shoot-your-shot.html';
+                    return;
+                }
 
-        // Update page with girl info
-        document.getElementById('pageTitle').textContent = `MEET ${girl.name.split(',')[0].toUpperCase()}`;
-        document.getElementById('girlAvatar').textContent = girl.avatar;
-        document.getElementById('girlName').textContent = girl.name;
-        document.getElementById('girlLocation').textContent = girl.location;
-        document.getElementById('girlBio').textContent = girl.bio;
+                // Update page with girl info
+                document.getElementById('pageTitle').textContent = `MEET ${girl.displayName.split(',')[0].toUpperCase()}`;
+                document.getElementById('girlAvatar').textContent = girl.avatar || '👤';
+                document.getElementById('girlName').textContent = girl.displayName;
+                document.getElementById('girlLocation').textContent = `📍 ${girl.location}`;
+                document.getElementById('girlBio').textContent = girl.bio || 'No bio provided';
 
-        // Create schedule slots
-        const scheduleContainer = document.getElementById('scheduleSlots');
-        girl.schedule.forEach(slot => {
-            const slotDiv = document.createElement('div');
-            slotDiv.className = 'time-slot';
-            slotDiv.textContent = slot;
-            scheduleContainer.appendChild(slotDiv);
-        });
+                // Update verification badge
+                const verificationElement = document.getElementById('girlVerification');
+                if (verificationElement) {
+                    verificationElement.textContent = girl.verification || '✅ Verified Member';
+                }
 
-        // Check if it's currently scheduled time
-        function checkSchedule() {
+                // Create schedule slots
+                const scheduleContainer = document.getElementById('scheduleSlots');
+                scheduleContainer.innerHTML = '';
+                
+                if (girl.schedule && girl.schedule.length > 0) {
+                    girl.schedule.forEach(slot => {
+                        const slotDiv = document.createElement('div');
+                        slotDiv.className = 'time-slot';
+                        slotDiv.textContent = slot;
+                        scheduleContainer.appendChild(slotDiv);
+                    });
+                } else {
+                    scheduleContainer.innerHTML = '<div style="color: var(--muted);">Schedule not set</div>';
+                }
+
+                // Check if it's currently scheduled time
+                checkSchedule(girl);
+                
+                // Check schedule every minute
+                setInterval(() => checkSchedule(girl), 60000);
+                
+                console.log('✅ Girl profile loaded successfully');
+                
+            } catch (error) {
+                console.error('❌ Error loading girl profile:', error);
+                alert('Error loading profile. Please try again.');
+                window.location.href = 'shoot-your-shot.html';
+            }
+        }
+
+        // Check schedule function
+        function checkSchedule(girl) {
             const now = new Date();
             const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
                               now.getMinutes().toString().padStart(2, '0');
             
             let isActive = false;
-            girl.schedule.forEach(slot => {
-                const [start, end] = slot.split('-');
-                if (currentTime >= start && currentTime <= end) {
-                    isActive = true;
-                }
-            });
+            
+            if (girl.schedule && girl.schedule.length > 0) {
+                girl.schedule.forEach(slot => {
+                    const [start, end] = slot.split('-');
+                    if (currentTime >= start && currentTime <= end) {
+                        isActive = true;
+                    }
+                });
+            }
 
             const purchaseBtn = document.getElementById('purchaseBtn');
             const queueInfo = document.getElementById('queueInfo');
@@ -299,18 +372,57 @@
             }
         }
 
-        // Check schedule every minute
-        checkSchedule();
-        setInterval(checkSchedule, 60000);
+        // Purchase function
+        function purchaseChat() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const girlId = urlParams.get('girl');
+            
+            if (!girlId) {
+                alert('Error: No dater selected');
+                return;
+            }
+            
+            console.log('💰 Redirecting to payment for girl:', girlId);
+            window.location.href = `payments.html?girl=${girlId}`;
+        }
 
-        // Replace the existing purchaseChat function with:
-function purchaseChat() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const girlId = urlParams.get('girl');
-    
-    // Redirect to payment page
-    window.location.href = `payments.html?girl=${girlId}`;
-}
+        // Image upload functionality
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    document.getElementById('girlImage').src = imageUrl;
+                    document.getElementById('girlImage').style.display = 'block';
+                    document.getElementById('girlAvatar').style.display = 'none';
+                    
+                    // Save to localStorage for this session
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const girlId = urlParams.get('girl');
+                    localStorage.setItem(`avatar_${girlId}`, imageUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Load saved image on page load
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const girlId = urlParams.get('girl');
+            const savedImage = localStorage.getItem(`avatar_${girlId}`);
+            if (savedImage) {
+                document.getElementById('girlImage').src = savedImage;
+                document.getElementById('girlImage').style.display = 'block';
+                document.getElementById('girlAvatar').style.display = 'none';
+            }
+        });
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏠 DOM loaded, initializing girl profile...');
+            loadGirlProfile();
+        });
     </script>
 </body>
 </html>

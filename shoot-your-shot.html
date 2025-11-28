@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Same meta tags as index.html -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shoot Your Shot - House of Whispers</title>
@@ -24,7 +23,6 @@
   <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
 </head>
 <body class="fonts-loading">
-  <!-- Same background elements as index.html -->
   <div class="cyber-background"></div>
   <div class="grid-overlay"></div>
   <div class="floating-shapes">
@@ -40,46 +38,18 @@
   </header>
 
   <main class="main-wrap">
-    <div class="girls-grid">
-      <!-- Girl 1 -->
-      <a href="girl-profile.html?girl=sarah" class="girl-card">
-        <div class="girl-image">🔥</div>
-        <div class="girl-info">
-          <div class="girl-name">Sarah, 24</div>
-          <div class="girl-schedule">🕐 7PM - 9PM Daily</div>
-          <div class="girl-tag">5-min Chat: $15</div>
-        </div>
-      </a>
+    <!-- Debug Button -->
+    <div style="position: fixed; top: 10px; right: 10px; z-index: 1000;">
+        <button onclick="debugPlatform()" style="background: #ff4444; color: white; padding: 10px; border: none; border-radius: 5px; font-size: 12px;">
+            🔧 Debug Platform
+        </button>
+    </div>
 
-      <!-- Girl 2 -->
-      <a href="girl-profile.html?girl=maya" class="girl-card">
-        <div class="girl-image">💫</div>
-        <div class="girl-info">
-          <div class="girl-name">Maya, 22</div>
-          <div class="girl-schedule">🕐 4PM - 6PM Daily</div>
-          <div class="girl-tag">5-min Chat: $15</div>
+    <div class="girls-grid" id="datersGrid">
+        <!-- Dynamic content will be loaded here -->
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">
+            Loading profiles...
         </div>
-      </a>
-
-      <!-- Girl 3 -->
-      <a href="girl-profile.html?girl=chloe" class="girl-card">
-        <div class="girl-image">🌟</div>
-        <div class="girl-info">
-          <div class="girl-name">Chloe, 25</div>
-          <div class="girl-schedule">🕐 8PM - 10PM Daily</div>
-          <div class="girl-tag">5-min Chat: $15</div>
-        </div>
-      </a>
-
-      <!-- Girl 4 -->
-      <a href="girl-profile.html?girl=jessica" class="girl-card">
-        <div class="girl-image">✨</div>
-        <div class="girl-info">
-          <div class="girl-name">Jessica, 23</div>
-          <div class="girl-schedule">🕐 2PM - 4PM Daily</div>
-          <div class="girl-tag">5-min Chat: $15</div>
-        </div>
-      </a>
     </div>
 
     <a href="index.html" class="back-btn">← Back to Main Site</a>
@@ -89,8 +59,86 @@
     <div>HOUSE OF WHISPERS © 2024 • SHOOT YOUR SHOT DATING</div>
   </footer>
 
-  <script src="https://iaiwaf.com/js/dating-system.js"></script>
+  <!-- Load platform manager FIRST -->
+  <script src="js/platform-manager.js"></script>
+  <script src="js/dating-system.js"></script>
   <script>
+    // Debug function
+    window.debugPlatform = function() {
+        console.log('=== DEBUG PLATFORM MANAGER ===');
+        console.log('Platform Manager:', window.platformManager);
+        if (window.platformManager) {
+            const daters = platformManager.getAllDaters();
+            console.log('Total Daters:', daters.length);
+            console.log('Daters:', daters);
+            alert(`Found ${daters.length} daters in system. Check console for details.`);
+            
+            // Also show stored data
+            const stored = localStorage.getItem('whispers_platform_data');
+            console.log('Stored Data:', stored ? JSON.parse(stored) : 'NO DATA');
+        } else {
+            alert('Platform manager not found! Check if platform-manager.js is loaded.');
+        }
+    };
+
+    // Load daters when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing shoot-your-shot...');
+        
+        // Wait a bit for platform manager to initialize
+        setTimeout(() => {
+            if (typeof populateGirlsGrid === 'function') {
+                populateGirlsGrid();
+            } else {
+                console.error('populateGirlsGrid function not found!');
+                // Fallback: try to load daters directly
+                loadDatersDirectly();
+            }
+        }, 500);
+    });
+
+    // Fallback function if dating-system.js doesn't work
+    function loadDatersDirectly() {
+        console.log('Loading daters directly...');
+        const grid = document.getElementById('datersGrid');
+        
+        if (typeof platformManager === 'undefined') {
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">Error: Platform system not loaded</div>';
+            return;
+        }
+        
+        const daters = platformManager.getAllDaters();
+        console.log('Retrieved daters:', daters);
+        
+        if (daters.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <div style="color: var(--muted); margin-bottom: 20px;">No daters available yet.</div>
+                    <a href="dater-signup.html" class="btn primary" style="background: var(--accent2);">Be the first to sign up!</a>
+                </div>
+            `;
+            return;
+        }
+        
+        grid.innerHTML = '';
+        daters.forEach(dater => {
+            const daterCard = document.createElement('a');
+            daterCard.href = `girl-profile.html?girl=${dater.id}`;
+            daterCard.className = 'girl-card';
+            daterCard.innerHTML = `
+                <div class="girl-image">${dater.avatar || '👤'}</div>
+                <div class="girl-info">
+                    <div class="girl-name">${dater.displayName}</div>
+                    <div class="girl-location">${dater.location}</div>
+                    <div class="girl-bio">${dater.bio ? (dater.bio.substring(0, 60) + '...') : 'No bio provided'}</div>
+                    <div class="girl-schedule">🕐 ${dater.schedule && dater.schedule[0] ? dater.schedule[0] + ' ' + dater.timezone : 'Check schedule'}</div>
+                    <div class="girl-tag">5-min Chat: $15</div>
+                </div>
+            `;
+            grid.appendChild(daterCard);
+        });
+    }
+
     // Font loading
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {

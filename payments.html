@@ -168,48 +168,42 @@
 
         async function processPayment() {
             try {
-                // Create payment method
-                const { paymentMethod, error } = await stripe.createPaymentMethod({
-                    type: 'card',
-                    card: cardElement,
-                    billing_details: {
-                        name: document.getElementById('daterName').textContent,
-                    },
-                });
-
-                if (error) {
-                    throw new Error(error.message);
-                }
-
-                // Create payment intent on your server
-                const paymentResult = await createPaymentIntent(paymentMethod.id, daterId);
-                
-                if (paymentResult.success) {
-                    // Show success and redirect to chat
-                    document.getElementById('payment-form').classList.add('hidden');
-                    document.getElementById('payment-success').classList.remove('hidden');
-                    
-                    // Record payment in platform manager
-                    await platformManager.processPayment({
-                        daterId: daterId,
-                        amount: 15.00,
-                        paymentMethod: 'stripe',
-                        paymentIntentId: paymentResult.paymentIntentId
-                    });
-                    
-                    // Redirect to private chat
-                    setTimeout(() => {
-                        window.location.href = `private-chat.html?girl=${daterId}&paid=true`;
-                    }, 2000);
-                    
-                } else {
-                    throw new Error(paymentResult.error);
-                }
-                
-            } catch (error) {
-                throw error;
+                // Replace the createPaymentIntent function in payments.html:
+async function createPaymentIntent(paymentMethodId, daterId) {
+    try {
+        const response = await fetch('/api/create-payment-intent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                daterId: daterId
+            }),
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Confirm the payment with Stripe
+            const { error } = await stripe.confirmCardPayment(result.clientSecret, {
+                payment_method: paymentMethodId,
+            });
+            
+            if (error) {
+                throw new Error(error.message);
             }
+            
+            return {
+                success: true,
+                paymentIntentId: result.paymentIntentId
+            };
+        } else {
+            throw new Error(result.error);
         }
+    } catch (error) {
+        throw new Error('Payment processing failed: ' + error.message);
+    }
+}
 
         // This function calls your backend - you'll need to create this
         async function createPaymentIntent(paymentMethodId, daterId) {

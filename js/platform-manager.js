@@ -1,22 +1,21 @@
 class PlatformManager {
-    constructor() {
-        this.initialized = false;
-        this.firebaseConfig = {
-            // Replace with your Firebase config
-            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-            authDomain: "house-of-whispers.firebaseapp.com",
-            projectId: "house-of-whispers",
-            storageBucket: "house-of-whispers.firebasestorage.app",
-            messagingSenderId: "1063333130646",
-            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-            measurementId: "G-06QR5LFKJ9"
-        };
-        
-        this.init();
-    }
+    // In platform-manager.js - replace the firebaseConfig section with this:
+constructor() {
+    this.initialized = false;
+    
+    // Firebase config will be loaded from external file
+    this.firebaseConfig = null;
+    this.db = null;
+    
+    this.init();
+}
 
-    async init() {
-        try {
+async init() {
+    try {
+        // Dynamically load Firebase config
+        await this.loadFirebaseConfig();
+        
+        if (this.firebaseConfig) {
             // Initialize Firebase
             if (!firebase.apps.length) {
                 firebase.initializeApp(this.firebaseConfig);
@@ -25,14 +24,40 @@ class PlatformManager {
             this.initialized = true;
             console.log('🔥 Firebase Platform Manager initialized');
             
-            // Sync localStorage with Firebase (for backward compatibility)
+            // Sync localStorage with Firebase
             await this.syncWithFirebase();
-            
-        } catch (error) {
-            console.error('Firebase initialization failed, falling back to localStorage:', error);
-            this.initLocalStorage();
+        } else {
+            throw new Error('No Firebase config available');
         }
+    } catch (error) {
+        console.error('Firebase initialization failed, falling back to localStorage:', error);
+        this.initLocalStorage();
     }
+}
+
+async loadFirebaseConfig() {
+    try {
+        // Try to load from external config file
+        const response = await fetch('./js/firebase-config.js');
+        if (response.ok) {
+            // This is a hacky way to get the config - in production, you might want to use a different approach
+            console.log('✅ Firebase config file found');
+            // We'll parse the config by evaluating the file content
+            // Note: This is simplified - you might want to use a JSON file instead
+            const configText = await response.text();
+            // Extract the config object (this is a simple approach)
+            const match = configText.match(/const firebaseConfig = ({[^}]+});/);
+            if (match) {
+                this.firebaseConfig = eval(`(${match[1]})`);
+            }
+        } else {
+            throw new Error('Firebase config file not found');
+        }
+    } catch (error) {
+        console.warn('Firebase config file not available, using localStorage only');
+        this.firebaseConfig = null;
+    }
+}
 
     initLocalStorage() {
         // Fallback to localStorage if Firebase fails

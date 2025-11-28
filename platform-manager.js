@@ -1,270 +1,194 @@
-// platform-manager.js - COMPLETE FIXED VERSION
-(function() {
-    // Global protection - only run once
-    if (window.PlatformManager) {
-        console.log('🔄 PlatformManager already exists, using existing instance');
-        return;
+class PlatformManager {
+    constructor() {
+        this.initialized = false;
+        this.firebaseConfig = null;
+        this.db = null;
+        this.useLocalStorage = false;
+        this.init();
     }
 
-    class PlatformManager {
-        constructor() {
-            if (window._platformManagerInstance) {
-                return window._platformManagerInstance;
-            }
-            window._platformManagerInstance = this;
-            
-            this.initialized = false;
-            this.firebaseConfig = null;
-            this.db = null;
-            this.init();
-        }
-
-        async init() {
-            try {
-                await this.loadFirebaseConfig();
+    async init() {
+        try {
+            // Check for Firebase config
+            if (typeof firebaseConfig !== 'undefined') {
+                console.log('✅ Firebase config loaded from global variable');
+                this.firebaseConfig = firebaseConfig;
                 
-                if (this.firebaseConfig) {
-                    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-                        firebase.initializeApp(this.firebaseConfig);
-                    }
-                    this.db = firebase.firestore();
-                    this.initialized = true;
-                    console.log('🔥 Firebase Platform Manager initialized');
-                    await this.syncWithFirebase();
-                } else {
-                    throw new Error('No Firebase config available');
-                }
-            } catch (error) {
-                console.log('📱 Using localStorage-only mode');
-                this.initLocalStorage();
-            }
-        }
-
-        async loadFirebaseConfig() {
-            return new Promise((resolve) => {
-                if (typeof firebaseConfig !== 'undefined') {
-                    this.firebaseConfig = firebaseConfig;
-                    console.log('✅ Firebase config loaded from global variable');
-                    resolve();
-                    return;
+                // Initialize Firebase if not already initialized
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(this.firebaseConfig);
                 }
                 
-                if (window.firebaseConfig) {
-                    this.firebaseConfig = window.firebaseConfig;
-                    console.log('✅ Firebase config loaded from window object');
-                    resolve();
-                    return;
-                }
-                
-                console.log('📱 Using localStorage-only mode');
-                resolve();
-            });
-        }
-
-        initLocalStorage() {
-            if (!localStorage.getItem('whispers_platform_data')) {
-                const initialData = {
-                    daters: [],
-                    payments: [],
-                    payouts: [],
-                    statistics: {
-                        totalRevenue: 0,
-                        totalChats: 0,
-                        activeDaters: 0
-                    }
-                };
-                localStorage.setItem('whispers_platform_data', JSON.stringify(initialData));
+                this.db = firebase.firestore();
+                this.initialized = true;
+                console.log('🔥 Firebase Platform Manager initialized');
+            } else {
+                throw new Error('Firebase config not found');
             }
+        } catch (error) {
+            console.warn('❌ Firebase initialization failed:', error.message);
+            console.log('📱 Using localStorage-only mode');
+            this.useLocalStorage = true;
             this.initialized = true;
-            console.log('📱 LocalStorage Platform Manager initialized');
-        }
-
-        // ✅ ADD THIS MISSING METHOD
-        async syncWithFirebase() {
-            try {
-                if (!this.db) return;
-                
-                const snapshot = await this.db.collection('platformData').doc('whispers_data').get();
-                
-                if (snapshot.exists) {
-                    const firebaseData = snapshot.data();
-                    localStorage.setItem('whispers_platform_data', JSON.stringify(firebaseData));
-                    console.log('✅ Synced from Firebase');
-                } else {
-                    const localData = localStorage.getItem('whispers_platform_data');
-                    if (localData) {
-                        await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
-                        console.log('✅ Initialized Firebase with local data');
-                    }
-                }
-            } catch (error) {
-                console.error('Firebase sync failed:', error);
-            }
-        }
-
-        async syncToFirebase() {
-            if (!this.db) return;
-            
-            try {
-                const localData = localStorage.getItem('whispers_platform_data');
-                if (localData) {
-                    await this.db.collection('platformData').doc('whispers_data').set(JSON.parse(localData));
-                    console.log('✅ Synced to Firebase');
-                }
-            } catch (error) {
-                console.error('Firebase sync failed:', error);
-            }
-        }
-
-        getData() {
-            try {
-                const stored = localStorage.getItem('whispers_platform_data');
-                if (!stored) {
-                    const initialData = {
-                        daters: [],
-                        payments: [],
-                        payouts: [],
-                        statistics: { totalRevenue: 0, totalChats: 0, activeDaters: 0 }
-                    };
-                    localStorage.setItem('whispers_platform_data', JSON.stringify(initialData));
-                    return initialData;
-                }
-                
-                const data = JSON.parse(stored);
-                if (!data.daters) data.daters = [];
-                if (!data.payments) data.payments = [];
-                if (!data.payouts) data.payouts = [];
-                if (!data.statistics) data.statistics = { totalRevenue: 0, totalChats: 0, activeDaters: 0 };
-                
-                return data;
-            } catch (error) {
-                console.error('Error reading platform data:', error);
-                return { daters: [], payments: [], payouts: [], statistics: { totalRevenue: 0, totalChats: 0, activeDaters: 0 } };
-            }
-        }
-
-        saveData(data) {
-            localStorage.setItem('whispers_platform_data', JSON.stringify(data));
-        }
-
-        generateId() {
-            return 'dater_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        // ✅ ADD THIS MISSING METHOD
-        async addDater(daterData) {
-            console.log('🔄 addDater called with:', daterData);
-            
-            if (!this.initialized) {
-                throw new Error('Platform manager not initialized');
-            }
-            
-            const data = this.getData();
-            
-            // Check if username already exists
-            if (data.daters.find(d => d.username === daterData.username)) {
-                throw new Error('Username already exists');
-            }
-
-            const dater = {
-                id: this.generateId(),
-                ...daterData,
-                createdAt: new Date().toISOString(),
-                earnings: 0,
-                totalChats: 0,
-                rating: 0,
-                isActive: true
-            };
-
-            console.log('✅ Creating dater:', dater);
-            
-            data.daters.push(dater);
-            data.statistics.activeDaters = data.daters.filter(d => d.isActive).length;
-            
-            this.saveData(data);
-            
-            // Sync to Firebase if available
-            if (this.db) {
-                await this.syncToFirebase();
-            }
-            
-            console.log('✅ Dater added successfully, ID:', dater.id);
-            return dater.id;
-        }
-
-        async getAllDaters() {
-            if (!this.initialized) return [];
-            
-            try {
-                if (this.db) {
-                    await this.syncWithFirebase();
-                }
-            } catch (error) {
-                console.error('Failed to sync from Firebase:', error);
-            }
-            
-            const data = this.getData();
-            const daters = data.daters || [];
-            return daters.filter(dater => dater.isActive !== false);
-        }
-
-        async updateDater(id, updates) {
-            const data = this.getData();
-            const daterIndex = data.daters.findIndex(d => d.id === id);
-            
-            if (daterIndex === -1) throw new Error('Dater not found');
-            
-            data.daters[daterIndex] = { ...data.daters[daterIndex], ...updates };
-            this.saveData(data);
-            
-            if (this.db) {
-                await this.syncToFirebase();
-            }
-            
-            return data.daters[daterIndex];
-        }
-
-        async processPayment(paymentData) {
-            const data = this.getData();
-            
-            const payment = {
-                id: 'pay_' + Math.random().toString(36).substr(2, 9),
-                ...paymentData,
-                processedAt: new Date().toISOString(),
-                status: 'completed'
-            };
-
-            const platformCut = (paymentData.amount * 25) / 100;
-            const daterEarnings = paymentData.amount - platformCut;
-
-            const daterIndex = data.daters.findIndex(d => d.id === paymentData.daterId);
-            if (daterIndex !== -1) {
-                data.daters[daterIndex].earnings += daterEarnings;
-                data.daters[daterIndex].totalChats += 1;
-            }
-
-            data.statistics.totalRevenue += paymentData.amount;
-            data.statistics.totalChats += 1;
-            data.payments.push(payment);
-            
-            this.saveData(data);
-            
-            if (this.db) {
-                await this.syncToFirebase();
-            }
-            
-            return {
-                paymentId: payment.id,
-                platformCut: platformCut,
-                daterEarnings: daterEarnings
-            };
         }
     }
 
-    // Initialize only once
-    if (!window.platformManager) {
-        window.platformManager = new PlatformManager();
-        window.PlatformManager = PlatformManager;
-        console.log('✅ PlatformManager initialized with ALL methods');
+    // Add a new dater to the platform
+    async addDater(daterData) {
+        if (!this.initialized) {
+            throw new Error('Platform manager not initialized');
+        }
+
+        try {
+            if (!this.useLocalStorage && this.db) {
+                // Add to Firebase
+                const docRef = await this.db.collection('daters').add({
+                    ...daterData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'active'
+                });
+                console.log('✅ Dater added to Firebase with ID:', docRef.id);
+                return docRef.id;
+            } else {
+                // Fallback to localStorage
+                const daters = this.getLocalStorageDaters();
+                const daterId = 'local_' + Date.now();
+                daters.push({
+                    id: daterId,
+                    ...daterData,
+                    createdAt: new Date().toISOString(),
+                    status: 'active'
+                });
+                localStorage.setItem('daters', JSON.stringify(daters));
+                console.log('✅ Dater added to localStorage with ID:', daterId);
+                return daterId;
+            }
+        } catch (error) {
+            console.error('❌ Error adding dater:', error);
+            throw error;
+        }
     }
-})();
+
+    // Get all daters from the platform
+    async getAllDaters() {
+        if (!this.initialized) {
+            throw new Error('Platform manager not initialized');
+        }
+
+        try {
+            if (!this.useLocalStorage && this.db) {
+                // Get from Firebase
+                const snapshot = await this.db.collection('daters')
+                    .where('status', '==', 'active')
+                    .get();
+                
+                const daters = [];
+                snapshot.forEach(doc => {
+                    daters.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                console.log(`📊 Retrieved ${daters.length} daters from Firebase`);
+                return daters;
+            } else {
+                // Fallback to localStorage
+                const daters = this.getLocalStorageDaters();
+                console.log(`📊 Retrieved ${daters.length} daters from localStorage`);
+                return daters.filter(dater => dater.status === 'active');
+            }
+        } catch (error) {
+            console.error('❌ Error getting daters from Firebase:', error);
+            console.log('🔄 Falling back to localStorage');
+            // Fallback to localStorage
+            const daters = this.getLocalStorageDaters();
+            return daters.filter(dater => dater.status === 'active');
+        }
+    }
+
+    // Get a specific dater by ID
+    async getDater(daterId) {
+        if (!this.initialized) {
+            throw new Error('Platform manager not initialized');
+        }
+
+        try {
+            if (!this.useLocalStorage && this.db) {
+                const doc = await this.db.collection('daters').doc(daterId).get();
+                if (doc.exists) {
+                    return { id: doc.id, ...doc.data() };
+                }
+                return null;
+            } else {
+                const daters = this.getLocalStorageDaters();
+                return daters.find(dater => dater.id === daterId) || null;
+            }
+        } catch (error) {
+            console.error('❌ Error getting dater:', error);
+            return null;
+        }
+    }
+
+    // Update a dater's information
+    async updateDater(daterId, updates) {
+        if (!this.initialized) {
+            throw new Error('Platform manager not initialized');
+        }
+
+        try {
+            if (!this.useLocalStorage && this.db) {
+                await this.db.collection('daters').doc(daterId).update({
+                    ...updates,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('✅ Dater updated in Firebase:', daterId);
+            } else {
+                const daters = this.getLocalStorageDaters();
+                const index = daters.findIndex(dater => dater.id === daterId);
+                if (index !== -1) {
+                    daters[index] = { ...daters[index], ...updates, updatedAt: new Date().toISOString() };
+                    localStorage.setItem('daters', JSON.stringify(daters));
+                    console.log('✅ Dater updated in localStorage:', daterId);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error updating dater:', error);
+            throw error;
+        }
+    }
+
+    // Helper method for localStorage
+    getLocalStorageDaters() {
+        try {
+            const stored = localStorage.getItem('daters');
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            console.error('❌ Error reading localStorage:', error);
+            return [];
+        }
+    }
+
+    // Debug method to check platform status
+    debug() {
+        return {
+            initialized: this.initialized,
+            useLocalStorage: this.useLocalStorage,
+            firebaseConfig: this.firebaseConfig ? '✅ Loaded' : '❌ Missing',
+            db: this.db ? '✅ Connected' : '❌ Disconnected',
+            methods: {
+                addDater: typeof this.addDater,
+                getAllDaters: typeof this.getAllDaters,
+                getDater: typeof this.getDater,
+                updateDater: typeof this.updateDater
+            }
+        };
+    }
+}
+
+// Create global instance
+window.platformManager = new PlatformManager();
+
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PlatformManager;
+}

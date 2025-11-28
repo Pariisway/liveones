@@ -1,0 +1,43 @@
+# Firebase configuration
+firebase-config.js
+config.js
+.env
+.env.local
+
+# API keys and secrets
+*-config.js
+*-keys.js
+
+# Environment variables
+.env*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Local development files
+.DS_Store
+Thumbs.db

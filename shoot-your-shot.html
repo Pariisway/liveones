@@ -116,32 +116,38 @@
         }
     };
 
-    // Load daters directly from platform manager
-    function loadDatersDirectly() {
-        console.log('Loading daters directly from platform manager...');
-        const grid = document.getElementById('datersGrid');
-        const statusElement = document.getElementById('debugStatus');
-        
-        if (typeof platformManager === 'undefined') {
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
-                    <h3>❌ Platform System Error</h3>
-                    <p>Platform manager not loaded. Please refresh the page.</p>
-                    <button onclick="location.reload()" class="btn primary">Refresh Page</button>
-                </div>
-            `;
-            statusElement.innerHTML = '<strong>Status:</strong> ❌ Platform Manager Not Found';
-            return;
-        }
-        
-        const daters = platformManager.getAllDaters();
-        console.log('Retrieved daters:', daters);
-        
-        statusElement.innerHTML = `
-            <strong>Platform Status:</strong> ✅ LOADED<br>
-            <strong>Total Daters:</strong> ${daters.length}<br>
-            <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+    // FIXED: Make this function async
+async function loadDatersDirectly() {
+    console.log('🔄 Loading daters directly from platform manager...');
+    const grid = document.getElementById('datersGrid');
+    const statusElement = document.getElementById('debugStatus');
+    
+    if (typeof platformManager === 'undefined') {
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
+                <h3>❌ Platform System Error</h3>
+                <p>Platform manager not loaded. Please refresh the page.</p>
+                <button onclick="location.reload()" class="btn primary">Refresh Page</button>
+            </div>
         `;
+        if (statusElement) {
+            statusElement.innerHTML = '<strong>Status:</strong> ❌ Platform Manager Not Found';
+        }
+        return;
+    }
+    
+    try {
+        // FIXED: Wait for the Promise to resolve
+        const daters = await platformManager.getAllDaters();
+        console.log('📊 Retrieved daters:', daters);
+        
+        if (statusElement) {
+            statusElement.innerHTML = `
+                <strong>Platform Status:</strong> ✅ LOADED<br>
+                <strong>Total Daters:</strong> ${daters.length}<br>
+                <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+            `;
+        }
         
         if (daters.length === 0) {
             grid.innerHTML = `
@@ -174,8 +180,19 @@
             `;
             grid.appendChild(daterCard);
         });
+        
+    } catch (error) {
+        console.error('❌ Error loading daters:', error);
+        grid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
+                <h3>Error Loading Profiles</h3>
+                <p>${error.message}</p>
+                <button onclick="loadDatersDirectly()" class="btn primary">Try Again</button>
+            </div>
+        `;
     }
-
+}
+    
     // Load daters when page loads
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing shoot-your-shot...');

@@ -1,31 +1,39 @@
-// Dating System - Fixed Syntax Version
-console.log('💘 Dating System: Fixed Syntax Version Loaded');
+// Dating System - Fixed with Firebase
+console.log('💘 Dating System: Fixed Version Loaded');
 
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-    authDomain: "house-of-whispers.firebaseapp.com",
-    projectId: "house-of-whispers",
-    storageBucket: "house-of-whispers.firebasestorage.app",
-    messagingSenderId: "1063333130646",
-    appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-    measurementId: "G-06QR5LFKJ9"
-};
-
-// Initialize Firebase
 let db;
-try {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    db = firebase.firestore();
-    console.log('✅ Firebase initialized successfully');
-} catch (error) {
-    console.error('❌ Firebase initialization error:', error);
-}
-
 let girlsData = [];
 let isLoading = false;
+
+// Initialize Firebase when needed
+function initializeFirebase() {
+    try {
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Firebase not loaded');
+            return false;
+        }
+        
+        if (!firebase.apps.length) {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+                authDomain: "house-of-whispers.firebaseapp.com",
+                projectId: "house-of-whispers",
+                storageBucket: "house-of-whispers.firebasestorage.app",
+                messagingSenderId: "1063333130646",
+                appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+                measurementId: "G-06QR5LFKJ9"
+            };
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        db = firebase.firestore();
+        console.log('✅ Firebase initialized in dating system');
+        return true;
+    } catch (error) {
+        console.error('❌ Firebase initialization error:', error);
+        return false;
+    }
+}
 
 async function getGirlsData() {
     if (isLoading) {
@@ -37,7 +45,11 @@ async function getGirlsData() {
     console.log('🔄 getGirlsData: Starting...');
     
     try {
-        // First try to get data from Firestore
+        // Initialize Firebase if needed
+        if (!db && !initializeFirebase()) {
+            throw new Error('Firebase not available');
+        }
+        
         const querySnapshot = await db.collection('whispers').limit(20).get();
         girlsData = [];
         
@@ -117,14 +129,24 @@ function displayWhispers(whispers) {
     
     if (!girlsGrid) {
         console.error('❌ girlsGrid element not found');
+        // Try alternative selectors
+        const alternativeGrid = document.querySelector('.girls-grid');
+        if (alternativeGrid) {
+            console.log('✅ Found alternative grid element');
+            displayWhispersInElement(whispers, alternativeGrid, loadingMessage, errorMessage);
+        }
         return;
     }
     
+    displayWhispersInElement(whispers, girlsGrid, loadingMessage, errorMessage);
+}
+
+function displayWhispersInElement(whispers, gridElement, loadingMessage, errorMessage) {
     // Hide loading, show content
     if (loadingMessage) loadingMessage.style.display = 'none';
     if (errorMessage) errorMessage.style.display = 'none';
     
-    girlsGrid.innerHTML = '';
+    gridElement.innerHTML = '';
 
     if (!whispers || whispers.length === 0) {
         console.log('ℹ️ No whispers to display');
@@ -167,7 +189,7 @@ function displayWhispers(whispers) {
                 </a>
             </div>
         `;
-        girlsGrid.appendChild(girlCard);
+        gridElement.appendChild(girlCard);
     });
 
     console.log('✅ Whispers displayed successfully');
@@ -206,7 +228,7 @@ async function loadWhispers() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Shoot Your Shot page loaded - Fixed Syntax Version');
+    console.log('🚀 Shoot Your Shot page loaded - Fixed Version');
     
     // Load whispers after a short delay to ensure DOM is ready
     setTimeout(loadWhispers, 500);

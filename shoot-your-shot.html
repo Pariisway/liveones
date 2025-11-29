@@ -21,6 +21,7 @@
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            width: 100%;
         }
         
         .call-button:hover {
@@ -49,16 +50,45 @@
             font-size: 1.1em;
             opacity: 0.9;
             margin-top: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation Header -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">House of Whispers</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="shoot-your-shot.html" class="active">Find Whispers</a>
+                <a href="become-a-whisper.html">Become a Whisper</a>
+                <a href="whisper-portal.html">Manage My Whispers</a>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
         <header class="main-header">
             <h1>🎯 Shoot Your Shot</h1>
             <p>Connect with amazing whispers for 5-minute voice calls</p>
             <p class="subtitle">Private 5 minute voice chats • $15 per chat • Instant connection</p>
         </header>
+
+        <div class="filters-section">
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="Search whispers..." class="search-input">
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="dating">Dating Advice</option>
+                    <option value="life">Life Coaching</option>
+                    <option value="fun">Just for Fun</option>
+                    <option value="professional">Professional</option>
+                </select>
+            </div>
+        </div>
 
         <div class="content-section">
             <div id="loadingMessage" class="loading-message">

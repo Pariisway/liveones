@@ -1,5 +1,5 @@
-// Dating System - Fixed Version
-console.log('💘 Dating System: DOM loaded');
+// Dating System - Robust Version
+console.log('💘 Dating System: Robust Version Loaded');
 
 // Firebase configuration
 const firebaseConfig = {
@@ -13,10 +13,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+let db;
+try {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.firestore();
+    console.log('✅ Firebase initialized successfully');
+} catch (error) {
+    console.error('❌ Firebase initialization error:', error);
 }
-const db = firebase.firestore();
 
 let girlsData = [];
 let isLoading = false;
@@ -31,13 +37,26 @@ async function getGirlsData() {
     console.log('🔄 getGirlsData: Starting...');
     
     try {
-        const querySnapshot = await db.collection('whispers').get();
+        // First try to get data from Firestore
+        const querySnapshot = await db.collection('whispers').limit(20).get();
         girlsData = [];
         
+        if (querySnapshot.empty) {
+            console.log('ℹ️ No whispers found in Firestore');
+            return getFallbackGirlsData();
+        }
+        
         querySnapshot.forEach((doc) => {
+            const data = doc.data();
             girlsData.push({ 
                 id: doc.id, 
-                ...doc.data() 
+                username: data.username || 'unknown',
+                displayName: data.displayName || data.username || 'Whisper',
+                avatar: data.avatar || '👤',
+                location: data.location || 'Online',
+                bio: data.bio || 'Ready to connect with you!',
+                rating: data.rating || 4.5,
+                verification: data.verification || 'Verified'
             });
         });
         
@@ -54,22 +73,43 @@ async function getGirlsData() {
 }
 
 function getFallbackGirlsData() {
+    console.log('🔄 Using fallback sample data');
     return [
         {
-            id: 'fallback-1',
-            username: 'sample_whisper',
-            displayName: 'Sample Whisper 🌟',
+            id: 'sample-1',
+            username: 'whisper_sarah',
+            displayName: 'Sarah 💫',
             avatar: '💁‍♀️',
-            location: 'Online',
-            bio: 'Ready to connect with you!',
-            rating: 4.5,
+            location: 'New York',
+            bio: 'Life coach and relationship expert. Let\\'s talk about your dreams and goals!',
+            rating: 4.8,
+            verification: 'Verified'
+        },
+        {
+            id: 'sample-2',
+            username: 'whisper_mike',
+            displayName: 'Mike 🎯',
+            avatar: '💁‍♂️',
+            location: 'Los Angeles',
+            bio: 'Career advisor and motivational speaker. Ready to help you succeed!',
+            rating: 4.6,
+            verification: 'Verified'
+        },
+        {
+            id: 'sample-3', 
+            username: 'whisper_emily',
+            displayName: 'Emily 🌟',
+            avatar: '👩‍💼',
+            location: 'Chicago',
+            bio: 'Dating coach and confidence builder. Let\\'s work on your social skills!',
+            rating: 4.9,
             verification: 'Verified'
         }
     ];
 }
 
 function displayWhispers(whispers) {
-    console.log('🔄 displayWhispers: Starting...');
+    console.log('🔄 displayWhispers: Starting with', whispers.length, 'whispers');
     
     const girlsGrid = document.getElementById('girlsGrid');
     const loadingMessage = document.getElementById('loadingMessage');
@@ -86,7 +126,8 @@ function displayWhispers(whispers) {
     
     girlsGrid.innerHTML = '';
 
-    if (whispers.length === 0) {
+    if (!whispers || whispers.length === 0) {
+        console.log('ℹ️ No whispers to display');
         if (errorMessage) {
             errorMessage.style.display = 'block';
             errorMessage.innerHTML = `
@@ -134,7 +175,6 @@ function displayWhispers(whispers) {
 
 function viewProfile(whisperId) {
     console.log('👤 Viewing profile:', whisperId);
-    // For now, redirect to payment page. Later you can create profile pages.
     window.location.href = `call-payment.html?whisperId=${whisperId}`;
 }
 
@@ -166,10 +206,10 @@ async function loadWhispers() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Shoot Your Shot page loaded - Fixed Version');
+    console.log('🚀 Shoot Your Shot page loaded - Robust Version');
     
     // Load whispers after a short delay to ensure DOM is ready
-    setTimeout(loadWhispers, 100);
+    setTimeout(loadWhispers, 500);
 });
 
 // Export for global access

@@ -1,13 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Redirecting to Become a Whisper</title>
-    <meta http-equiv="refresh" content="0; url=become-a-whisper.html">
-    <script>
-        window.location.href = 'become-a-whisper.html';
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Whisper Profile - House of Whispers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background: #7C3AED;
+        }
+        
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .nav-buttons .btn {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
-    <p>Redirecting to <a href="become-a-whisper.html">Become a Whisper</a>...</p>
+    <div class="container">
+        <h1>🎙️ Create Your Whisper Profile</h1>
+        
+        <form id="whisperForm">
+            <div class="form-group">
+                <label for="displayName">Display Name</label>
+                <input type="text" id="displayName" placeholder="Enter your display name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <textarea id="bio" rows="4" placeholder="Tell people about yourself..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="interests">Interests</label>
+                <input type="text" id="interests" placeholder="e.g., Dating, Career, Life Advice" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" placeholder="Your city or country" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="avatar">Avatar Emoji</label>
+                <input type="text" id="avatar" placeholder="e.g., 👩‍💼, 💁‍♀️, 👨‍🎓" value="👤" required>
+            </div>
+            
+            <button type="submit" class="btn">Create Profile</button>
+        </form>
+        
+        <div class="nav-buttons">
+            <a href="whisper-portal.html" class="btn secondary">Back to Portal</a>
+            <a href="index.html" class="btn secondary">Home</a>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <script>
+        document.getElementById('whisperForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert('Please sign in first');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const profileData = {
+                displayName: document.getElementById('displayName').value,
+                bio: document.getElementById('bio').value,
+                interests: document.getElementById('interests').value,
+                location: document.getElementById('location').value,
+                avatar: document.getElementById('avatar').value,
+                userId: user.uid,
+                username: user.email.split('@')[0],
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                isActive: true
+            };
+            
+            try {
+                await firebase.firestore().collection('whispers').doc(user.uid).set(profileData);
+                alert('Profile created successfully!');
+                window.location.href = 'whisper-portal.html';
+            } catch (error) {
+                console.error('Error creating profile:', error);
+                alert('Error creating profile: ' + error.message);
+            }
+        });
+    </script>
 </body>
 </html>

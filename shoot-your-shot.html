@@ -4,31 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shoot Your Shot - Find Your Whisper</title>
+    <!-- Google Adsense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dating.css">
     <style>
         body {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             margin: 0;
             padding: 0;
+            font-family: 'Arial', sans-serif;
+            color: white;
         }
         
         .container {
-            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            text-align: center;
         }
         
         .main-header {
             text-align: center;
-            margin: 0 auto 40px auto;
-            max-width: 800px;
+            margin-bottom: 40px;
+            padding: 20px;
         }
         
         .main-header h1 {
@@ -36,147 +37,46 @@
             margin-bottom: 10px;
         }
         
-        .main-header p {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-top: 10px;
-        }
-        
-        .filters-section {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0;
-            width: 100%;
-        }
-        
-        .filter-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
         .content-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        
-        .girls-grid {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-        }
-        
-        .girl-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            width: 300px;
-            margin: 0 auto;
-        }
-        
-        .call-button {
-            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .call-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
-        }
-        
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
-            width: 100%;
-            align-items: center;
-        }
-        
-        .pricing-badge {
-            background: #10B981;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 5px;
-        }
-        
-        .loading-message, .error-message {
-            text-align: center;
-            margin: 40px auto;
-        }
-        
-        /* Navigation */
-        .main-nav {
-            width: 100%;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            padding: 15px 0;
-            margin-bottom: 30px;
-        }
-        
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-        }
-        
-        .nav-logo a {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
+            padding: 2rem;
             border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
             transition: background 0.3s;
         }
         
-        .nav-links a:hover, .nav-links a.active {
+        .btn:hover {
+            background: #7C3AED;
+        }
+        
+        .btn.primary {
+            background: #8B5CF6;
+        }
+        
+        .btn.secondary {
             background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Header -->
     <nav class="main-nav">
         <div class="nav-container">
             <div class="nav-logo">
@@ -196,26 +96,13 @@
             </div>
         </div>
     </nav>
-
+    
     <div class="container">
         <header class="main-header">
             <h1>🎯 Shoot Your Shot</h1>
             <p>Connect with amazing whispers for 5-minute voice calls</p>
             <p class="subtitle">Private 5 minute voice chats • $15 per chat • Instant connection</p>
         </header>
-
-        <div class="filters-section">
-            <div class="filter-group">
-                <input type="text" id="searchInput" placeholder="Search whispers..." class="search-input">
-                <select id="categoryFilter" class="filter-select">
-                    <option value="">All Categories</option>
-                    <option value="dating">Dating Advice</option>
-                    <option value="life">Life Coaching</option>
-                    <option value="fun">Just for Fun</option>
-                    <option value="professional">Professional</option>
-                </select>
-            </div>
-        </div>
 
         <div class="content-section">
             <div id="loadingMessage" class="loading-message">
@@ -235,11 +122,15 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Firebase MUST be loaded before dating-system.js -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     
     <!-- Dating System -->
     <script src="js/dating-system.js"></script>
+    
+    <!-- Auth System -->
+    <script src="js/firebase-auth.js"></script>
 </body>
 </html>

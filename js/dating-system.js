@@ -1,5 +1,5 @@
-// Dating System - Fixed with Firebase
-console.log('💘 Dating System: Fixed Version Loaded');
+// Dating System - Ultra Robust Version
+console.log('💘 Dating System: Ultra Robust Version Loaded');
 
 let db;
 let girlsData = [];
@@ -9,7 +9,7 @@ let isLoading = false;
 function initializeFirebase() {
     try {
         if (typeof firebase === 'undefined') {
-            console.error('❌ Firebase not loaded');
+            console.error('❌ Firebase not loaded - waiting for it...');
             return false;
         }
         
@@ -46,8 +46,12 @@ async function getGirlsData() {
     
     try {
         // Initialize Firebase if needed
-        if (!db && !initializeFirebase()) {
-            throw new Error('Firebase not available');
+        if (!db) {
+            // Try to initialize Firebase
+            if (!initializeFirebase()) {
+                console.log('🎭 Firebase not available, using fallback data');
+                return getFallbackGirlsData();
+            }
         }
         
         const querySnapshot = await db.collection('whispers').limit(20).get();
@@ -123,30 +127,35 @@ function getFallbackGirlsData() {
 function displayWhispers(whispers) {
     console.log('🔄 displayWhispers: Starting with', whispers.length, 'whispers');
     
-    const girlsGrid = document.getElementById('girlsGrid');
+    // Try multiple ways to find the grid element
+    let girlsGrid = document.getElementById('girlsGrid');
+    if (!girlsGrid) {
+        girlsGrid = document.querySelector('.girls-grid');
+    }
+    
     const loadingMessage = document.getElementById('loadingMessage');
     const errorMessage = document.getElementById('errorMessage');
     
     if (!girlsGrid) {
-        console.error('❌ girlsGrid element not found');
-        // Try alternative selectors
-        const alternativeGrid = document.querySelector('.girls-grid');
-        if (alternativeGrid) {
-            console.log('✅ Found alternative grid element');
-            displayWhispersInElement(whispers, alternativeGrid, loadingMessage, errorMessage);
+        console.error('❌ Could not find girls grid element');
+        // Try to create it or use error message
+        if (errorMessage) {
+            errorMessage.style.display = 'block';
+            errorMessage.innerHTML = `
+                <h3>Display Error</h3>
+                <p>Could not load whispers display. Please refresh the page.</p>
+                <button onclick="window.location.reload()" class="btn primary">Refresh Page</button>
+            `;
         }
+        if (loadingMessage) loadingMessage.style.display = 'none';
         return;
     }
     
-    displayWhispersInElement(whispers, girlsGrid, loadingMessage, errorMessage);
-}
-
-function displayWhispersInElement(whispers, gridElement, loadingMessage, errorMessage) {
     // Hide loading, show content
     if (loadingMessage) loadingMessage.style.display = 'none';
     if (errorMessage) errorMessage.style.display = 'none';
     
-    gridElement.innerHTML = '';
+    girlsGrid.innerHTML = '';
 
     if (!whispers || whispers.length === 0) {
         console.log('ℹ️ No whispers to display');
@@ -189,7 +198,7 @@ function displayWhispersInElement(whispers, gridElement, loadingMessage, errorMe
                 </a>
             </div>
         `;
-        gridElement.appendChild(girlCard);
+        girlsGrid.appendChild(girlCard);
     });
 
     console.log('✅ Whispers displayed successfully');
@@ -226,12 +235,12 @@ async function loadWhispers() {
     }
 }
 
-// Initialize when page loads
+// Initialize when page loads - wait a bit for Firebase to load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Shoot Your Shot page loaded - Fixed Version');
+    console.log('🚀 Shoot Your Shot page loaded - Ultra Robust Version');
     
-    // Load whispers after a short delay to ensure DOM is ready
-    setTimeout(loadWhispers, 500);
+    // Wait a bit longer for Firebase to potentially load
+    setTimeout(loadWhispers, 1000);
 });
 
 // Export for global access

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firebase Rules - House of Whispers</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+        }
+        .test-result {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.2);
+            border-left: 4px solid #10B981;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #EF4444;
+        }
+        button {
+            padding: 1rem 2rem;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Firebase Security Rules</h1>
+        <p>Run these tests after updating your Firebase rules to ensure everything works correctly.</p>
+        
+        <div id="testResults">
+            <div class="test-result">
+                <strong>Test 1:</strong> Reading whispers (should work for everyone)
+                <div id="test1Result">⏳ Testing...</div>
+            </div>
+            <div class="test-result">
+                <strong>Test 2:</strong> Writing without authentication (should fail)
+                <div id="test2Result">⏳ Testing...</div>
+            </div>
+            <div class="test-result">
+                <strong>Test 3:</strong> Overall security check
+                <div id="test3Result">⏳ Testing...</div>
+            </div>
+        </div>
+
+        <button onclick="runAllTests()">Run Security Tests</button>
+        <button onclick="window.location.href='shoot-your-shot.html'">Test Main App</button>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function runAllTests() {
+            await testReadWhispers();
+            await testWriteWithoutAuth();
+            checkOverallSecurity();
+        }
+
+        async function testReadWhispers() {
+            try {
+                const querySnapshot = await db.collection('whispers').limit(1).get();
+                document.getElementById('test1Result').innerHTML = 
+                    '✅ SUCCESS: Can read whispers (as expected)';
+                document.getElementById('test1Result').parentElement.className = 'test-result success';
+            } catch (error) {
+                document.getElementById('test1Result').innerHTML = 
+                    '❌ FAILED: Cannot read whispers. Error: ' + error.message;
+                document.getElementById('test1Result').parentElement.className = 'test-result error';
+            }
+        }
+
+        async function testWriteWithoutAuth() {
+            try {
+                await db.collection('whispers').add({
+                    test: 'unauthorized write',
+                    timestamp: new Date()
+                });
+                document.getElementById('test2Result').innerHTML = 
+                    '❌ FAILED: Could write without authentication (SECURITY RISK!)';
+                document.getElementById('test2Result').parentElement.className = 'test-result error';
+            } catch (error) {
+                document.getElementById('test2Result').innerHTML = 
+                    '✅ SUCCESS: Cannot write without authentication (as expected)';
+                document.getElementById('test2Result').parentElement.className = 'test-result success';
+            }
+        }
+
+        function checkOverallSecurity() {
+            const test1 = document.getElementById('test1Result').textContent.includes('SUCCESS');
+            const test2 = document.getElementById('test2Result').textContent.includes('SUCCESS');
+            
+            if (test1 && test2) {
+                document.getElementById('test3Result').innerHTML = 
+                    '✅ SECURE: Firebase rules are working correctly!';
+                document.getElementById('test3Result').parentElement.className = 'test-result success';
+            } else {
+                document.getElementById('test3Result').innerHTML = 
+                    '❌ INSECURE: Some security tests failed. Check your rules.';
+                document.getElementById('test3Result').parentElement.className = 'test-result error';
+            }
+        }
+
+        // Run tests when page loads
+        document.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>

@@ -31,12 +31,12 @@ class PlatformManager {
             console.log('🔄 Initializing PlatformManager...');
             
             // Try to load Firebase config from global variable
-            if (typeof firebaseConfig !== 'undefined') {
+            if (window.firebaseLoader && window.firebaseLoader.isFirebaseAvailable()) {
                 this.firebaseConfig = firebaseConfig;
                 console.log('✅ Firebase config loaded from global variable');
                 
                 // Initialize Firebase
-                if (!firebase.apps.length) {
+                if (firebase && !firebase.apps.length) {
                     firebase.initializeApp(this.firebaseConfig);
                 }
                 this.db = firebase.firestore();
@@ -317,3 +317,54 @@ document.addEventListener('DOMContentLoaded', function() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = PlatformManager;
 }
+
+    // ADDED: deleteDaterProfile method for user self-deletion
+    async deleteDaterProfile(daterId, confirmation = true) {
+        if (!this.initialized) {
+            throw new Error('Platform manager not initialized');
+        }
+
+        if (confirmation) {
+            const userConfirmed = confirm('Are you sure you want to delete your profile? This action cannot be undone.');
+            if (!userConfirmed) {
+                console.log('❌ Profile deletion cancelled by user');
+                return false;
+            }
+        }
+
+        try {
+            const data = this.getData();
+            const daterIndex = data.daters.findIndex(d => d.id === daterId);
+            
+            if (daterIndex === -1) {
+                throw new Error('Dater profile not found');
+            }
+
+            const daterName = data.daters[daterIndex].displayName;
+            
+            // Remove dater from array
+            data.daters.splice(daterIndex, 1);
+            
+            // Save updated data
+            if (this.setData(data)) {
+                await this.syncToFirebase();
+                console.log('✅ Dater profile deleted successfully:', daterName);
+                
+                if (confirmation) {
+                    alert(`Your profile "${daterName}" has been deleted successfully.`);
+                    // Redirect to home page
+                    window.location.href = '/';
+                }
+                
+                return true;
+            } else {
+                throw new Error('Failed to delete dater profile');
+            }
+        } catch (error) {
+            console.error('❌ Error deleting dater profile:', error);
+            if (confirmation) {
+                alert('Error deleting profile: ' + error.message);
+            }
+            throw error;
+        }
+    }

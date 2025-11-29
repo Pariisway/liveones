@@ -3,285 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Dashboard - House of Whispers</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dating.css">
+    <title>Dater Dashboard - House of Whispers</title>
     <style>
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 25px 0;
+        .delete-profile-btn {
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
         }
-        
-        .stat-card {
-            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-            border: 2px solid var(--accent2);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 32px;
-            color: var(--accent2);
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .dashboard-section {
-            background: linear-gradient(145deg, #1a1a1a, #222222);
-            border: 2px solid var(--accent1);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-        
-        .payment-history {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .payment-item {
-            background: rgba(255, 0, 51, 0.1);
-            border: 1px solid var(--accent1);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .payment-amount {
-            font-size: 18px;
-            color: var(--accent2);
-            font-weight: bold;
+        .delete-profile-btn:hover {
+            background: linear-gradient(145deg, #cc0000, #990000);
         }
     </style>
 </head>
-<body class="fonts-loading">
-    <div class="cyber-background"></div>
-    <div class="grid-overlay"></div>
+<body>
+    <!-- Your existing dashboard content -->
     
-    <header class="site-header">
-        <div class="glowing-title title-large">DATER DASHBOARD</div>
-        <div class="glowing-title title-medium">💰 MANAGE YOUR EARNINGS</div>
-    </header>
+    <div class="dashboard-section">
+        <h3>Account Management</h3>
+        <button class="delete-profile-btn" onclick="deleteMyProfile()">
+            🗑️ Delete My Profile
+        </button>
+        <p style="color: #666; font-size: 14px; margin-top: 10px;">
+            This will permanently remove your profile and all associated data.
+        </p>
+    </div>
 
-    <main class="main-wrap">
-        <div class="panel">
-            <!-- Welcome Section -->
-            <div class="dashboard-section">
-                <div style="display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center;">
-                    <div id="dashboardAvatar" style="font-size: 60px;">🔥</div>
-                    <div>
-                        <h2 id="dashboardName" style="color: var(--accent2); margin-bottom: 5px;">Sarah, 24</h2>
-                        <div style="color: var(--muted);" id="dashboardStatus">Active • 4.8⭐ Rating</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Earnings Stats -->
-            <div class="dashboard-section">
-                <h3 class="glowing-title title-small">💰 EARNINGS OVERVIEW</h3>
-                <div class="dashboard-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalEarnings">$0.00</div>
-                        <div class="stat-label">Total Earnings</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalChats">0</div>
-                        <div class="stat-label">Total Chats</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="avgEarnings">$0.00</div>
-                        <div class="stat-label">Avg per Chat</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="availablePayout">$0.00</div>
-                        <div class="stat-label">Available for Payout</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="dashboard-section">
-                <h3 class="glowing-title title-small">⚡ QUICK ACTIONS</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <button class="btn primary" onclick="updateSchedule()">
-                        🕐 Update Schedule
-                    </button>
-                    <button class="btn" onclick="editProfile()">
-                        ✏️ Edit Profile
-                    </button>
-                    <button class="btn" onclick="requestPayout()" id="payoutBtn">
-                        💸 Request Payout
-                    </button>
-                    <button class="btn" onclick="viewProfile()">
-                        👀 View My Profile
-                    </button>
-                </div>
-            </div>
-
-            <!-- Recent Payments -->
-            <div class="dashboard-section">
-                <h3 class="glowing-title title-small">📊 RECENT PAYMENTS</h3>
-                <div class="payment-history" id="paymentHistory">
-                    <!-- Payments will be populated here -->
-                    <div style="text-align: center; color: var(--muted); padding: 40px;">
-                        No payments yet. Your earnings will appear here after chats.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Platform Info -->
-            <div class="dashboard-section">
-                <h3 class="glowing-title title-small">🏢 PLATFORM INFORMATION</h3>
-                <div style="background: rgba(0, 255, 153, 0.1); padding: 20px; border-radius: 10px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <div style="font-size: 14px; color: var(--muted);">Chat Price</div>
-                            <div style="color: var(--accent2); font-size: 18px;">$15.00</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 14px; color: var(--muted);">Your Cut</div>
-                            <div style="color: var(--accent3); font-size: 18px;">75% ($11.25)</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 14px; color: var(--muted);">Platform Fee</div>
-                            <div style="color: var(--accent1); font-size: 18px;">25% ($3.75)</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 14px; color: var(--muted);">Payout Schedule</div>
-                            <div style="color: gold; font-size: 18px;">Weekly</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <a href="index.html" class="back-btn">← Back to Main Site</a>
-    </main>
-
-    <script src="js/platform-manager.js"></script>
     <script>
-        let currentDater = null;
-
-        function loadDashboard() {
-            // For demo - in real app, get logged-in dater from session
-            const daters = platformManager.getAllDaters();
-            if (daters.length > 0) {
-                currentDater = daters[0]; // First dater for demo
-                updateDashboardUI();
-            } else {
-                // Redirect to signup if no dater profile
-                window.location.href = 'become-a-dater.html';
-            }
-        }
-
-        function updateDashboardUI() {
-            if (!currentDater) return;
-
-            // Update basic info
-            document.getElementById('dashboardAvatar').textContent = currentDater.avatar;
-            document.getElementById('dashboardName').textContent = currentDater.displayName;
-            document.getElementById('dashboardStatus').textContent = 
-                `${currentDater.isActive ? 'Active' : 'Inactive'} • ${currentDater.rating || 'No'}⭐ Rating`;
-
-            // Update earnings
-            const earnings = platformManager.getDaterEarnings(currentDater.username);
-            document.getElementById('totalEarnings').textContent = `$${earnings.totalEarnings.toFixed(2)}`;
-            document.getElementById('totalChats').textContent = earnings.totalChats;
-            document.getElementById('avgEarnings').textContent = `$${earnings.averageEarnings.toFixed(2)}`;
-            document.getElementById('availablePayout').textContent = `$${earnings.totalEarnings.toFixed(2)}`;
-
-            // Update payout button
-            const payoutBtn = document.getElementById('payoutBtn');
-            payoutBtn.disabled = earnings.totalEarnings < 10; // Minimum $10 for payout
-
-            // Update payment history
-            updatePaymentHistory();
-        }
-
-        function updatePaymentHistory() {
-            const historyContainer = document.getElementById('paymentHistory');
-            const payments = platformManager.platformData.payments
-                .filter(payment => payment.daterId === currentDater.username)
-                .slice(-10); // Last 10 payments
-
-            if (payments.length === 0) {
-                historyContainer.innerHTML = `
-                    <div style="text-align: center; color: var(--muted); padding: 40px;">
-                        No payments yet. Your earnings will appear here after chats.
-                    </div>
-                `;
-                return;
-            }
-
-            historyContainer.innerHTML = payments.map(payment => `
-                <div class="payment-item">
-                    <div>
-                        <div style="font-weight: bold; color: var(--text);">Chat with User</div>
-                        <div style="font-size: 12px; color: var(--muted);">
-                            ${new Date(payment.timestamp).toLocaleDateString()}
-                        </div>
-                    </div>
-                    <div class="payment-amount">+$${payment.daterEarnings.toFixed(2)}</div>
-                </div>
-            `).join('');
-        }
-
-        function requestPayout() {
-            const earnings = platformManager.getDaterEarnings(currentDater.username);
-            
-            if (earnings.totalEarnings < 10) {
-                alert('Minimum payout amount is $10.00');
-                return;
-            }
-
-            if (confirm(`Request payout of $${earnings.totalEarnings.toFixed(2)}?`)) {
-                try {
-                    const payout = platformManager.initiatePayout(currentDater.username, earnings.totalEarnings);
-                    alert(`Payout of $${payout.amount.toFixed(2)} processed! Funds will be transferred within 3-5 business days.`);
-                    updateDashboardUI();
-                } catch (error) {
-                    alert('Payout failed: ' + error.message);
+        async function deleteMyProfile() {
+            try {
+                // Get current dater ID from localStorage or URL
+                const currentDater = JSON.parse(localStorage.getItem('currentDater') || '{}');
+                const daterId = currentDater.id || getDaterIdFromURL();
+                
+                if (!daterId) {
+                    alert('Could not find your profile ID. Please contact support.');
+                    return;
                 }
+
+                if (window.platformManager && window.platformManager.deleteDaterProfile) {
+                    await window.platformManager.deleteDaterProfile(daterId);
+                } else {
+                    alert('Platform manager not available. Please refresh the page and try again.');
+                }
+            } catch (error) {
+                console.error('Error deleting profile:', error);
+                alert('Failed to delete profile: ' + error.message);
             }
         }
 
-        function updateSchedule() {
-            alert('Schedule update feature coming soon!');
-        }
-
-        function editProfile() {
-            alert('Profile editing coming soon!');
-        }
-
-        function viewProfile() {
-            window.location.href = `girl-profile.html?girl=${currentDater.username}`;
-        }
-
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(loadDashboard, 100);
-        });
-
-        // Font loading
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(() => {
-                document.body.classList.remove('fonts-loading');
-                document.body.classList.add('fonts-loaded');
-            });
+        function getDaterIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('daterId');
         }
     </script>
 </body>

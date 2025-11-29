@@ -1,5 +1,5 @@
-// Dating System - Robust Version
-console.log('💘 Dating System: Robust Version Loaded');
+// Dating System - Fixed Syntax Version
+console.log('💘 Dating System: Fixed Syntax Version Loaded');
 
 // Firebase configuration
 const firebaseConfig = {
@@ -81,7 +81,7 @@ function getFallbackGirlsData() {
             displayName: 'Sarah 💫',
             avatar: '💁‍♀️',
             location: 'New York',
-            bio: 'Life coach and relationship expert. Let\\'s talk about your dreams and goals!',
+            bio: 'Life coach and relationship expert. Lets talk about your dreams and goals!',
             rating: 4.8,
             verification: 'Verified'
         },
@@ -101,7 +101,7 @@ function getFallbackGirlsData() {
             displayName: 'Emily 🌟',
             avatar: '👩‍💼',
             location: 'Chicago',
-            bio: 'Dating coach and confidence builder. Let\\'s work on your social skills!',
+            bio: 'Dating coach and confidence builder. Lets work on your social skills!',
             rating: 4.9,
             verification: 'Verified'
         }
@@ -206,7 +206,7 @@ async function loadWhispers() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Shoot Your Shot page loaded - Robust Version');
+    console.log('🚀 Shoot Your Shot page loaded - Fixed Syntax Version');
     
     // Load whispers after a short delay to ensure DOM is ready
     setTimeout(loadWhispers, 500);

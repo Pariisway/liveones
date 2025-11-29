@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dater Signup - House of Whispers</title>
+    <title>Whisper Signup - House of Whispers</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dating.css">
     <style>
@@ -74,23 +74,23 @@
 <main class="main-wrap">
     <div class="panel">
         <!-- rest of your form -->
-            <form id="daterSignupForm" class="signup-form">
+            <form id="whisperSignupForm" class="signup-form">
                 <div class="form-section">
                     <div class="form-section-title">👤 Basic Information</div>
                     
                     <div class="form-group">
                         <label class="form-label">Username *</label>
-                        <input type="text" class="form-control" id="daterUsername" required placeholder="Choose a unique username">
+                        <input type="text" class="form-control" id="whisperUsername" required placeholder="Choose a unique username">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Display Name *</label>
-                        <input type="text" class="form-control" id="daterDisplayName" required placeholder="e.g., Sarah, 24">
+                        <input type="text" class="form-control" id="whisperDisplayName" required placeholder="e.g., Sarah, 24">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Email *</label>
-                        <input type="email" class="form-control" id="daterEmail" required placeholder="your@email.com">
+                        <input type="email" class="form-control" id="whisperEmail" required placeholder="your@email.com">
                     </div>
                 </div>
 
@@ -99,22 +99,22 @@
                     
                     <div class="form-group">
                         <label class="form-label">Location *</label>
-                        <input type="text" class="form-control" id="daterLocation" required placeholder="e.g., Los Angeles, CA">
+                        <input type="text" class="form-control" id="whisperLocation" required placeholder="e.g., Los Angeles, CA">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Avatar Emoji *</label>
-                        <input type="text" class="form-control" id="daterAvatar" required placeholder="e.g., 🔥, 💫, 🌟">
+                        <input type="text" class="form-control" id="whisperAvatar" required placeholder="e.g., 🔥, 💫, 🌟">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Bio *</label>
-                        <textarea class="form-control" id="daterBio" rows="4" required placeholder="Tell people about yourself..."></textarea>
+                        <textarea class="form-control" id="whisperBio" rows="4" required placeholder="Tell people about yourself..."></textarea>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Interests</label>
-                        <input type="text" class="form-control" id="daterInterests" placeholder="e.g., Hiking, Coffee, Travel, Music">
+                        <input type="text" class="form-control" id="whisperInterests" placeholder="e.g., Hiking, Coffee, Travel, Music">
                     </div>
                 </div>
 
@@ -123,7 +123,7 @@
                     
                     <div class="form-group">
                         <label class="form-label">Timezone *</label>
-                        <select class="form-control" id="daterTimezone" required>
+                        <select class="form-control" id="whisperTimezone" required>
                             <option value="">Select your timezone</option>
                             <option value="PST">PST - Pacific Time</option>
                             <option value="EST">EST - Eastern Time</option>
@@ -267,14 +267,14 @@
         }
 
         // ✅ FIXED: Form submission with proper async/await
-        document.getElementById('daterSignupForm').addEventListener('submit', async function(e) {
+        document.getElementById('whisperSignupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             console.log('Form submission started...');
             
             // Validate required fields
             const requiredFields = [
-                'daterUsername', 'daterDisplayName', 'daterEmail', 
-                'daterLocation', 'daterAvatar', 'daterBio', 'daterTimezone'
+                'whisperUsername', 'whisperDisplayName', 'whisperEmail', 
+                'whisperLocation', 'whisperAvatar', 'whisperBio', 'whisperTimezone'
             ];
             
             for (let field of requiredFields) {
@@ -293,46 +293,46 @@
                 return;
             }
 
-            const daterData = {
-                username: document.getElementById('daterUsername').value.trim(),
-                displayName: document.getElementById('daterDisplayName').value.trim(),
-                email: document.getElementById('daterEmail').value.trim(),
-                location: document.getElementById('daterLocation').value.trim(),
-                avatar: document.getElementById('daterAvatar').value.trim(),
-                bio: document.getElementById('daterBio').value.trim(),
-                interests: document.getElementById('daterInterests').value.split(',').map(i => i.trim()).filter(i => i),
-                timezone: document.getElementById('daterTimezone').value,
+            const whisperData = {
+                username: document.getElementById('whisperUsername').value.trim(),
+                displayName: document.getElementById('whisperDisplayName').value.trim(),
+                email: document.getElementById('whisperEmail').value.trim(),
+                location: document.getElementById('whisperLocation').value.trim(),
+                avatar: document.getElementById('whisperAvatar').value.trim(),
+                bio: document.getElementById('whisperBio').value.trim(),
+                interests: document.getElementById('whisperInterests').value.split(',').map(i => i.trim()).filter(i => i),
+                timezone: document.getElementById('whisperTimezone').value,
                 schedule: [...schedules],
                 verification: 'Pending Verification'
             };
             
-            console.log('Dater data prepared:', daterData);
+            console.log('Whisper data prepared:', whisperData);
             
             // ✅ FIXED: Better platform manager check
-            if (typeof platformManager === 'undefined' || !platformManager.addDater) {
+            if (typeof platformManager === 'undefined' || !platformManager.addWhisper) {
                 console.error('Platform manager not properly loaded:', platformManager);
                 alert('Error: Platform system not loaded. Please refresh the page.');
                 return;
             }
             
             try {
-                console.log('Attempting to add dater to platform manager...');
+                console.log('Attempting to add whisper to platform manager...');
                 
                 // ✅ FIXED: Wait for the async operation
-                const whisperId = await platformManager.addDater(daterData);
-                console.log('Dater added successfully! ID:', whisperId);
+                const whisperId = await platformManager.addWhisper(whisperData);
+                console.log('Whisper added successfully! ID:', whisperId);
                 
-                alert('🎉 Dater profile created successfully! You can now receive paid chat requests.');
+                alert('🎉 Whisper profile created successfully! You can now receive paid chat requests.');
                 setTimeout(() => {
                     window.location.href = 'shoot-your-shot.html';
                 }, 1000);
                 
             } catch (error) {
-                console.error('Error adding dater:', error);
+                console.error('Error adding whisper:', error);
                 if (error.message.includes('already exists')) {
                     alert('Username already exists. Please choose a different username.');
-                    document.getElementById('daterUsername').focus();
-                    document.getElementById('daterUsername').select();
+                    document.getElementById('whisperUsername').focus();
+                    document.getElementById('whisperUsername').select();
                 } else {
                     alert('Error creating profile: ' + error.message);
                 }
@@ -343,14 +343,14 @@
         window.debugPlatform = async function() {
             console.log('=== DEBUG PLATFORM MANAGER ===');
             console.log('Platform Manager:', window.platformManager);
-            console.log('addDater method:', typeof window.platformManager?.addDater);
+            console.log('addWhisper method:', typeof window.platformManager?.addWhisper);
             
-            if (window.platformManager && window.platformManager.addDater) {
+            if (window.platformManager && window.platformManager.addWhisper) {
                 try {
-                    const daters = await platformManager.getAllDaters();
-                    console.log('Total Daters:', daters.length);
-                    console.log('Daters:', daters);
-                    alert(`✅ Platform Manager Working!\nFound ${daters.length} daters in system.`);
+                    const whispers = await platformManager.getAllWhispers();
+                    console.log('Total Whispers:', whispers.length);
+                    console.log('Whispers:', whispers);
+                    alert(`✅ Platform Manager Working!\nFound ${whispers.length} whispers in system.`);
                 } catch (error) {
                     console.error('Debug error:', error);
                     alert('❌ Platform Manager Error: ' + error.message);
@@ -366,16 +366,16 @@
             
             // Wait for platform manager to be ready
             const checkPlatform = setInterval(() => {
-                if (window.platformManager && typeof window.platformManager.addDater === 'function') {
+                if (window.platformManager && typeof window.platformManager.addWhisper === 'function') {
                     clearInterval(checkPlatform);
-                    console.log('✅ Platform manager ready with addDater method');
+                    console.log('✅ Platform manager ready with addWhisper method');
                     updateScheduleList();
                 }
             }, 100);
             
             // Timeout after 5 seconds
             setTimeout(() => {
-                if (!window.platformManager || !window.platformManager.addDater) {
+                if (!window.platformManager || !window.platformManager.addWhisper) {
                     console.error('❌ Platform manager failed to initialize');
                     alert('Warning: Platform system may not be working properly.');
                 }

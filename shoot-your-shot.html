@@ -60,12 +60,12 @@
     </div>
 
     <div class="panel" style="text-align: center; margin-bottom: 20px;">
-        <a href="dater-signup.html" class="btn primary" style="background: var(--accent2);">
-            💖 Become a Dater and Earn Money
+        <a href="whisper-signup.html" class="btn primary" style="background: var(--accent2);">
+            💖 Become a Whisper and Earn Money
         </a>
     </div>
 
-    <div class="girls-grid" id="datersGrid">
+    <div class="girls-grid" id="whispersGrid">
         <!-- Dynamic content will be loaded here -->
         <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">
             Loading profiles...
@@ -113,22 +113,22 @@
         
         const statusElement = document.getElementById('debugStatus');
         
-        if (window.platformManager && typeof window.platformManager.getAllDaters === 'function') {
+        if (window.platformManager && typeof window.platformManager.getAllWhispers === 'function') {
             try {
-                const daters = await platformManager.getAllDaters();
-                console.log('Total Daters:', daters.length);
-                console.log('Daters:', daters);
+                const whispers = await platformManager.getAllWhispers();
+                console.log('Total Whispers:', whispers.length);
+                console.log('Whispers:', whispers);
                 
                 statusElement.innerHTML = `
                     <strong>Platform Status:</strong> ✅ LOADED<br>
-                    <strong>Total Daters:</strong> ${daters.length}<br>
+                    <strong>Total Whispers:</strong> ${whispers.length}<br>
                     <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
                 `;
                 
-                alert(`✅ Platform Manager Working!\nFound ${daters.length} daters in system.`);
+                alert(`✅ Platform Manager Working!\nFound ${whispers.length} whispers in system.`);
                 
                 // Refresh the display
-                loadDatersDirectly();
+                loadWhispersDirectly();
             } catch (error) {
                 console.error('Debug error:', error);
                 statusElement.innerHTML = `
@@ -146,13 +146,13 @@
         }
     };
 
-    // Load daters from platform manager
-    async function loadDatersDirectly() {
-        console.log('🔄 Loading daters directly from platform manager...');
-        const grid = document.getElementById('datersGrid');
+    // Load whispers from platform manager
+    async function loadWhispersDirectly() {
+        console.log('🔄 Loading whispers directly from platform manager...');
+        const grid = document.getElementById('whispersGrid');
         const statusElement = document.getElementById('debugStatus');
         
-        if (typeof platformManager === 'undefined' || typeof platformManager.getAllDaters !== 'function') {
+        if (typeof platformManager === 'undefined' || typeof platformManager.getAllWhispers !== 'function') {
             grid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
                     <h3>❌ Platform System Error</h3>
@@ -167,25 +167,25 @@
         }
         
         try {
-            const daters = await platformManager.getAllDaters();
-            console.log('📊 Retrieved daters:', daters);
+            const whispers = await platformManager.getAllWhispers();
+            console.log('📊 Retrieved whispers:', whispers);
             
             if (statusElement) {
                 statusElement.innerHTML = `
                     <strong>Platform Status:</strong> ✅ LOADED<br>
-                    <strong>Total Daters:</strong> ${daters.length}<br>
+                    <strong>Total Whispers:</strong> ${whispers.length}<br>
                     <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
                 `;
             }
             
-            if (daters.length === 0) {
+            if (whispers.length === 0) {
                 grid.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
                         <div style="color: var(--muted); margin-bottom: 20px; font-size: 18px;">
-                            🌟 No daters available yet. Be the first to sign up!
+                            🌟 No whispers available yet. Be the first to sign up!
                         </div>
-                        <a href="dater-signup.html" class="btn primary" style="background: var(--accent2); font-size: 16px; padding: 15px 30px;">
-                            💖 Become a Dater and Earn Money
+                        <a href="whisper-signup.html" class="btn primary" style="background: var(--accent2); font-size: 16px; padding: 15px 30px;">
+                            💖 Become a Whisper and Earn Money
                         </a>
                     </div>
                 `;
@@ -193,53 +193,53 @@
             }
             
             grid.innerHTML = '';
-            daters.forEach(dater => {
-                const daterCard = document.createElement('a');
-                daterCard.href = `girl-profile.html?girl=${dater.id}`;
-                daterCard.className = 'girl-card';
-                daterCard.innerHTML = `
-                    <div class="girl-image">${dater.avatar || '👤'}</div>
+            whispers.forEach(whisper => {
+                const whisperCard = document.createElement('a');
+                whisperCard.href = `girl-profile.html?girl=${whisper.id}`;
+                whisperCard.className = 'girl-card';
+                whisperCard.innerHTML = `
+                    <div class="girl-image">${whisper.avatar || '👤'}</div>
                     <div class="girl-info">
-                        <div class="girl-name">${dater.displayName}</div>
-                        <div class="girl-location">📍 ${dater.location}</div>
-                        <div class="girl-bio">${dater.bio ? (dater.bio.substring(0, 80) + (dater.bio.length > 80 ? '...' : '')) : 'No bio provided'}</div>
-                        <div class="girl-schedule">🕐 ${dater.schedule && dater.schedule[0] ? dater.schedule[0] + ' ' + dater.timezone : 'Check schedule'}</div>
+                        <div class="girl-name">${whisper.displayName}</div>
+                        <div class="girl-location">📍 ${whisper.location}</div>
+                        <div class="girl-bio">${whisper.bio ? (whisper.bio.substring(0, 80) + (whisper.bio.length > 80 ? '...' : '')) : 'No bio provided'}</div>
+                        <div class="girl-schedule">🕐 ${whisper.schedule && whisper.schedule[0] ? whisper.schedule[0] + ' ' + whisper.timezone : 'Check schedule'}</div>
                         <div class="girl-tag">5-min Chat: $15</div>
                     </div>
                 `;
-                grid.appendChild(daterCard);
+                grid.appendChild(whisperCard);
             });
             
         } catch (error) {
-            console.error('❌ Error loading daters:', error);
+            console.error('❌ Error loading whispers:', error);
             grid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
                     <h3>Error Loading Profiles</h3>
                     <p>${error.message}</p>
-                    <button onclick="loadDatersDirectly()" class="btn primary">Try Again</button>
+                    <button onclick="loadWhispersDirectly()" class="btn primary">Try Again</button>
                 </div>
             `;
         }
     }
     
-    // Load daters when page loads
+    // Load whispers when page loads
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing shoot-your-shot...');
         
         // Wait for platform manager to initialize
         const checkPlatform = setInterval(() => {
-            if (window.platformManager && typeof window.platformManager.getAllDaters === 'function') {
+            if (window.platformManager && typeof window.platformManager.getAllWhispers === 'function') {
                 clearInterval(checkPlatform);
-                console.log('✅ Platform manager found and ready, loading daters...');
-                loadDatersDirectly();
+                console.log('✅ Platform manager found and ready, loading whispers...');
+                loadWhispersDirectly();
             }
         }, 100);
         
         // Timeout after 5 seconds
         setTimeout(() => {
-            if (!window.platformManager || typeof window.platformManager.getAllDaters !== 'function') {
+            if (!window.platformManager || typeof window.platformManager.getAllWhispers !== 'function') {
                 console.error('❌ Platform manager not found after 5 seconds');
-                loadDatersDirectly(); // Still try to load
+                loadWhispersDirectly(); // Still try to load
             }
         }, 5000);
     });

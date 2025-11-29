@@ -3,399 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Girl Profile - House of Whispers</title>
-    <style>
-        /* Your existing CSS stays the same */
-        :root {
-            --bg: #0a0a0a;
-            --panel: #1a1a1a;
-            --accent1: #ff0033;
-            --accent2: #00ff99;
-            --accent3: #ffcc00;
-            --text: #ffffff;
-            --muted: #888888;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .site-header {
-            text-align: center;
-            padding: 25px 20px;
-            border-bottom: 3px solid var(--accent1);
-            background: rgba(0,0,0,0.8);
-            margin-bottom: 30px;
-        }
-        
-        .glowing-title {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            text-align: center;
-        }
-        
-        .title-large {
-            font-size: 48px;
-            color: var(--accent1);
-            text-shadow: 0 0 30px var(--accent1);
-            margin-bottom: 10px;
-        }
-        
-        .title-medium {
-            font-size: 24px;
-            color: var(--accent2);
-            text-shadow: 0 0 20px var(--accent2);
-        }
-        
-        .profile-container {
-            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-            border: 3px solid var(--accent1);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-        }
-        
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .girl-avatar {
-            font-size: 80px;
-            margin-bottom: 20px;
-        }
-        
-        .girl-name {
-            color: var(--accent2);
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-        
-        .girl-location {
-            color: var(--muted);
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-        
-        .info-section {
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            color: var(--accent3);
-            font-size: 20px;
-            margin-bottom: 10px;
-            border-bottom: 2px solid var(--accent3);
-            padding-bottom: 5px;
-        }
-        
-        .bio-text {
-            line-height: 1.6;
-            font-size: 16px;
-        }
-        
-        .schedule-slots {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .time-slot {
-            background: rgba(255, 0, 51, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid var(--accent1);
-        }
-        
-        .time-slot.active {
-            background: rgba(0, 255, 153, 0.2);
-            border-color: var(--accent2);
-        }
-        
-        .purchase-section {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid var(--accent1);
-        }
-        
-        .price-tag {
-            font-size: 24px;
-            color: gold;
-            margin-bottom: 15px;
-        }
-        
-        .purchase-btn {
-            background: linear-gradient(145deg, var(--accent1), #ff3366);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            margin: 10px;
-        }
-        
-        .purchase-btn:disabled {
-            background: var(--muted);
-            cursor: not-allowed;
-        }
-        
-        .queue-info {
-            margin-top: 15px;
-            color: var(--muted);
-        }
-        
-        .back-btn {
-            display: block;
-            width: 200px;
-            margin: 30px auto;
-            padding: 15px;
-            background: linear-gradient(145deg, var(--accent2), #00cc88);
-            color: black;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--muted);
-        }
-        
-        .error-message {
-            text-align: center;
-            padding: 40px;
-            color: var(--accent1);
-        }
-    </style>
+    <title>Whisper Profile - House of Whispers</title>
+    <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
+    <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
 </head>
-<body>
-    <header class="site-header">
-        <div class="glowing-title title-large">SHOOT YOUR SHOT</div>
-        <div class="glowing-title title-medium" id="pageTitle">LOADING PROFILE...</div>
-    </header>
+<body class="fonts-loading">
+    <div class="cyber-background"></div>
+    <div class="main-wrap">
+        <header class="site-header">
+            <div class="glowing-title title-large">WHISPER PROFILE</div>
+        </header>
 
-    <div class="profile-container" id="profileContainer">
-        <div class="loading" id="loadingMessage">
-            <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
-            <h3>Loading Profile...</h3>
-            <p>Please wait while we load the dater profile</p>
-        </div>
-        
-        <div id="profileContent" style="display: none;">
-            <div class="profile-header">
-                <div class="girl-avatar" id="girlAvatar">👤</div>
-                <div class="girl-name" id="girlName">Loading...</div>
-                <div class="girl-location" id="girlLocation">📍 Loading...</div>
-            </div>
+        <div class="panel">
+            <div id="loadingMessage">Loading whisper profile...</div>
+            
+            <div id="profileContent" style="display: none;">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <span id="profileAvatar" style="font-size: 80px;">👤</span>
+                    </div>
+                    <h1 id="profileName" class="glowing-title title-medium"></h1>
+                    <p id="profileLocation" class="profile-location"></p>
+                </div>
 
-            <div class="info-section">
-                <div class="section-title">About Me</div>
-                <div class="bio-text" id="girlBio">Loading...</div>
-            </div>
+                <div class="profile-bio">
+                    <h3>About Me</h3>
+                    <p id="profileBio"></p>
+                </div>
 
-            <div class="info-section">
-                <div class="section-title">Chat Schedule</div>
-                <div class="schedule-slots" id="scheduleSlots">
-                    <!-- Schedule will load here -->
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-number" id="profileRating">0.0</div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="profileChats">0</div>
+                        <div class="stat-label">Chats</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="profileResponse">2m</div>
+                        <div class="stat-label">Response</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <button class="btn primary" onclick="startChat()" style="font-size: 20px; padding: 15px 30px;">
+                        💘 Start Chat - $15
+                    </button>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <a href="whisper-dashboard.html" id="dashboardLink" class="btn" style="background: var(--accent2);">
+                            📊 Whisper Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <div class="profile-interests">
+                    <h3>Interests</h3>
+                    <div id="profileInterests"></div>
                 </div>
             </div>
 
-            <div class="purchase-section">
-                <div class="price-tag">$15 for 5-Minute Private Chat</div>
-                <button class="purchase-btn" id="purchaseBtn" onclick="purchaseChat()" disabled>
-                    Purchase Private Chat
-                </button>
-                <div class="queue-info" id="queueInfo">
-                    Loading schedule...
-                </div>
+            <div id="errorMessage" style="display: none; text-align: center;">
+                <h3>Profile Not Found</h3>
+                <p>This whisper profile doesn't exist or may have been deleted.</p>
+                <a href="shoot-your-shot.html" class="btn primary">Browse Whispers</a>
             </div>
-        </div>
-        
-        <div class="error-message" id="errorMessage" style="display: none;">
-            <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
-            <h3>Profile Not Found</h3>
-            <p>This dater profile is no longer available or doesn't exist.</p>
-            <button class="purchase-btn" onclick="window.location.href='shoot-your-shot.html'" style="margin-top: 20px;">
-                ← Back to Available Daters
-            </button>
         </div>
     </div>
 
-    <a href="shoot-your-shot.html" class="back-btn">← Back to Girls</a>
-    <!-- Add before platform-manager.js -->
-<script>
-const firebaseConfig = {
-    apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-    authDomain: "house-of-whispers.firebaseapp.com",
-    projectId: "house-of-whispers",
-    storageBucket: "house-of-whispers.firebasestorage.app",
-    messagingSenderId: "1063333130646",
-    appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7", 
-    measurementId: "G-06QR5LFKJ9"
-};
-</script>
-    <!-- Load Platform Manager -->
     <script src="js/platform-manager.js"></script>
-    
     <script>
-        // Simple, robust girl profile loader
-        async function loadGirlProfile() {
-            console.log('🔍 Starting profile load...');
+        let currentGirl = null;
+
+        async function loadProfile() {
+            console.log('🚀 Starting whisper profile page...');
             
+            // Get girl ID from URL
             const urlParams = new URLSearchParams(window.location.search);
             const girlId = urlParams.get('girl');
             
             if (!girlId) {
-                showError('No profile ID provided');
+                showError('No whisper profile specified.');
                 return;
             }
+
+            console.log('🔍 Starting profile load...');
             
             try {
                 // Wait for platform manager
-                if (typeof platformManager === 'undefined') {
-                    console.log('⏳ Platform manager not ready, waiting...');
-                    setTimeout(loadGirlProfile, 500);
+                await waitForPlatformManager();
+                
+                console.log('📡 Fetching whispers from platform...');
+                const daters = await window.platformManager.getAllDaters();
+                console.log('📊 Found whispers:', daters);
+                
+                currentGirl = daters.find(dater => dater.id === girlId);
+                console.log('🎯 Looking for whisper ID:', girlId);
+                console.log('🔎 Found whisper:', currentGirl);
+                
+                if (!currentGirl) {
+                    showError('Whisper profile not found.');
                     return;
                 }
-                
-                console.log('📡 Fetching daters from platform...');
-                const daters = await platformManager.getAllDaters();
-                console.log('📊 Found daters:', daters);
-                
-                // Find the specific girl
-                const girl = daters.find(d => d.id === girlId);
-                console.log('🎯 Looking for girl ID:', girlId);
-                console.log('🔎 Found girl:', girl);
-                
-                if (!girl) {
-                    showError('Profile not found. This dater may have been removed.');
-                    return;
-                }
-                
-                // Display the profile
-                displayProfile(girl);
+
+                displayProfile(currentGirl);
                 
             } catch (error) {
-                console.error('💥 Error loading profile:', error);
-                showError('Error loading profile: ' + error.message);
+                console.error('❌ Error loading profile:', error);
+                showError('Failed to load profile: ' + error.message);
             }
         }
-        
+
+        function waitForPlatformManager() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 20;
+                
+                function check() {
+                    attempts++;
+                    if (window.platformManager && window.platformManager.initialized) {
+                        resolve();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(check, 500);
+                    } else {
+                        reject(new Error('Platform manager failed to initialize'));
+                    }
+                }
+                
+                check();
+            });
+        }
+
         function displayProfile(girl) {
-            console.log('🎨 Displaying profile:', girl);
-            
-            // Hide loading, show content
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('profileContent').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
             
-            // Update profile information
-            document.getElementById('pageTitle').textContent = `MEET ${girl.displayName?.split(',')[0]?.toUpperCase() || 'DATER'}`;
-            document.getElementById('girlAvatar').textContent = girl.avatar || '👤';
-            document.getElementById('girlName').textContent = girl.displayName || 'Unknown Dater';
-            document.getElementById('girlLocation').textContent = `📍 ${girl.location || 'Location not set'}`;
-            document.getElementById('girlBio').textContent = girl.bio || 'No bio provided.';
+            // Update profile info
+            document.getElementById('profileAvatar').textContent = girl.avatar || '👤';
+            document.getElementById('profileName').textContent = girl.displayName || girl.username;
+            document.getElementById('profileLocation').textContent = `📍 ${girl.location || 'Location not set'}`;
+            document.getElementById('profileBio').textContent = girl.bio || 'No bio yet.';
             
-            // Update schedule
-            const scheduleContainer = document.getElementById('scheduleSlots');
-            scheduleContainer.innerHTML = '';
+            // Update stats
+            document.getElementById('profileRating').textContent = girl.rating ? girl.rating.toFixed(1) : '0.0';
+            document.getElementById('profileChats').textContent = girl.totalChats || 0;
+            document.getElementById('profileResponse').textContent = girl.responseTime || '2m';
             
-            if (girl.schedule && girl.schedule.length > 0) {
-                girl.schedule.forEach(slot => {
-                    const slotDiv = document.createElement('div');
-                    slotDiv.className = 'time-slot';
-                    slotDiv.textContent = slot;
-                    scheduleContainer.appendChild(slotDiv);
-                });
-                // Start schedule checking
-                checkSchedule(girl);
-                setInterval(() => checkSchedule(girl), 60000);
+            // Update interests
+            const interestsDiv = document.getElementById('profileInterests');
+            if (girl.interests && girl.interests.length > 0) {
+                interestsDiv.innerHTML = girl.interests.map(interest => 
+                    `<span class="interest-tag">${interest}</span>`
+                ).join('');
             } else {
-                scheduleContainer.innerHTML = '<div style="color: var(--muted);">Schedule not set</div>';
-                document.getElementById('purchaseBtn').disabled = true;
-                document.getElementById('queueInfo').textContent = 'Schedule not available';
+                interestsDiv.innerHTML = '<p>No interests specified yet.</p>';
             }
             
+            // Update dashboard link
+            document.getElementById('dashboardLink').href = `whisper-dashboard.html?whisperId=${girl.id}`;
+            
+            console.log('🎨 Displaying profile:', girl);
             console.log('✅ Profile displayed successfully');
         }
-        
+
         function showError(message) {
-            console.error('🚨 Showing error:', message);
             document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('profileContent').style.display = 'none';
             document.getElementById('errorMessage').style.display = 'block';
-            document.getElementById('pageTitle').textContent = 'PROFILE ERROR';
+            document.getElementById('errorMessage').innerHTML = `
+                <h3>Profile Not Found</h3>
+                <p>${message}</p>
+                <a href="shoot-your-shot.html" class="btn primary">Browse Whispers</a>
+            `;
         }
-        
-        function checkSchedule(girl) {
-            if (!girl.schedule) return;
-            
-            const now = new Date();
-            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
-                              now.getMinutes().toString().padStart(2, '0');
-            
-            let isActive = false;
-            girl.schedule.forEach(slot => {
-                const [start, end] = slot.split('-');
-                if (currentTime >= start && currentTime <= end) {
-                    isActive = true;
-                }
-            });
-            
-            const purchaseBtn = document.getElementById('purchaseBtn');
-            const queueInfo = document.getElementById('queueInfo');
-            
-            if (isActive) {
-                purchaseBtn.disabled = false;
-                queueInfo.textContent = 'Chat is LIVE! Join now.';
-                document.querySelectorAll('.time-slot').forEach(slot => {
-                    if (slot.textContent.includes(currentTime.substring(0,2))) {
-                        slot.classList.add('active');
-                    }
-                });
-            } else {
-                purchaseBtn.disabled = true;
-                queueInfo.textContent = 'Available during scheduled hours only';
+
+        function startChat() {
+            if (!currentGirl) {
+                alert('Please wait for the profile to load.');
+                return;
             }
+            
+            // For now, just show a message
+            alert(`Starting chat with ${currentGirl.displayName} would cost $15. This feature is coming soon!`);
+            
+            // In the future, this would:
+            // 1. Process payment
+            // 2. Create a chat session
+            // 3. Redirect to private chat page
         }
-        
-        function purchaseChat() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const girlId = urlParams.get('girl');
-            window.location.href = `payments.html?girl=${girlId}`;
-        }
-        
-        // Initialize when ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Starting girl profile page...');
-            loadGirlProfile();
-        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', loadProfile);
     </script>
 </body>
 </html>
-
-<!-- Add this to the girl profile page, maybe near the chat button -->
-<div style="margin-top: 20px; text-align: center;">
-    <a href="dater-dashboard.html?daterId=${girl.id}" class="btn" style="background: var(--accent2);">
-        📊 My Dashboard
-    </a>
-</div>

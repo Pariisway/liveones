@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dater Dashboard - House of Whispers</title>
+    <title>Whisper Dashboard - House of Whispers</title>
     <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
     <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
     <style>
@@ -59,7 +59,7 @@
     <div class="cyber-background"></div>
     <div class="main-wrap">
         <header class="site-header">
-            <div class="glowing-title title-large">DATER DASHBOARD</div>
+            <div class="glowing-title title-large">WHISPER DASHBOARD</div>
             <div class="glowing-title title-medium">MANAGE YOUR PROFILE & EARNINGS</div>
         </header>
 
@@ -95,11 +95,11 @@
                     <a href="girl-profile.html" id="viewProfileLink" class="btn primary">
                         👀 View Public Profile
                     </a>
-                    <a href="become-a-dater.html" class="btn">
+                    <a href="become-a-whisper.html" class="btn">
                         ✏️ Edit Profile
                     </a>
                     <a href="shoot-your-shot.html" class="btn">
-                        💘 Browse Other Daters
+                        💘 Browse Other Whispers
                     </a>
                     <button onclick="deleteMyProfile()" class="delete-profile-btn">
                         🗑️ Delete My Profile
@@ -113,34 +113,34 @@
 
             <div id="errorMessage" style="display: none; color: #ff4444; text-align: center;">
                 <h3>Profile Not Found</h3>
-                <p>We couldn't find your dater profile. Please make sure you're accessing this page with a valid profile ID.</p>
-                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
+                <p>We couldn't find your whisper profile. Please make sure you're accessing this page with a valid profile ID.</p>
+                <a href="become-a-whisper.html" class="btn primary">Create a Profile</a>
             </div>
         </div>
     </div>
 
     <script src="js/platform-manager.js"></script>
     <script>
-        let currentDater = null;
+        let currentWhisper = null;
 
         async function loadDashboard() {
-            console.log('🚀 Loading dater dashboard...');
+            console.log('🚀 Loading whisper dashboard...');
             
-            // Get dater ID from URL or localStorage
+            // Get whisper ID from URL or localStorage
             const urlParams = new URLSearchParams(window.location.search);
-            let daterId = urlParams.get('daterId');
+            let whisperId = urlParams.get('whisperId');
             
-            if (!daterId) {
+            if (!whisperId) {
                 // Try to get from localStorage
-                const storedDater = localStorage.getItem('currentDater');
-                if (storedDater) {
-                    const daterData = JSON.parse(storedDater);
-                    daterId = daterData.id;
+                const storedWhisper = localStorage.getItem('currentWhisper');
+                if (storedWhisper) {
+                    const whisperData = JSON.parse(storedWhisper);
+                    whisperId = whisperData.id;
                 }
             }
 
-            if (!daterId) {
-                showError('No dater profile specified. Please access this page from your profile.');
+            if (!whisperId) {
+                showError('No whisper profile specified. Please access this page from your profile.');
                 return;
             }
 
@@ -148,16 +148,16 @@
                 // Wait for platform manager to be ready
                 await waitForPlatformManager();
                 
-                console.log('📊 Fetching dater data for:', daterId);
-                currentDater = await window.platformManager.getDater(daterId);
+                console.log('📊 Fetching whisper data for:', whisperId);
+                currentWhisper = await window.platformManager.getWhisper(whisperId);
                 
-                if (!currentDater) {
-                    showError('Dater profile not found. It may have been deleted.');
+                if (!currentWhisper) {
+                    showError('Whisper profile not found. It may have been deleted.');
                     return;
                 }
 
-                console.log('✅ Dater data loaded:', currentDater);
-                displayDashboard(currentDater);
+                console.log('✅ Whisper data loaded:', currentWhisper);
+                displayDashboard(currentWhisper);
                 
             } catch (error) {
                 console.error('❌ Error loading dashboard:', error);
@@ -185,31 +185,31 @@
             });
         }
 
-        function displayDashboard(dater) {
+        function displayDashboard(whisper) {
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('dashboardContent').style.display = 'block';
             
             // Update profile info
-            document.getElementById('profileName').textContent = dater.displayName;
+            document.getElementById('profileName').textContent = whisper.displayName;
             document.getElementById('profileDetails').innerHTML = `
-                <p><strong>Username:</strong> ${dater.username}</p>
-                <p><strong>Location:</strong> ${dater.location}</p>
-                <p><strong>Bio:</strong> ${dater.bio || 'No bio yet'}</p>
-                <p><strong>Status:</strong> <span style="color: var(--accent1);">${dater.verification || 'Pending'}</span></p>
-                <p><strong>Member Since:</strong> ${new Date(dater.createdAt).toLocaleDateString()}</p>
+                <p><strong>Username:</strong> ${whisper.username}</p>
+                <p><strong>Location:</strong> ${whisper.location}</p>
+                <p><strong>Bio:</strong> ${whisper.bio || 'No bio yet'}</p>
+                <p><strong>Status:</strong> <span style="color: var(--accent1);">${whisper.verification || 'Pending'}</span></p>
+                <p><strong>Member Since:</strong> ${new Date(whisper.createdAt).toLocaleDateString()}</p>
             `;
             
             // Update stats
-            document.getElementById('totalEarnings').textContent = `$${dater.earnings || 0}`;
-            document.getElementById('totalChats').textContent = dater.totalChats || 0;
-            document.getElementById('profileRating').textContent = dater.rating ? dater.rating.toFixed(1) : '0.0';
-            document.getElementById('responseTime').textContent = dater.responseTime || '2 mins';
+            document.getElementById('totalEarnings').textContent = `$${whisper.earnings || 0}`;
+            document.getElementById('totalChats').textContent = whisper.totalChats || 0;
+            document.getElementById('profileRating').textContent = whisper.rating ? whisper.rating.toFixed(1) : '0.0';
+            document.getElementById('responseTime').textContent = whisper.responseTime || '2 mins';
             
             // Update view profile link
-            document.getElementById('viewProfileLink').href = `girl-profile.html?girl=${dater.id}`;
+            document.getElementById('viewProfileLink').href = `girl-profile.html?girl=${whisper.id}`;
             
-            // Store current dater for later use
-            localStorage.setItem('currentDater', JSON.stringify(dater));
+            // Store current whisper for later use
+            localStorage.setItem('currentWhisper', JSON.stringify(whisper));
         }
 
         function showError(message) {
@@ -218,22 +218,22 @@
             document.getElementById('errorMessage').innerHTML = `
                 <h3>Profile Not Found</h3>
                 <p>${message}</p>
-                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
-                <a href="dater-portal.html" class="btn">Dater Portal</a>
+                <a href="become-a-whisper.html" class="btn primary">Create a Profile</a>
+                <a href="whisper-portal.html" class="btn">Whisper Portal</a>
             `;
         }
 
         async function deleteMyProfile() {
-            if (!currentDater) {
+            if (!currentWhisper) {
                 alert('No profile loaded to delete.');
                 return;
             }
 
-            const confirmed = confirm(`Are you sure you want to delete your profile "${currentDater.displayName}"? This action cannot be undone and all your data will be lost.`);
+            const confirmed = confirm(`Are you sure you want to delete your profile "${currentWhisper.displayName}"? This action cannot be undone and all your data will be lost.`);
             
             if (confirmed) {
                 try {
-                    await window.platformManager.deleteDaterProfile(currentDater.id, false);
+                    await window.platformManager.deleteWhisperProfile(currentWhisper.id, false);
                     alert('Your profile has been deleted successfully.');
                     window.location.href = 'index.html';
                 } catch (error) {
@@ -248,14 +248,14 @@
     </script>
 </body>
 </html>
-EOF# Create a complete dater dashboard
-cat > dater-dashboard.html << 'EOF'
+EOF# Create a complete whisper dashboard
+cat > whisper-dashboard.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dater Dashboard - House of Whispers</title>
+    <title>Whisper Dashboard - House of Whispers</title>
     <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
     <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
     <style>
@@ -311,7 +311,7 @@ cat > dater-dashboard.html << 'EOF'
     <div class="cyber-background"></div>
     <div class="main-wrap">
         <header class="site-header">
-            <div class="glowing-title title-large">DATER DASHBOARD</div>
+            <div class="glowing-title title-large">WHISPER DASHBOARD</div>
             <div class="glowing-title title-medium">MANAGE YOUR PROFILE & EARNINGS</div>
         </header>
 
@@ -347,11 +347,11 @@ cat > dater-dashboard.html << 'EOF'
                     <a href="girl-profile.html" id="viewProfileLink" class="btn primary">
                         👀 View Public Profile
                     </a>
-                    <a href="become-a-dater.html" class="btn">
+                    <a href="become-a-whisper.html" class="btn">
                         ✏️ Edit Profile
                     </a>
                     <a href="shoot-your-shot.html" class="btn">
-                        💘 Browse Other Daters
+                        💘 Browse Other Whispers
                     </a>
                     <button onclick="deleteMyProfile()" class="delete-profile-btn">
                         🗑️ Delete My Profile
@@ -365,34 +365,34 @@ cat > dater-dashboard.html << 'EOF'
 
             <div id="errorMessage" style="display: none; color: #ff4444; text-align: center;">
                 <h3>Profile Not Found</h3>
-                <p>We couldn't find your dater profile. Please make sure you're accessing this page with a valid profile ID.</p>
-                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
+                <p>We couldn't find your whisper profile. Please make sure you're accessing this page with a valid profile ID.</p>
+                <a href="become-a-whisper.html" class="btn primary">Create a Profile</a>
             </div>
         </div>
     </div>
 
     <script src="js/platform-manager.js"></script>
     <script>
-        let currentDater = null;
+        let currentWhisper = null;
 
         async function loadDashboard() {
-            console.log('🚀 Loading dater dashboard...');
+            console.log('🚀 Loading whisper dashboard...');
             
-            // Get dater ID from URL or localStorage
+            // Get whisper ID from URL or localStorage
             const urlParams = new URLSearchParams(window.location.search);
-            let daterId = urlParams.get('daterId');
+            let whisperId = urlParams.get('whisperId');
             
-            if (!daterId) {
+            if (!whisperId) {
                 // Try to get from localStorage
-                const storedDater = localStorage.getItem('currentDater');
-                if (storedDater) {
-                    const daterData = JSON.parse(storedDater);
-                    daterId = daterData.id;
+                const storedWhisper = localStorage.getItem('currentWhisper');
+                if (storedWhisper) {
+                    const whisperData = JSON.parse(storedWhisper);
+                    whisperId = whisperData.id;
                 }
             }
 
-            if (!daterId) {
-                showError('No dater profile specified. Please access this page from your profile.');
+            if (!whisperId) {
+                showError('No whisper profile specified. Please access this page from your profile.');
                 return;
             }
 
@@ -400,16 +400,16 @@ cat > dater-dashboard.html << 'EOF'
                 // Wait for platform manager to be ready
                 await waitForPlatformManager();
                 
-                console.log('📊 Fetching dater data for:', daterId);
-                currentDater = await window.platformManager.getDater(daterId);
+                console.log('📊 Fetching whisper data for:', whisperId);
+                currentWhisper = await window.platformManager.getWhisper(whisperId);
                 
-                if (!currentDater) {
-                    showError('Dater profile not found. It may have been deleted.');
+                if (!currentWhisper) {
+                    showError('Whisper profile not found. It may have been deleted.');
                     return;
                 }
 
-                console.log('✅ Dater data loaded:', currentDater);
-                displayDashboard(currentDater);
+                console.log('✅ Whisper data loaded:', currentWhisper);
+                displayDashboard(currentWhisper);
                 
             } catch (error) {
                 console.error('❌ Error loading dashboard:', error);
@@ -437,31 +437,31 @@ cat > dater-dashboard.html << 'EOF'
             });
         }
 
-        function displayDashboard(dater) {
+        function displayDashboard(whisper) {
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('dashboardContent').style.display = 'block';
             
             // Update profile info
-            document.getElementById('profileName').textContent = dater.displayName;
+            document.getElementById('profileName').textContent = whisper.displayName;
             document.getElementById('profileDetails').innerHTML = `
-                <p><strong>Username:</strong> ${dater.username}</p>
-                <p><strong>Location:</strong> ${dater.location}</p>
-                <p><strong>Bio:</strong> ${dater.bio || 'No bio yet'}</p>
-                <p><strong>Status:</strong> <span style="color: var(--accent1);">${dater.verification || 'Pending'}</span></p>
-                <p><strong>Member Since:</strong> ${new Date(dater.createdAt).toLocaleDateString()}</p>
+                <p><strong>Username:</strong> ${whisper.username}</p>
+                <p><strong>Location:</strong> ${whisper.location}</p>
+                <p><strong>Bio:</strong> ${whisper.bio || 'No bio yet'}</p>
+                <p><strong>Status:</strong> <span style="color: var(--accent1);">${whisper.verification || 'Pending'}</span></p>
+                <p><strong>Member Since:</strong> ${new Date(whisper.createdAt).toLocaleDateString()}</p>
             `;
             
             // Update stats
-            document.getElementById('totalEarnings').textContent = `$${dater.earnings || 0}`;
-            document.getElementById('totalChats').textContent = dater.totalChats || 0;
-            document.getElementById('profileRating').textContent = dater.rating ? dater.rating.toFixed(1) : '0.0';
-            document.getElementById('responseTime').textContent = dater.responseTime || '2 mins';
+            document.getElementById('totalEarnings').textContent = `$${whisper.earnings || 0}`;
+            document.getElementById('totalChats').textContent = whisper.totalChats || 0;
+            document.getElementById('profileRating').textContent = whisper.rating ? whisper.rating.toFixed(1) : '0.0';
+            document.getElementById('responseTime').textContent = whisper.responseTime || '2 mins';
             
             // Update view profile link
-            document.getElementById('viewProfileLink').href = `girl-profile.html?girl=${dater.id}`;
+            document.getElementById('viewProfileLink').href = `girl-profile.html?girl=${whisper.id}`;
             
-            // Store current dater for later use
-            localStorage.setItem('currentDater', JSON.stringify(dater));
+            // Store current whisper for later use
+            localStorage.setItem('currentWhisper', JSON.stringify(whisper));
         }
 
         function showError(message) {
@@ -470,22 +470,22 @@ cat > dater-dashboard.html << 'EOF'
             document.getElementById('errorMessage').innerHTML = `
                 <h3>Profile Not Found</h3>
                 <p>${message}</p>
-                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
-                <a href="dater-portal.html" class="btn">Dater Portal</a>
+                <a href="become-a-whisper.html" class="btn primary">Create a Profile</a>
+                <a href="whisper-portal.html" class="btn">Whisper Portal</a>
             `;
         }
 
         async function deleteMyProfile() {
-            if (!currentDater) {
+            if (!currentWhisper) {
                 alert('No profile loaded to delete.');
                 return;
             }
 
-            const confirmed = confirm(`Are you sure you want to delete your profile "${currentDater.displayName}"? This action cannot be undone and all your data will be lost.`);
+            const confirmed = confirm(`Are you sure you want to delete your profile "${currentWhisper.displayName}"? This action cannot be undone and all your data will be lost.`);
             
             if (confirmed) {
                 try {
-                    await window.platformManager.deleteDaterProfile(currentDater.id, false);
+                    await window.platformManager.deleteWhisperProfile(currentWhisper.id, false);
                     alert('Your profile has been deleted successfully.');
                     window.location.href = 'index.html';
                 } catch (error) {

@@ -1,0 +1,26 @@
+// Replace the platform manager check in dater-signup.html with this:
+
+// Wait for platform manager to initialize
+let platformCheckAttempts = 0;
+const maxPlatformCheckAttempts = 10;
+
+function checkPlatformManager() {
+    platformCheckAttempts++;
+    
+    if (window.platformManager && window.platformManager.initialized) {
+        console.log('✅ Platform manager ready!');
+        // Enable form or show success message
+        document.getElementById('createProfileBtn').disabled = false;
+        return;
+    }
+    
+    if (platformCheckAttempts < maxPlatformCheckAttempts) {
+        setTimeout(checkPlatformManager, 500);
+    } else {
+        console.warn('⚠️ Platform manager not available, but form will still work');
+        // Form will work with localStorage fallback
+    }
+}
+
+// Start checking for platform manager
+setTimeout(checkPlatformManager, 1000);

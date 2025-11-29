@@ -75,32 +75,32 @@
         const elements = stripe.elements();
         
         let cardElement;
-        let daterId;
+        let whisperId;
         let daterName;
 
         // Initialize payment page
         document.addEventListener('DOMContentLoaded', async function() {
             // Get dater info from URL
             const urlParams = new URLSearchParams(window.location.search);
-            daterId = urlParams.get('girl');
+            whisperId = urlParams.get('girl');
             
-            if (!daterId) {
+            if (!whisperId) {
                 alert('No dater selected');
                 window.location.href = 'shoot-your-shot.html';
                 return;
             }
             
             // Load dater info
-            await loadDaterInfo(daterId);
+            await loadDaterInfo(whisperId);
             
             // Setup Stripe elements
             setupStripe();
         });
 
-        async function loadDaterInfo(daterId) {
+        async function loadDaterInfo(whisperId) {
             try {
                 const daters = await platformManager.getAllDaters();
-                const dater = daters.find(d => d.id === daterId);
+                const dater = daters.find(d => d.id === whisperId);
                 
                 if (dater) {
                     document.getElementById('daterName').textContent = dater.displayName;
@@ -169,7 +169,7 @@
         async function processPayment() {
             try {
                 // Replace the createPaymentIntent function in payments.html:
-async function createPaymentIntent(paymentMethodId, daterId) {
+async function createPaymentIntent(paymentMethodId, whisperId) {
     try {
         const response = await fetch('/api/create-payment-intent', {
             method: 'POST',
@@ -177,7 +177,7 @@ async function createPaymentIntent(paymentMethodId, daterId) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                daterId: daterId
+                whisperId: whisperId
             }),
         });
         
@@ -206,7 +206,7 @@ async function createPaymentIntent(paymentMethodId, daterId) {
 }
 
         // This function calls your backend - you'll need to create this
-        async function createPaymentIntent(paymentMethodId, daterId) {
+        async function createPaymentIntent(paymentMethodId, whisperId) {
             // For now, we'll simulate success
             // In production, you need a backend server for this
             return {
@@ -223,7 +223,7 @@ async function createPaymentIntent(paymentMethodId, daterId) {
                 },
                 body: JSON.stringify({
                     paymentMethodId: paymentMethodId,
-                    daterId: daterId,
+                    whisperId: whisperId,
                     amount: 1500, // $15.00 in cents
                     currency: 'usd'
                 }),

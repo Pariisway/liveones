@@ -192,7 +192,7 @@
             </form>
         </div>
 
-        <a href="become-a-dater.html" class="back-btn">← Back</a>
+        <a href="become-a-whisper.html" class="back-btn">← Back</a>
     </main>
 
     <!-- ✅ FIXED: Add Firebase Config BEFORE platform-manager.js -->
@@ -319,8 +319,8 @@
                 console.log('Attempting to add dater to platform manager...');
                 
                 // ✅ FIXED: Wait for the async operation
-                const daterId = await platformManager.addDater(daterData);
-                console.log('Dater added successfully! ID:', daterId);
+                const whisperId = await platformManager.addDater(daterData);
+                console.log('Dater added successfully! ID:', whisperId);
                 
                 alert('🎉 Dater profile created successfully! You can now receive paid chat requests.');
                 setTimeout(() => {

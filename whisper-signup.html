@@ -98,11 +98,32 @@
         .nav-buttons .btn {
             flex: 1;
         }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #EF4444;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #10B981;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎙️ Create Your Whisper Profile</h1>
+        
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
         
         <form id="whisperForm">
             <div class="form-group">
@@ -145,13 +166,72 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        // Initialize Firebase
+        console.log('🚀 Initializing Firebase...');
+        firebase.initializeApp(firebaseConfig);
+        console.log('✅ Firebase initialized successfully');
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Check authentication state when page loads
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                console.log('❌ User not authenticated, redirecting to login');
+                showError('Please sign in to create a whisper profile');
+                setTimeout(() => {
+                    window.location.href = 'login.html?redirect=whisper-signup.html';
+                }, 2000);
+            } else {
+                console.log('✅ User authenticated:', user.email);
+                // Check if user already has a profile
+                checkExistingProfile(user.uid);
+            }
+        });
+
+        async function checkExistingProfile(userId) {
+            try {
+                const doc = await db.collection('whispers').doc(userId).get();
+                if (doc.exists) {
+                    showError('You already have a whisper profile! Redirecting to portal...');
+                    setTimeout(() => {
+                        window.location.href = 'whisper-portal.html';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error checking profile:', error);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
         document.getElementById('whisperForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const user = firebase.auth().currentUser;
+            const user = auth.currentUser;
             if (!user) {
-                alert('Please sign in first');
-                window.location.href = 'login.html';
+                showError('Please sign in first');
                 return;
             }
             
@@ -162,18 +242,28 @@
                 location: document.getElementById('location').value,
                 avatar: document.getElementById('avatar').value,
                 userId: user.uid,
-                username: user.email.split('@')[0],
+                username: user.email ? user.email.split('@')[0] : 'user',
+                email: user.email,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                isActive: true
+                isActive: true,
+                rating: 5.0,
+                verification: 'Verified',
+                totalCalls: 0,
+                totalEarnings: 0
             };
             
             try {
-                await firebase.firestore().collection('whispers').doc(user.uid).set(profileData);
-                alert('Profile created successfully!');
-                window.location.href = 'whisper-portal.html';
+                console.log('📝 Creating profile for user:', user.uid);
+                await db.collection('whispers').doc(user.uid).set(profileData);
+                console.log('✅ Profile created successfully');
+                
+                showSuccess('Profile created successfully! Redirecting to portal...');
+                setTimeout(() => {
+                    window.location.href = 'whisper-portal.html';
+                }, 2000);
             } catch (error) {
-                console.error('Error creating profile:', error);
-                alert('Error creating profile: ' + error.message);
+                console.error('❌ Error creating profile:', error);
+                showError('Error creating profile: ' + error.message);
             }
         });
     </script>

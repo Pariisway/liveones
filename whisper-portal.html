@@ -78,6 +78,10 @@
         
         .profile-info {
             margin: 20px 0;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
         }
         
         .no-profile {
@@ -85,6 +89,33 @@
             padding: 2rem;
             border-radius: 15px;
             border-left: 4px solid #F59E0B;
+        }
+        
+        .has-profile {
+            background: rgba(16, 185, 129, 0.2);
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 4px solid #10B981;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -95,10 +126,13 @@
             <p>Manage your whisper profile and earnings</p>
         </div>
         
-        <div id="profileSection" class="portal-card no-profile">
-            <h2>No Profile Yet</h2>
-            <p>Create your whisper profile to start earning</p>
-            <a href="whisper-signup.html" class="btn">Create Whisper Profile</a>
+        <div id="loadingSection" class="loading">
+            <div class="spinner"></div>
+            <p>Loading your portal...</p>
+        </div>
+        
+        <div id="profileSection" style="display: none;">
+            <!-- Profile content will be loaded here -->
         </div>
         
         <div class="portal-card">
@@ -117,43 +151,97 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Auth System -->
-    <script src="js/firebase-auth.js"></script>
-    
     <script>
-        // Check if user has a whisper profile
-        document.addEventListener('DOMContentLoaded', function() {
-            const user = firebase.auth().currentUser;
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        // Initialize Firebase
+        console.log('🚀 Initializing Firebase for portal...');
+        firebase.initializeApp(firebaseConfig);
+        console.log('✅ Firebase initialized successfully');
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Check authentication state
+        auth.onAuthStateChanged((user) => {
+            const loadingSection = document.getElementById('loadingSection');
+            const profileSection = document.getElementById('profileSection');
+            
             if (!user) {
-                window.location.href = 'login.html';
+                console.log('❌ User not authenticated, redirecting to login');
+                loadingSection.innerHTML = `
+                    <p>Please sign in to access your portal</p>
+                    <a href="login.html?redirect=whisper-portal.html" class="btn">Sign In</a>
+                `;
                 return;
             }
-            
-            // Check for existing profile
-            firebase.firestore().collection('whispers').doc(user.uid).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        document.getElementById('profileSection').innerHTML = `
-                            <h2>Welcome, ${data.displayName}!</h2>
+
+            console.log('✅ User authenticated:', user.email);
+            checkUserProfile(user.uid);
+        });
+
+        async function checkUserProfile(userId) {
+            try {
+                console.log('🔍 Checking profile for user:', userId);
+                const doc = await db.collection('whispers').doc(userId).get();
+                
+                const loadingSection = document.getElementById('loadingSection');
+                const profileSection = document.getElementById('profileSection');
+                
+                loadingSection.style.display = 'none';
+                profileSection.style.display = 'block';
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    console.log('✅ Profile found:', data.displayName);
+                    profileSection.innerHTML = `
+                        <div class="portal-card has-profile">
+                            <h2>Welcome, ${data.displayName}! 👋</h2>
                             <div class="profile-info">
                                 <p><strong>Bio:</strong> ${data.bio}</p>
                                 <p><strong>Location:</strong> ${data.location}</p>
                                 <p><strong>Interests:</strong> ${data.interests}</p>
+                                <p><strong>Rating:</strong> ⭐ ${data.rating || '5.0'}</p>
+                                <p><strong>Status:</strong> ${data.verification || 'Verified'} ✅</p>
                             </div>
                             <a href="whisper-signup.html" class="btn">Edit Profile</a>
-                        `;
-                        document.getElementById('profileSection').classList.remove('no-profile');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking profile:', error);
-                });
-        });
-        
+                        </div>
+                    `;
+                } else {
+                    console.log('❌ No profile found');
+                    profileSection.innerHTML = `
+                        <div class="portal-card no-profile">
+                            <h2>No Profile Yet</h2>
+                            <p>Create your whisper profile to start earning money with 5-minute voice calls</p>
+                            <a href="whisper-signup.html" class="btn">Create Whisper Profile</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error checking profile:', error);
+                const loadingSection = document.getElementById('loadingSection');
+                loadingSection.innerHTML = `
+                    <p>Error loading profile: ${error.message}</p>
+                    <button onclick="window.location.reload()" class="btn">Try Again</button>
+                `;
+            }
+        }
+
         function signOutUser() {
-            firebase.auth().signOut().then(() => {
+            auth.signOut().then(() => {
+                console.log('✅ User signed out');
                 window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error('❌ Sign out error:', error);
             });
         }
     </script>

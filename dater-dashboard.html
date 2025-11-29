@@ -4,61 +4,499 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dater Dashboard - House of Whispers</title>
+    <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
+    <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
     <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--accent1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent1);
+        }
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.9em;
+        }
+        .profile-actions {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+        }
         .delete-profile-btn {
             background: linear-gradient(145deg, #ff4444, #cc0000);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
+            font-size: 16px;
         }
         .delete-profile-btn:hover {
             background: linear-gradient(145deg, #cc0000, #990000);
         }
+        .profile-info {
+            background: var(--card-bg);
+            border: 1px solid var(--accent2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
     </style>
 </head>
-<body>
-    <!-- Your existing dashboard content -->
-    
-    <div class="dashboard-section">
-        <h3>Account Management</h3>
-        <button class="delete-profile-btn" onclick="deleteMyProfile()">
-            🗑️ Delete My Profile
-        </button>
-        <p style="color: #666; font-size: 14px; margin-top: 10px;">
-            This will permanently remove your profile and all associated data.
-        </p>
+<body class="fonts-loading">
+    <div class="cyber-background"></div>
+    <div class="main-wrap">
+        <header class="site-header">
+            <div class="glowing-title title-large">DATER DASHBOARD</div>
+            <div class="glowing-title title-medium">MANAGE YOUR PROFILE & EARNINGS</div>
+        </header>
+
+        <div class="panel">
+            <div id="loadingMessage">Loading your dashboard...</div>
+            
+            <div id="dashboardContent" style="display: none;">
+                <div class="profile-info">
+                    <h2 id="profileName" class="glowing-title title-medium">Your Profile</h2>
+                    <div id="profileDetails"></div>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEarnings">$0</div>
+                        <div class="stat-label">Total Earnings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalChats">0</div>
+                        <div class="stat-label">Total Chats</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="profileRating">0.0</div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="responseTime">-</div>
+                        <div class="stat-label">Avg. Response</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="girl-profile.html" id="viewProfileLink" class="btn primary">
+                        👀 View Public Profile
+                    </a>
+                    <a href="become-a-dater.html" class="btn">
+                        ✏️ Edit Profile
+                    </a>
+                    <a href="shoot-your-shot.html" class="btn">
+                        💘 Browse Other Daters
+                    </a>
+                    <button onclick="deleteMyProfile()" class="delete-profile-btn">
+                        🗑️ Delete My Profile
+                    </button>
+                </div>
+
+                <div style="margin-top: 30px; color: var(--muted); font-size: 14px;">
+                    <p><strong>Need help?</strong> Contact support if you have any questions about your dashboard.</p>
+                </div>
+            </div>
+
+            <div id="errorMessage" style="display: none; color: #ff4444; text-align: center;">
+                <h3>Profile Not Found</h3>
+                <p>We couldn't find your dater profile. Please make sure you're accessing this page with a valid profile ID.</p>
+                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
+            </div>
+        </div>
     </div>
 
+    <script src="js/platform-manager.js"></script>
     <script>
-        async function deleteMyProfile() {
+        let currentDater = null;
+
+        async function loadDashboard() {
+            console.log('🚀 Loading dater dashboard...');
+            
+            // Get dater ID from URL or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            let daterId = urlParams.get('daterId');
+            
+            if (!daterId) {
+                // Try to get from localStorage
+                const storedDater = localStorage.getItem('currentDater');
+                if (storedDater) {
+                    const daterData = JSON.parse(storedDater);
+                    daterId = daterData.id;
+                }
+            }
+
+            if (!daterId) {
+                showError('No dater profile specified. Please access this page from your profile.');
+                return;
+            }
+
             try {
-                // Get current dater ID from localStorage or URL
-                const currentDater = JSON.parse(localStorage.getItem('currentDater') || '{}');
-                const daterId = currentDater.id || getDaterIdFromURL();
+                // Wait for platform manager to be ready
+                await waitForPlatformManager();
                 
-                if (!daterId) {
-                    alert('Could not find your profile ID. Please contact support.');
+                console.log('📊 Fetching dater data for:', daterId);
+                currentDater = await window.platformManager.getDater(daterId);
+                
+                if (!currentDater) {
+                    showError('Dater profile not found. It may have been deleted.');
                     return;
                 }
 
-                if (window.platformManager && window.platformManager.deleteDaterProfile) {
-                    await window.platformManager.deleteDaterProfile(daterId);
-                } else {
-                    alert('Platform manager not available. Please refresh the page and try again.');
-                }
+                console.log('✅ Dater data loaded:', currentDater);
+                displayDashboard(currentDater);
+                
             } catch (error) {
-                console.error('Error deleting profile:', error);
-                alert('Failed to delete profile: ' + error.message);
+                console.error('❌ Error loading dashboard:', error);
+                showError('Failed to load dashboard: ' + error.message);
             }
         }
 
-        function getDaterIdFromURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('daterId');
+        function waitForPlatformManager() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 20; // 10 seconds max
+                
+                function check() {
+                    attempts++;
+                    if (window.platformManager && window.platformManager.initialized) {
+                        resolve();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(check, 500);
+                    } else {
+                        reject(new Error('Platform manager failed to initialize'));
+                    }
+                }
+                
+                check();
+            });
         }
+
+        function displayDashboard(dater) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+            
+            // Update profile info
+            document.getElementById('profileName').textContent = dater.displayName;
+            document.getElementById('profileDetails').innerHTML = `
+                <p><strong>Username:</strong> ${dater.username}</p>
+                <p><strong>Location:</strong> ${dater.location}</p>
+                <p><strong>Bio:</strong> ${dater.bio || 'No bio yet'}</p>
+                <p><strong>Status:</strong> <span style="color: var(--accent1);">${dater.verification || 'Pending'}</span></p>
+                <p><strong>Member Since:</strong> ${new Date(dater.createdAt).toLocaleDateString()}</p>
+            `;
+            
+            // Update stats
+            document.getElementById('totalEarnings').textContent = `$${dater.earnings || 0}`;
+            document.getElementById('totalChats').textContent = dater.totalChats || 0;
+            document.getElementById('profileRating').textContent = dater.rating ? dater.rating.toFixed(1) : '0.0';
+            document.getElementById('responseTime').textContent = dater.responseTime || '2 mins';
+            
+            // Update view profile link
+            document.getElementById('viewProfileLink').href = `girl-profile.html?girl=${dater.id}`;
+            
+            // Store current dater for later use
+            localStorage.setItem('currentDater', JSON.stringify(dater));
+        }
+
+        function showError(message) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').innerHTML = `
+                <h3>Profile Not Found</h3>
+                <p>${message}</p>
+                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
+                <a href="dater-portal.html" class="btn">Dater Portal</a>
+            `;
+        }
+
+        async function deleteMyProfile() {
+            if (!currentDater) {
+                alert('No profile loaded to delete.');
+                return;
+            }
+
+            const confirmed = confirm(`Are you sure you want to delete your profile "${currentDater.displayName}"? This action cannot be undone and all your data will be lost.`);
+            
+            if (confirmed) {
+                try {
+                    await window.platformManager.deleteDaterProfile(currentDater.id, false);
+                    alert('Your profile has been deleted successfully.');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error deleting profile:', error);
+                    alert('Failed to delete profile: ' + error.message);
+                }
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>
+EOF# Create a complete dater dashboard
+cat > dater-dashboard.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dater Dashboard - House of Whispers</title>
+    <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
+    <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--accent1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent1);
+        }
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.9em;
+        }
+        .profile-actions {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .delete-profile-btn {
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .delete-profile-btn:hover {
+            background: linear-gradient(145deg, #cc0000, #990000);
+        }
+        .profile-info {
+            background: var(--card-bg);
+            border: 1px solid var(--accent2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="fonts-loading">
+    <div class="cyber-background"></div>
+    <div class="main-wrap">
+        <header class="site-header">
+            <div class="glowing-title title-large">DATER DASHBOARD</div>
+            <div class="glowing-title title-medium">MANAGE YOUR PROFILE & EARNINGS</div>
+        </header>
+
+        <div class="panel">
+            <div id="loadingMessage">Loading your dashboard...</div>
+            
+            <div id="dashboardContent" style="display: none;">
+                <div class="profile-info">
+                    <h2 id="profileName" class="glowing-title title-medium">Your Profile</h2>
+                    <div id="profileDetails"></div>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEarnings">$0</div>
+                        <div class="stat-label">Total Earnings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalChats">0</div>
+                        <div class="stat-label">Total Chats</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="profileRating">0.0</div>
+                        <div class="stat-label">Rating</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="responseTime">-</div>
+                        <div class="stat-label">Avg. Response</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="girl-profile.html" id="viewProfileLink" class="btn primary">
+                        👀 View Public Profile
+                    </a>
+                    <a href="become-a-dater.html" class="btn">
+                        ✏️ Edit Profile
+                    </a>
+                    <a href="shoot-your-shot.html" class="btn">
+                        💘 Browse Other Daters
+                    </a>
+                    <button onclick="deleteMyProfile()" class="delete-profile-btn">
+                        🗑️ Delete My Profile
+                    </button>
+                </div>
+
+                <div style="margin-top: 30px; color: var(--muted); font-size: 14px;">
+                    <p><strong>Need help?</strong> Contact support if you have any questions about your dashboard.</p>
+                </div>
+            </div>
+
+            <div id="errorMessage" style="display: none; color: #ff4444; text-align: center;">
+                <h3>Profile Not Found</h3>
+                <p>We couldn't find your dater profile. Please make sure you're accessing this page with a valid profile ID.</p>
+                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/platform-manager.js"></script>
+    <script>
+        let currentDater = null;
+
+        async function loadDashboard() {
+            console.log('🚀 Loading dater dashboard...');
+            
+            // Get dater ID from URL or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            let daterId = urlParams.get('daterId');
+            
+            if (!daterId) {
+                // Try to get from localStorage
+                const storedDater = localStorage.getItem('currentDater');
+                if (storedDater) {
+                    const daterData = JSON.parse(storedDater);
+                    daterId = daterData.id;
+                }
+            }
+
+            if (!daterId) {
+                showError('No dater profile specified. Please access this page from your profile.');
+                return;
+            }
+
+            try {
+                // Wait for platform manager to be ready
+                await waitForPlatformManager();
+                
+                console.log('📊 Fetching dater data for:', daterId);
+                currentDater = await window.platformManager.getDater(daterId);
+                
+                if (!currentDater) {
+                    showError('Dater profile not found. It may have been deleted.');
+                    return;
+                }
+
+                console.log('✅ Dater data loaded:', currentDater);
+                displayDashboard(currentDater);
+                
+            } catch (error) {
+                console.error('❌ Error loading dashboard:', error);
+                showError('Failed to load dashboard: ' + error.message);
+            }
+        }
+
+        function waitForPlatformManager() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 20; // 10 seconds max
+                
+                function check() {
+                    attempts++;
+                    if (window.platformManager && window.platformManager.initialized) {
+                        resolve();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(check, 500);
+                    } else {
+                        reject(new Error('Platform manager failed to initialize'));
+                    }
+                }
+                
+                check();
+            });
+        }
+
+        function displayDashboard(dater) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+            
+            // Update profile info
+            document.getElementById('profileName').textContent = dater.displayName;
+            document.getElementById('profileDetails').innerHTML = `
+                <p><strong>Username:</strong> ${dater.username}</p>
+                <p><strong>Location:</strong> ${dater.location}</p>
+                <p><strong>Bio:</strong> ${dater.bio || 'No bio yet'}</p>
+                <p><strong>Status:</strong> <span style="color: var(--accent1);">${dater.verification || 'Pending'}</span></p>
+                <p><strong>Member Since:</strong> ${new Date(dater.createdAt).toLocaleDateString()}</p>
+            `;
+            
+            // Update stats
+            document.getElementById('totalEarnings').textContent = `$${dater.earnings || 0}`;
+            document.getElementById('totalChats').textContent = dater.totalChats || 0;
+            document.getElementById('profileRating').textContent = dater.rating ? dater.rating.toFixed(1) : '0.0';
+            document.getElementById('responseTime').textContent = dater.responseTime || '2 mins';
+            
+            // Update view profile link
+            document.getElementById('viewProfileLink').href = `girl-profile.html?girl=${dater.id}`;
+            
+            // Store current dater for later use
+            localStorage.setItem('currentDater', JSON.stringify(dater));
+        }
+
+        function showError(message) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').innerHTML = `
+                <h3>Profile Not Found</h3>
+                <p>${message}</p>
+                <a href="become-a-dater.html" class="btn primary">Create a Profile</a>
+                <a href="dater-portal.html" class="btn">Dater Portal</a>
+            `;
+        }
+
+        async function deleteMyProfile() {
+            if (!currentDater) {
+                alert('No profile loaded to delete.');
+                return;
+            }
+
+            const confirmed = confirm(`Are you sure you want to delete your profile "${currentDater.displayName}"? This action cannot be undone and all your data will be lost.`);
+            
+            if (confirmed) {
+                try {
+                    await window.platformManager.deleteDaterProfile(currentDater.id, false);
+                    alert('Your profile has been deleted successfully.');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error deleting profile:', error);
+                    alert('Failed to delete profile: ' + error.message);
+                }
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', loadDashboard);
     </script>
 </body>
 </html>

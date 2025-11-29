@@ -44,27 +44,21 @@
             font-weight: bold;
             margin-left: 5px;
         }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="main-header">
             <h1>🎯 Shoot Your Shot</h1>
-            <p>Connect with amazing whispers for 5-minute voice calls for 5-minute voice calls for 5-minute voice calls</p>
+            <p>Connect with amazing whispers for 5-minute voice calls</p>
+            <p class="subtitle">Private 5 minute voice chats • $15 per chat • Instant connection</p>
         </header>
-
-        <div class="filters-section">
-            <div class="filter-group">
-                <input type="text" id="searchInput" placeholder="Search whispers..." class="search-input">
-                <select id="categoryFilter" class="filter-select">
-                    <option value="">All Categories</option>
-                    <option value="dating">Dating Advice</option>
-                    <option value="life">Life Coaching</option>
-                    <option value="fun">Just for Fun</option>
-                    <option value="professional">Professional</option>
-                </select>
-            </div>
-        </div>
 
         <div class="content-section">
             <div id="loadingMessage" class="loading-message">
@@ -84,92 +78,11 @@
         </div>
     </div>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-            authDomain: "house-of-whispers.firebaseapp.com",
-            projectId: "house-of-whispers",
-            storageBucket: "house-of-whispers.firebasestorage.app",
-            messagingSenderId: "1063333130646",
-            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-            measurementId: "G-06QR5LFKJ9"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-    </script>
+    
+    <!-- Dating System -->
     <script src="js/dating-system.js"></script>
-    <script>
-        // Enhanced displayWhispers function with payment buttons
-        function displayWhispers(whispers) {
-            document.getElementById('loadingMessage').style.display = 'none';
-            
-            const girlsGrid = document.getElementById('girlsGrid');
-            girlsGrid.innerHTML = '';
-
-            whispers.forEach(whisper => {
-                const girlCard = document.createElement('div');
-                girlCard.className = 'girl-card';
-                girlCard.innerHTML = `
-                    <div class="girl-avatar">
-                        <span style="font-size: 60px;">${whisper.avatar || '👤'}</span>
-                        <div class="online-indicator online"></div>
-                    </div>
-                    <div class="girl-info">
-                        <h3>${whisper.displayName || whisper.username}
-                            <span class="pricing-badge">$15/5min</span>
-                        </h3>
-                        <p class="girl-location">📍 ${whisper.location || 'Location not set'}</p>
-                        <p class="girl-bio">${whisper.bio || 'No bio yet'}</p>
-                        <div class="girl-stats">
-                            <span class="verification-badge">${whisper.verification || 'Pending'}</span>
-                            <span class="rating">⭐ ${whisper.rating || '0.0'}</span>
-                        </div>
-                    </div>
-                    <div class="button-group">
-                        <button class="btn primary start-chat-btn" onclick="viewProfile('${whisper.id}')">
-                            💘 View Profile
-                        </button>
-                        <a href="call-payment.html?whisperId=${whisper.id}" class="call-button">
-                            🎙️ Call Now - $15
-                        </a>
-                    </div>
-                `;
-                girlsGrid.appendChild(girlCard);
-            });
-
-            console.log('✅ Whispers displayed with payment buttons');
-        }
-
-        function showNoWhispers() {
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'block';
-        }
-
-        function showError(message) {
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('errorMessage').style.display = 'block';
-            document.getElementById('errorMessage').innerHTML = `
-                <h3>Error Loading Whispers</h3>
-                <p>${message}</p>
-                <button onclick="loadWhispersDirectly()" class="btn primary">Try Again</button>
-            `;
-        }
-
-        // View profile function
-        function viewProfile(whisperId) {
-            // For now, redirect to payment page. Later you can create profile pages.
-            window.location.href = `call-payment.html?whisperId=${whisperId}`;
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Shoot Your Shot page loaded');
-            // Your existing loadWhispers function will be called from dating-system.js
-        });
-    </script>
 </body>
 </html>

@@ -1,285 +1,177 @@
-/*************************************************************************
- * SHOOT YOUR SHOT DATING SYSTEM - FIXED VERSION
- * Removed duplicate section injection
- *************************************************************************/
+// Dating System - Fixed Version
+console.log('💘 Dating System: DOM loaded');
 
-// Girl data management with Firebase support - FIXED
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+    authDomain: "house-of-whispers.firebaseapp.com",
+    projectId: "house-of-whispers",
+    storageBucket: "house-of-whispers.firebasestorage.app",
+    messagingSenderId: "1063333130646",
+    appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+    measurementId: "G-06QR5LFKJ9"
+};
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
+let girlsData = [];
+let isLoading = false;
+
 async function getGirlsData() {
+    if (isLoading) {
+        console.log('⏳ Already loading, skipping...');
+        return girlsData;
+    }
+    
+    isLoading = true;
+    console.log('🔄 getGirlsData: Starting...');
+    
     try {
-        console.log('🔄 getGirlsData: Checking platform manager...');
+        const querySnapshot = await db.collection('whispers').get();
+        girlsData = [];
         
-        if (window.platformManager && platformManager.initialized) {
-            console.log('✅ Platform manager found and initialized');
-            const daters = await platformManager.getAllDaters();
-            console.log('📊 Retrieved daters from platform manager:', daters);
-            
-            const girlsData = {};
-            
-            daters.forEach(dater => {
-                // Use dater.id as the key for consistency
-                girlsData[dater.id] = {
-                    id: dater.id,
-                    name: dater.displayName,
-                    avatar: dater.avatar,
-                    location: dater.location,
-                    bio: dater.bio,
-                    schedule: dater.schedule || [],
-                    timezone: dater.timezone,
-                    interests: dater.interests || [],
-                    verification: dater.verification || 'Pending Verification',
-                    responseTime: 'Usually replies in 2 mins',
-                    earnings: dater.earnings || 0,
-                    totalChats: dater.totalChats || 0,
-                    rating: dater.rating || 0
-                };
+        querySnapshot.forEach((doc) => {
+            girlsData.push({ 
+                id: doc.id, 
+                ...doc.data() 
             });
-            
-            if (Object.keys(girlsData).length > 0) {
-                console.log('✅ Successfully loaded', Object.keys(girlsData).length, 'daters from platform manager');
-                return girlsData;
-            } else {
-                console.log('ℹ️ No daters found in platform manager');
-            }
-        } else {
-            console.warn('❌ Platform manager not available or not initialized');
-        }
-    } catch (error) {
-        console.error('❌ Error getting daters from platform manager:', error);
-    }
-    
-    // Fallback to localStorage or mock data - ONLY if platform manager fails
-    console.log('🔄 Falling back to alternative data source...');
-    return getFallbackGirlsData();
-}
-
-// Fallback data function
-function getFallbackGirlsData() {
-    try {
-        // Check localStorage first
-        const storedGirls = localStorage.getItem('girlsData');
-        if (storedGirls) {
-            console.log('📁 Loading girls data from localStorage');
-            return JSON.parse(storedGirls);
-        }
-    } catch (error) {
-        console.warn('❌ Error loading from localStorage:', error);
-    }
-    
-    // Final fallback - mock data
-    console.log('🎭 Using mock girls data');
-    return {
-        "1": {
-            id: "1",
-            name: "Jessica",
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-            location: "New York, NY",
-            bio: "Love hiking and coffee dates ☕",
-            schedule: ["Monday", "Wednesday", "Friday"],
-            timezone: "EST",
-            interests: ["Hiking", "Coffee", "Travel"],
-            verification: "Verified",
-            responseTime: "Usually replies in 2 mins",
-            earnings: 1250,
-            totalChats: 45,
-            rating: 4.8
-        },
-        "2": {
-            id: "2",
-            name: "Sarah",
-            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-            location: "Los Angeles, CA",
-            bio: "Artist and dog lover 🎨🐕",
-            schedule: ["Tuesday", "Thursday", "Saturday"],
-            timezone: "PST",
-            interests: ["Art", "Dogs", "Movies"],
-            verification: "Verified",
-            responseTime: "Usually replies in 5 mins",
-            earnings: 980,
-            totalChats: 32,
-            rating: 4.6
-        },
-        "3": {
-            id: "3",
-            name: "Maya",
-            avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
-            location: "Chicago, IL",
-            bio: "Foodie and travel enthusiast 🌎",
-            schedule: ["Monday", "Tuesday", "Weekends"],
-            timezone: "CST",
-            interests: ["Food", "Travel", "Photography"],
-            verification: "Pending Verification",
-            responseTime: "Usually replies in 10 mins",
-            earnings: 650,
-            totalChats: 28,
-            rating: 4.7
-        }
-    };
-}
-
-// Save girls data to localStorage
-function saveGirlsData(girlsData) {
-    try {
-        localStorage.setItem('girlsData', JSON.stringify(girlsData));
-        console.log('💾 Girls data saved to localStorage');
-    } catch (error) {
-        console.error('❌ Error saving to localStorage:', error);
-    }
-}
-
-// Update shoot-your-shot.html to use dynamic data - FIXED
-async function populateGirlsGrid() {
-    try {
-        console.log('🔄 populateGirlsGrid: Starting...');
-        const girlsGrid = document.getElementById('girlsGrid');
+        });
         
-        if (!girlsGrid) {
-            console.error('❌ Girls grid element not found');
-            return;
-        }
+        console.log(`✅ Firestore data loaded: ${girlsData.length} whispers`);
+        return girlsData;
+        
+    } catch (error) {
+        console.error('❌ Error getting whispers data:', error);
+        console.log('🎭 Using fallback data');
+        return getFallbackGirlsData();
+    } finally {
+        isLoading = false;
+    }
+}
 
-        // Show loading state
-        girlsGrid.innerHTML = `
-            <div class="loading-girls">
-                <div class="loading-spinner"></div>
-                <p>Loading amazing people...</p>
+function getFallbackGirlsData() {
+    return [
+        {
+            id: 'fallback-1',
+            username: 'sample_whisper',
+            displayName: 'Sample Whisper 🌟',
+            avatar: '💁‍♀️',
+            location: 'Online',
+            bio: 'Ready to connect with you!',
+            rating: 4.5,
+            verification: 'Verified'
+        }
+    ];
+}
+
+function displayWhispers(whispers) {
+    console.log('🔄 displayWhispers: Starting...');
+    
+    const girlsGrid = document.getElementById('girlsGrid');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    if (!girlsGrid) {
+        console.error('❌ girlsGrid element not found');
+        return;
+    }
+    
+    // Hide loading, show content
+    if (loadingMessage) loadingMessage.style.display = 'none';
+    if (errorMessage) errorMessage.style.display = 'none';
+    
+    girlsGrid.innerHTML = '';
+
+    if (whispers.length === 0) {
+        if (errorMessage) {
+            errorMessage.style.display = 'block';
+            errorMessage.innerHTML = `
+                <h3>No whispers available yet - Be the first to sign up!</h3>
+                <p>The first whispers are signing up now! Join them and start earning.</p>
+                <a href="become-a-whisper.html" class="btn primary">Become a Whisper</a>
+            `;
+        }
+        return;
+    }
+
+    whispers.forEach(whisper => {
+        const girlCard = document.createElement('div');
+        girlCard.className = 'girl-card';
+        girlCard.innerHTML = `
+            <div class="girl-avatar">
+                <span style="font-size: 60px;">${whisper.avatar || '👤'}</span>
+                <div class="online-indicator online"></div>
+            </div>
+            <div class="girl-info">
+                <h3>${whisper.displayName || whisper.username}
+                    <span class="pricing-badge">$15/5min</span>
+                </h3>
+                <p class="girl-location">📍 ${whisper.location || 'Location not set'}</p>
+                <p class="girl-bio">${whisper.bio || 'No bio yet'}</p>
+                <div class="girl-stats">
+                    <span class="verification-badge">${whisper.verification || 'Pending'}</span>
+                    <span class="rating">⭐ ${whisper.rating || '0.0'}</span>
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn primary start-chat-btn" onclick="viewProfile('${whisper.id}')">
+                    💘 View Profile
+                </button>
+                <a href="call-payment.html?whisperId=${whisper.id}" class="call-button">
+                    🎙️ Call Now - $15
+                </a>
             </div>
         `;
+        girlsGrid.appendChild(girlCard);
+    });
 
-        const girlsData = await getGirlsData();
-        console.log('📊 Girls data loaded:', Object.keys(girlsData).length, 'girls');
+    console.log('✅ Whispers displayed successfully');
+}
 
-        if (!girlsData || Object.keys(girlsData).length === 0) {
-            girlsGrid.innerHTML = `
-                <div class="no-girls">
-                    <p>No daters available at the moment.</p>
-                    <p>Check back soon or <a href="become-a-dater.html">become a dater</a>!</p>
-                </div>
-            `;
-            return;
-        }
+function viewProfile(whisperId) {
+    console.log('👤 Viewing profile:', whisperId);
+    // For now, redirect to payment page. Later you can create profile pages.
+    window.location.href = `call-payment.html?whisperId=${whisperId}`;
+}
 
-        // Clear loading state
-        girlsGrid.innerHTML = '';
-
-        // Populate grid with girls data
-        Object.values(girlsData).forEach(girl => {
-            const girlCard = document.createElement('div');
-            girlCard.className = 'girl-card';
-            girlCard.innerHTML = `
-                <div class="girl-avatar">
-                    <img src="${girl.avatar}" alt="${girl.name}" onerror="this.src='https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'">
-                    <div class="online-indicator ${girl.isOnline ? 'online' : 'offline'}"></div>
-                </div>
-                <div class="girl-info">
-                    <h3>${girl.name}</h3>
-                    <p class="girl-location">📍 ${girl.location}</p>
-                    <p class="girl-bio">${girl.bio}</p>
-                    <div class="girl-stats">
-                        <span class="verification-badge">${girl.verification}</span>
-                        <span class="rating">⭐ ${girl.rating}</span>
-                    </div>
-                    <div class="girl-interests">
-                        ${girl.interests.slice(0, 3).map(interest => 
-                            `<span class="interest-tag">${interest}</span>`
-                        ).join('')}
-                    </div>
-                </div>
-                <button class="btn primary start-chat-btn" data-girl-id="${girl.id}">
-                    💘 Start Chat - $15
-                </button>
-            `;
-            girlsGrid.appendChild(girlCard);
-        });
-
-        // Add click handlers for chat buttons
-        document.querySelectorAll('.start-chat-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const girlId = this.getAttribute('data-girl-id');
-                startDatingSession(girlId);
-            });
-        });
-
-        console.log('✅ Girls grid populated successfully');
-
-    } catch (error) {
-        console.error('❌ Error populating girls grid:', error);
-        const girlsGrid = document.getElementById('girlsGrid');
-        if (girlsGrid) {
-            girlsGrid.innerHTML = `
-                <div class="error-state">
-                    <p>Sorry, we're having trouble loading daters right now.</p>
-                    <button onclick="populateGirlsGrid()" class="btn">Try Again</button>
-                </div>
-            `;
-        }
+function showError(message) {
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingMessage = document.getElementById('loadingMessage');
+    
+    if (loadingMessage) loadingMessage.style.display = 'none';
+    if (errorMessage) {
+        errorMessage.style.display = 'block';
+        errorMessage.innerHTML = `
+            <h3>Error Loading Whispers</h3>
+            <p>${message}</p>
+            <button onclick="loadWhispers()" class="btn primary">Try Again</button>
+        `;
     }
 }
 
-// Start dating session function
-async function startDatingSession(girlId) {
+async function loadWhispers() {
     try {
-        console.log('💘 Starting dating session with girl:', girlId);
-        
-        // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        if (!currentUser.id) {
-            alert('Please set your username first!');
-            return;
-        }
-
-        // Show loading state
-        const chatBtn = document.querySelector(`[data-girl-id="${girlId}"]`);
-        const originalText = chatBtn.innerHTML;
-        chatBtn.innerHTML = 'Starting chat...';
-        chatBtn.disabled = true;
-
-        // Simulate API call to start session
-        const sessionData = {
-            userId: currentUser.id,
-            girlId: girlId,
-            startTime: new Date().toISOString(),
-            status: 'active'
-        };
-
-        // Save session to localStorage (replace with actual API call)
-        const sessions = JSON.parse(localStorage.getItem('datingSessions') || '[]');
-        sessions.push(sessionData);
-        localStorage.setItem('datingSessions', JSON.stringify(sessions));
-
-        // Redirect to private chat page
-        setTimeout(() => {
-            window.location.href = `private-chat.html?session=${btoa(JSON.stringify(sessionData))}`;
-        }, 1000);
-
+        console.log('🚀 Loading whispers...');
+        const whispers = await getGirlsData();
+        displayWhispers(whispers);
     } catch (error) {
-        console.error('❌ Error starting dating session:', error);
-        alert('Failed to start chat. Please try again.');
-        
-        // Reset button
-        const chatBtn = document.querySelector(`[data-girl-id="${girlId}"]`);
-        chatBtn.innerHTML = '💘 Start Chat - $15';
-        chatBtn.disabled = false;
+        console.error('❌ Error loading whispers:', error);
+        showError(error.message);
     }
 }
 
-// Initialize when DOM is loaded
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('💘 Dating System: DOM loaded');
+    console.log('🚀 Shoot Your Shot page loaded - Fixed Version');
     
-    // Only populate girls grid if we're on the shoot-your-shot page
-    if (document.getElementById('girlsGrid')) {
-        populateGirlsGrid();
-    }
-    
-    // Remove the duplicate section injection - this is the fix!
-    // The duplicate createDatingSection() function has been removed
+    // Load whispers after a short delay to ensure DOM is ready
+    setTimeout(loadWhispers, 100);
 });
 
-// Export for testing
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        getGirlsData,
-        populateGirlsGrid,
-        startDatingSession
-    };
-}
+// Export for global access
+window.loadWhispers = loadWhispers;
+window.viewProfile = viewProfile;

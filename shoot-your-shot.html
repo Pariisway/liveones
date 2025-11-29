@@ -1,256 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shoot Your Shot - House of Whispers</title>
-  <meta name="description" content="Private 5-minute video chats with local singles. Make your move and connect with verified singles in your area.">
-  
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4QYRJLTXTT"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4QYRJLTXTT');
-  </script>
-  
-  <!-- Google AdSense -->
-  <meta name="google-adsense-account" content="ca-pub-1184595877548269">
-  
-  <!-- CSS Files -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/dating.css">
-  <style>
-    .debug-info {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 12px;
-        z-index: 1000;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoot Your Shot - House of Whispers</title>
+    <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
+    <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
 </head>
 <body class="fonts-loading">
-  <div class="cyber-background"></div>
-  <div class="grid-overlay"></div>
-  <div class="floating-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
-    <div class="shape shape-4"></div>
-  </div>
+    <div class="cyber-background"></div>
+    <div class="main-wrap">
+        <header class="site-header">
+            <div class="glowing-title title-large">SHOOT YOUR SHOT</div>
+            <div class="glowing-title title-medium">CONNECT WITH AMAZING WHISPERS</div>
+        </header>
 
-  <header class="site-header">
-    <div class="glowing-title title-large">SHOOT YOUR SHOT</div>
-    <div class="glowing-title title-medium">💖 PRIVATE CHATS WITH LOCAL SINGLES</div>
-  </header>
+        <div class="panel">
+            <h2 class="glowing-title title-medium">💘 Available Whispers</h2>
+            <p style="text-align: center; color: var(--muted); margin-bottom: 25px;">
+                Private 5-minute video chats • $15 per chat • Instant connection
+            </p>
 
-  <main class="main-wrap">
-    <!-- Debug Info -->
-    <div class="debug-info">
-        <button onclick="debugPlatform()" style="background: #ff4444; color: white; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; margin-bottom: 5px;">
-            🔧 Debug Platform
-        </button>
-        <div id="debugStatus">Loading...</div>
-    </div>
+            <!-- Center the "Manage My Whispers" button -->
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="whisper-portal.html" class="btn" style="background: var(--accent2); padding: 12px 24px;">
+                    📊 Manage My Whispers
+                </a>
+            </div>
 
-    <div class="panel" style="text-align: center; margin-bottom: 20px;">
-        <a href="whisper-signup.html" class="btn primary" style="background: var(--accent2);">
-            💖 Become a Whisper and Earn Money
-        </a>
-    </div>
+            <div id="loadingMessage" style="text-align: center;">
+                <div class="loading-spinner"></div>
+                <p>Loading amazing whispers...</p>
+            </div>
 
-    <div class="girls-grid" id="whispersGrid">
-        <!-- Dynamic content will be loaded here -->
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted);">
-            Loading profiles...
+            <div id="girlsGrid" class="girls-grid">
+                <!-- Whispers will be loaded here dynamically -->
+            </div>
+
+            <div id="errorMessage" style="display: none; text-align: center;">
+                <h3>No Whispers Available</h3>
+                <p>Check back soon or <a href="become-a-whisper.html">become a whisper</a> yourself!</p>
+            </div>
         </div>
     </div>
 
-    <a href="index.html" class="back-btn">← Back to Main Site</a>
-  </main>
-
-  <footer class="site-footer">
-    <div>HOUSE OF WHISPERS © 2024 • SHOOT YOUR SHOT DATING</div>
-  </footer>
-
-  <!-- ✅ FIXED: CORRECT SCRIPT LOADING ORDER (NO DUPLICATES) -->
-  <!-- 1. Firebase SDK FIRST -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
-  <!-- 2. Firebase Config SECOND -->
-  <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-        authDomain: "house-of-whispers.firebaseapp.com",
-        projectId: "house-of-whispers",
-        storageBucket: "house-of-whispers.firebasestorage.app",
-        messagingSenderId: "1063333130646", 
-        appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-        measurementId: "G-06QR5LFKJ9"
-    };
-    
-    // Initialize Firebase
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-  </script>
-
-  <!-- 3. Platform Manager THIRD (ONLY ONCE) -->
-  <script src="js/platform-manager.js"></script>
-
-  <script>
-    // Debug function
-    window.debugPlatform = async function() {
-        console.log('=== DEBUG PLATFORM MANAGER ===');
-        console.log('Platform Manager:', window.platformManager);
-        
-        const statusElement = document.getElementById('debugStatus');
-        
-        if (window.platformManager && typeof window.platformManager.getAllWhispers === 'function') {
-            try {
-                const whispers = await platformManager.getAllWhispers();
-                console.log('Total Whispers:', whispers.length);
-                console.log('Whispers:', whispers);
-                
-                statusElement.innerHTML = `
-                    <strong>Platform Status:</strong> ✅ LOADED<br>
-                    <strong>Total Whispers:</strong> ${whispers.length}<br>
-                    <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
-                `;
-                
-                alert(`✅ Platform Manager Working!\nFound ${whispers.length} whispers in system.`);
-                
-                // Refresh the display
-                loadWhispersDirectly();
-            } catch (error) {
-                console.error('Debug error:', error);
-                statusElement.innerHTML = `
-                    <strong>Platform Status:</strong> ❌ ERROR<br>
-                    <strong>Error:</strong> ${error.message}
-                `;
-                alert('❌ Platform Manager Error: ' + error.message);
-            }
-        } else {
-            statusElement.innerHTML = `
-                <strong>Platform Status:</strong> ❌ NOT FOUND<br>
-                Check if platform-manager.js is loaded
-            `;
-            alert('❌ Platform manager not found or not properly initialized!');
-        }
-    };
-
-    // Load whispers from platform manager
-    async function loadWhispersDirectly() {
-        console.log('🔄 Loading whispers directly from platform manager...');
-        const grid = document.getElementById('whispersGrid');
-        const statusElement = document.getElementById('debugStatus');
-        
-        if (typeof platformManager === 'undefined' || typeof platformManager.getAllWhispers !== 'function') {
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
-                    <h3>❌ Platform System Error</h3>
-                    <p>Platform manager not loaded properly. Please refresh the page.</p>
-                    <button onclick="location.reload()" class="btn primary">Refresh Page</button>
-                </div>
-            `;
-            if (statusElement) {
-                statusElement.innerHTML = '<strong>Status:</strong> ❌ Platform Manager Not Found';
-            }
-            return;
-        }
-        
-        try {
-            const whispers = await platformManager.getAllWhispers();
-            console.log('📊 Retrieved whispers:', whispers);
-            
-            if (statusElement) {
-                statusElement.innerHTML = `
-                    <strong>Platform Status:</strong> ✅ LOADED<br>
-                    <strong>Total Whispers:</strong> ${whispers.length}<br>
-                    <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
-                `;
-            }
-            
-            if (whispers.length === 0) {
-                grid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                        <div style="color: var(--muted); margin-bottom: 20px; font-size: 18px;">
-                            🌟 No whispers available yet. Be the first to sign up!
-                        </div>
-                        <a href="whisper-signup.html" class="btn primary" style="background: var(--accent2); font-size: 16px; padding: 15px 30px;">
-                            💖 Become a Whisper and Earn Money
-                        </a>
-                    </div>
-                `;
-                return;
-            }
-            
-            grid.innerHTML = '';
-            whispers.forEach(whisper => {
-                const whisperCard = document.createElement('a');
-                whisperCard.href = `girl-profile.html?girl=${whisper.id}`;
-                whisperCard.className = 'girl-card';
-                whisperCard.innerHTML = `
-                    <div class="girl-image">${whisper.avatar || '👤'}</div>
-                    <div class="girl-info">
-                        <div class="girl-name">${whisper.displayName}</div>
-                        <div class="girl-location">📍 ${whisper.location}</div>
-                        <div class="girl-bio">${whisper.bio ? (whisper.bio.substring(0, 80) + (whisper.bio.length > 80 ? '...' : '')) : 'No bio provided'}</div>
-                        <div class="girl-schedule">🕐 ${whisper.schedule && whisper.schedule[0] ? whisper.schedule[0] + ' ' + whisper.timezone : 'Check schedule'}</div>
-                        <div class="girl-tag">5-min Chat: $15</div>
-                    </div>
-                `;
-                grid.appendChild(whisperCard);
-            });
-            
-        } catch (error) {
-            console.error('❌ Error loading whispers:', error);
-            grid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--accent1);">
-                    <h3>Error Loading Profiles</h3>
-                    <p>${error.message}</p>
-                    <button onclick="loadWhispersDirectly()" class="btn primary">Try Again</button>
-                </div>
-            `;
-        }
-    }
-    
-    // Load whispers when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    <script src="js/platform-manager.js"></script>
+    <script>
         console.log('DOM loaded, initializing shoot-your-shot...');
-        
-        // Wait for platform manager to initialize
-        const checkPlatform = setInterval(() => {
-            if (window.platformManager && typeof window.platformManager.getAllWhispers === 'function') {
-                clearInterval(checkPlatform);
-                console.log('✅ Platform manager found and ready, loading whispers...');
-                loadWhispersDirectly();
-            }
-        }, 100);
-        
-        // Timeout after 5 seconds
-        setTimeout(() => {
-            if (!window.platformManager || typeof window.platformManager.getAllWhispers !== 'function') {
-                console.error('❌ Platform manager not found after 5 seconds');
-                loadWhispersDirectly(); // Still try to load
-            }
-        }, 5000);
-    });
 
-    // Font loading
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        document.body.classList.remove('fonts-loading');
-        document.body.classList.add('fonts-loaded');
-      });
-    }
-  </script>
+        async function loadWhispersDirectly() {
+            console.log('🔄 Loading whispers directly from platform manager...');
+            
+            try {
+                // Wait for platform manager with better timeout handling
+                await waitForPlatformManager();
+                
+                console.log('✅ Platform manager ready, loading whispers...');
+                const whispers = await window.platformManager.getAllDaters();
+                console.log('📊 Retrieved whispers:', whispers);
+                
+                if (!whispers || whispers.length === 0) {
+                    showNoWhispers();
+                    return;
+                }
+
+                displayWhispers(whispers);
+                
+            } catch (error) {
+                console.error('❌ Error loading whispers:', error);
+                showError('Failed to load whispers: ' + error.message);
+            }
+        }
+
+        function waitForPlatformManager() {
+            return new Promise((resolve, reject) => {
+                let attempts = 0;
+                const maxAttempts = 30; // 15 seconds max
+                
+                function check() {
+                    attempts++;
+                    console.log(`🔄 Checking platform manager (attempt ${attempts}/${maxAttempts})...`);
+                    
+                    if (window.platformManager && window.platformManager.initialized && typeof window.platformManager.getAllDaters === 'function') {
+                        console.log('✅ Platform manager found and ready!');
+                        resolve();
+                    } else if (attempts < maxAttempts) {
+                        setTimeout(check, 500);
+                    } else {
+                        console.warn('⚠️ Platform manager not found after maximum attempts');
+                        // Try to initialize it ourselves
+                        if (typeof PlatformManager !== 'undefined') {
+                            console.log('🔄 Creating new platform manager instance...');
+                            window.platformManager = new PlatformManager();
+                            setTimeout(() => resolve(), 1000);
+                        } else {
+                            reject(new Error('Platform manager not available'));
+                        }
+                    }
+                }
+                
+                check();
+            });
+        }
+
+        function displayWhispers(whispers) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            
+            const girlsGrid = document.getElementById('girlsGrid');
+            girlsGrid.innerHTML = '';
+
+            whispers.forEach(whisper => {
+                const girlCard = document.createElement('div');
+                girlCard.className = 'girl-card';
+                girlCard.innerHTML = `
+                    <div class="girl-avatar">
+                        <span style="font-size: 60px;">${whisper.avatar || '👤'}</span>
+                        <div class="online-indicator online"></div>
+                    </div>
+                    <div class="girl-info">
+                        <h3>${whisper.displayName || whisper.username}</h3>
+                        <p class="girl-location">📍 ${whisper.location || 'Location not set'}</p>
+                        <p class="girl-bio">${whisper.bio || 'No bio yet'}</p>
+                        <div class="girl-stats">
+                            <span class="verification-badge">${whisper.verification || 'Pending'}</span>
+                            <span class="rating">⭐ ${whisper.rating || '0.0'}</span>
+                        </div>
+                    </div>
+                    <button class="btn primary start-chat-btn" onclick="viewProfile('${whisper.id}')">
+                        💘 View Profile
+                    </button>
+                `;
+                girlsGrid.appendChild(girlCard);
+            });
+
+            console.log('✅ Whispers displayed successfully');
+        }
+
+        function showNoWhispers() {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorMessage').innerHTML = `
+                <h3>Error Loading Whispers</h3>
+                <p>${message}</p>
+                <button onclick="loadWhispersDirectly()" class="btn primary">Try Again</button>
+            `;
+        }
+
+        function viewProfile(whisperId) {
+            window.location.href = `girl-profile.html?girl=${whisperId}`;
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Starting shoot-your-shot initialization...');
+            loadWhispersDirectly();
+        });
+    </script>
 </body>
 </html>

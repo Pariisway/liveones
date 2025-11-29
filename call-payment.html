@@ -32,6 +32,7 @@
             width: 100%;
             max-width: 500px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
         }
         
         .payment-header {
@@ -53,6 +54,7 @@
             padding: 1.5rem;
             border-radius: 10px;
             margin-bottom: 2rem;
+            text-align: left;
         }
         
         .detail-row {
@@ -75,12 +77,9 @@
         
         #payment-element {
             margin-bottom: 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            border-radius: 10px;
         }
         
-        #submit-payment {
+        .call-button {
             width: 100%;
             padding: 1rem;
             background: #8B5CF6;
@@ -90,13 +89,14 @@
             font-size: 1.1rem;
             cursor: pointer;
             transition: background 0.3s;
+            margin: 10px 0;
         }
         
-        #submit-payment:hover {
+        .call-button:hover {
             background: #7C3AED;
         }
         
-        #submit-payment:disabled {
+        .call-button:disabled {
             background: #6B7280;
             cursor: not-allowed;
         }
@@ -136,13 +136,26 @@
         .back-button:hover {
             color: white;
         }
+
+        .demo-notice {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #F59E0B;
+        }
     </style>
 </head>
-<body data-whisper-id="default-whisper">
+<body>
     <div class="payment-container">
         <div class="payment-header">
             <h1>🎙️ Connect with Whisper</h1>
             <p>5-minute voice call for $15</p>
+        </div>
+
+        <div class="demo-notice">
+            <strong>Demo Mode</strong>
+            <p>This is a demonstration. No real payment required.</p>
         </div>
         
         <div class="payment-details">
@@ -166,9 +179,8 @@
         
         <form id="payment-form">
             <div id="payment-element">
-                <!-- Stripe Elements will be inserted here -->
+                <!-- Payment interface will be inserted here -->
             </div>
-            <button id="submit-payment" type="submit">Pay $15</button>
             <div id="payment-message"></div>
         </form>
         

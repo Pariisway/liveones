@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Call - House of Whispers</title>
     <script src="https://cdn.agora.io/sdk/release/AgoraRTC_N-4.19.2.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         * {
             margin: 0;
@@ -23,6 +21,7 @@
             justify-content: center;
             color: white;
             padding: 20px;
+            text-align: center;
         }
         
         .call-container {
@@ -34,7 +33,6 @@
             width: 100%;
             max-width: 500px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            text-align: center;
         }
         
         .call-header {
@@ -82,7 +80,6 @@
         
         .call-button.end-call {
             background: #EF4444;
-            display: none;
         }
         
         .call-button.end-call:hover {
@@ -99,6 +96,7 @@
             align-items: center;
             justify-content: center;
             color: #6B7280;
+            font-size: 1.1rem;
         }
         
         .call-info {
@@ -113,10 +111,13 @@
             justify-content: space-between;
             margin-bottom: 0.5rem;
         }
-        
-        .volume-control {
-            width: 100%;
-            margin: 1rem 0;
+
+        .demo-notice {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #10B981;
         }
     </style>
 </head>
@@ -126,20 +127,26 @@
             <h1>🎙️ Live Voice Call</h1>
             <p>Connected to Whisper</p>
         </div>
+
+        <div class="demo-notice">
+            <strong>Demo Mode Active</strong>
+            <p>Voice call simulation - No real audio connection</p>
+        </div>
         
         <div class="call-timer" id="call-timer">05:00</div>
         
         <div class="call-status" id="call-status">
-            Connecting to whisper...
+            Call connected successfully!
         </div>
         
         <div class="audio-visualizer" id="audio-visualizer">
-            <div id="remote-audio"></div>
-            <span>Audio Stream</span>
+            🎵 Audio Stream Simulation
+            <br>
+            <small>In production, real audio would stream here</small>
         </div>
         
         <div class="call-controls">
-            <button class="call-button end-call" id="end-call-btn" onclick="endAgoraCall()">
+            <button class="call-button end-call" id="end-call-btn" onclick="endDemoCall()">
                 🎤 End Call
             </button>
         </div>
@@ -155,28 +162,54 @@
             </div>
             <div class="info-row">
                 <span>Status:</span>
-                <span id="call-detail-status">Starting...</span>
+                <span id="call-detail-status">Connected (Demo)</span>
             </div>
         </div>
     </div>
 
-    <!-- Firebase Configuration -->
     <script>
-        // Your Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-            authDomain: "house-of-whispers.firebaseapp.com",
-            projectId: "house-of-whispers",
-            storageBucket: "house-of-whispers.firebasestorage.app",
-            messagingSenderId: "1063333130646",
-            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-            measurementId: "G-06QR5LFKJ9"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-    </script>
+        // Demo voice call functionality
+        let timeLeft = 300; // 5 minutes
+        let callTimer;
 
-    <script src="js/agora-voice-call.js"></script>
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('call-timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft > 0) {
+                timeLeft--;
+            } else {
+                endDemoCall();
+            }
+        }
+
+        function startDemoCall() {
+            console.log('🚀 Starting demo voice call');
+            callTimer = setInterval(updateTimer, 1000);
+            document.getElementById('call-status').innerHTML = 
+                '<span style="color: #4ADE80;">🔊 Call Connected - Speak Now! (Demo)</span>';
+        }
+
+        function endDemoCall() {
+            clearInterval(callTimer);
+            document.getElementById('call-status').innerHTML = 
+                '<span style="color: #6B7280;">Call Ended</span>';
+            document.getElementById('call-detail-status').textContent = 'Completed';
+            document.getElementById('end-call-btn').style.display = 'none';
+            
+            // Show call completed message
+            setTimeout(() => {
+                alert('Call completed! In production, earnings would be tracked and paid out after 3 days.');
+                window.location.href = 'shoot-your-shot.html';
+            }, 1000);
+        }
+
+        // Start call when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(startDemoCall, 1000);
+        });
+    </script>
 </body>
 </html>

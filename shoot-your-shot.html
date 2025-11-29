@@ -186,7 +186,13 @@
                 <a href="index.html">Home</a>
                 <a href="shoot-your-shot.html" class="active">Find Whispers</a>
                 <a href="become-a-whisper.html">Become a Whisper</a>
-                <a href="whisper-portal.html">Manage My Whispers</a>
+                <div class="auth-element logged-out">
+                    <a href="login.html" class="btn secondary">Sign In</a>
+                </div>
+                <div class="auth-element logged-in" style="display: none;">
+                    <a href="whisper-portal.html" class="btn primary">My Portal</a>
+                    <a href="#" onclick="signOutUser()" class="btn secondary">Sign Out</a>
+                </div>
             </div>
         </div>
     </nav>

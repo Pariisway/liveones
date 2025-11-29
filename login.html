@@ -7,22 +7,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             padding: 20px;
+            margin: 0;
         }
         
         .auth-container {
@@ -34,25 +28,32 @@
             width: 100%;
             max-width: 400px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
         }
         
         .auth-header {
-            text-align: center;
             margin-bottom: 2rem;
         }
         
         .auth-header h1 {
             font-size: 2rem;
             margin-bottom: 0.5rem;
+            color: white;
+        }
+        
+        .auth-header p {
+            color: rgba(255, 255, 255, 0.8);
         }
         
         .form-group {
             margin-bottom: 1.5rem;
+            text-align: left;
         }
         
         label {
             display: block;
             margin-bottom: 0.5rem;
+            color: white;
             font-weight: bold;
         }
         
@@ -88,6 +89,8 @@
             cursor: pointer;
             margin: 0.5rem 0;
             transition: background 0.3s;
+            text-decoration: none;
+            display: block;
         }
         
         .btn:hover {
@@ -114,6 +117,7 @@
             text-align: center;
             margin: 1.5rem 0;
             position: relative;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .divider::before {
@@ -135,6 +139,7 @@
         .auth-footer {
             text-align: center;
             margin-top: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .auth-footer a {
@@ -156,11 +161,22 @@
         .message.error {
             background: rgba(239, 68, 68, 0.2);
             border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #FCA5A5;
         }
         
         .message.success {
             background: rgba(34, 197, 94, 0.2);
             border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #86EFAC;
+        }
+
+        .domain-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            color: #FCD34D;
         }
     </style>
 </head>
@@ -169,6 +185,11 @@
         <div class="auth-header">
             <h1>🔐 Welcome Back</h1>
             <p>Sign in to your House of Whispers account</p>
+        </div>
+
+        <div class="domain-warning" id="domainWarning" style="display: none;">
+            <strong>Domain Not Authorized</strong>
+            <p>Please add <code>iaiwaf.com</code> to Firebase Authorized Domains to enable Google Sign-In.</p>
         </div>
 
         <div id="message"></div>
@@ -191,7 +212,7 @@
             <span>or</span>
         </div>
 
-        <button onclick="handleGoogleSignIn()" class="btn btn-google">
+        <button onclick="handleGoogleSignIn()" class="btn btn-google" id="googleBtn">
             Continue with Google
         </button>
 
@@ -203,6 +224,11 @@
 
     <script src="js/firebase-auth.js"></script>
     <script>
+        // Show domain warning if Google auth fails
+        function showDomainWarning() {
+            document.getElementById('domainWarning').style.display = 'block';
+        }
+
         // Handle form submission
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -236,25 +262,42 @@
         // Handle Google sign in
         async function handleGoogleSignIn() {
             const messageDiv = document.getElementById('message');
-            const googleBtn = document.querySelector('.btn-google');
+            const googleBtn = document.getElementById('googleBtn');
             
             googleBtn.disabled = true;
             googleBtn.textContent = 'Connecting...';
             
-            const result = await signInWithGoogle();
-            
-            if (result.success) {
-                messageDiv.innerHTML = '<div class="message success">✅ Signed in with Google! Redirecting...</div>';
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect') || 'index.html';
-                    window.location.href = redirect;
-                }, 1000);
-            } else {
-                messageDiv.innerHTML = `<div class="message error">❌ ${result.error}</div>`;
+            try {
+                const result = await signInWithGoogle();
+                
+                if (result.success) {
+                    messageDiv.innerHTML = '<div class="message success">✅ Signed in with Google! Redirecting...</div>';
+                    setTimeout(() => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirect = urlParams.get('redirect') || 'index.html';
+                        window.location.href = redirect;
+                    }, 1000);
+                } else {
+                    if (result.error && result.error.includes('unauthorized-domain')) {
+                        showDomainWarning();
+                        messageDiv.innerHTML = '<div class="message error">❌ Domain not authorized. Please add iaiwaf.com to Firebase settings.</div>';
+                    } else {
+                        messageDiv.innerHTML = `<div class="message error">❌ ${result.error}</div>`;
+                    }
+                    googleBtn.disabled = false;
+                    googleBtn.textContent = 'Continue with Google';
+                }
+            } catch (error) {
+                showDomainWarning();
+                messageDiv.innerHTML = '<div class="message error">❌ Google sign-in not configured. Please add domain to Firebase.</div>';
                 googleBtn.disabled = false;
                 googleBtn.textContent = 'Continue with Google';
             }
+        }
+
+        // Check if there was a previous Google auth error
+        if (window.location.search.includes('googleError=true')) {
+            showDomainWarning();
         }
     </script>
 </body>

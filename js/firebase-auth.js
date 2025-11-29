@@ -1,4 +1,4 @@
-// Firebase Authentication Manager
+// Firebase Authentication Manager - Updated
 class FirebaseAuth {
     constructor() {
         this.user = null;
@@ -62,13 +62,19 @@ class FirebaseAuth {
             const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
             
-            // Save additional user data to Firestore
+            // Try to save additional user data to Firestore, but don't fail if permissions are missing
             if (Object.keys(userData).length > 0) {
-                await this.db.collection('users').doc(user.uid).set({
-                    email: user.email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    ...userData
-                });
+                try {
+                    await this.db.collection('users').doc(user.uid).set({
+                        email: user.email,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        ...userData
+                    });
+                    console.log('✅ User data saved to Firestore');
+                } catch (firestoreError) {
+                    console.warn('⚠️ Could not save user data to Firestore (permissions issue):', firestoreError.message);
+                    // Continue anyway - the user account was created successfully
+                }
             }
             
             console.log('✅ Account created successfully');
@@ -99,13 +105,19 @@ class FirebaseAuth {
             const userCredential = await this.auth.signInWithPopup(provider);
             const user = userCredential.user;
             
-            // Save/update user data in Firestore
-            await this.db.collection('users').doc(user.uid).set({
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
+            // Try to save/update user data in Firestore, but don't fail if permissions are missing
+            try {
+                await this.db.collection('users').doc(user.uid).set({
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                console.log('✅ Google user data saved to Firestore');
+            } catch (firestoreError) {
+                console.warn('⚠️ Could not save Google user data to Firestore (permissions issue):', firestoreError.message);
+                // Continue anyway - the user is signed in successfully
+            }
             
             console.log('✅ Google sign in successful');
             return { success: true, user };

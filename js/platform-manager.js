@@ -1,5 +1,6 @@
 /**
- * PLATFORM MANAGER - FIXED VERSION WITH DEBUGGING
+ * PLATFORM MANAGER - FIXED VERSION
+ * Unified platform manager with Firebase and localStorage support
  */
 
 class PlatformManager {
@@ -10,10 +11,7 @@ class PlatformManager {
         this.db = null;
         this.useFirebase = false;
         
-        // Debug: Check if methods are being bound
-        console.log('🔧 Binding methods...');
-        
-        // Bind all methods
+        // Bind methods to maintain proper 'this' context
         this.getAllDaters = this.getAllDaters.bind(this);
         this.addDater = this.addDater.bind(this);
         this.updateDater = this.updateDater.bind(this);
@@ -21,6 +19,7 @@ class PlatformManager {
         this.syncToFirebase = this.syncToFirebase.bind(this);
         this.getData = this.getData.bind(this);
         this.setData = this.setData.bind(this);
+        this.deleteDaterProfile = this.deleteDaterProfile.bind(this);
         
         console.log('🔥 Firebase Platform Manager initialized');
         this.initialize();
@@ -31,12 +30,12 @@ class PlatformManager {
             console.log('🔄 Initializing PlatformManager...');
             
             // Try to load Firebase config from global variable
-            if (window.firebaseLoader && window.firebaseLoader.isFirebaseAvailable()) {
+            if (typeof firebaseConfig !== 'undefined') {
                 this.firebaseConfig = firebaseConfig;
                 console.log('✅ Firebase config loaded from global variable');
                 
                 // Initialize Firebase
-                if (firebase && !firebase.apps.length) {
+                if (typeof firebase !== 'undefined' && !firebase.apps.length) {
                     firebase.initializeApp(this.firebaseConfig);
                 }
                 this.db = firebase.firestore();
@@ -51,14 +50,6 @@ class PlatformManager {
             this.initializeData();
             this.initialized = true;
             console.log('✅ Platform Manager initialized successfully');
-            
-            // Debug: Check if methods are available
-            console.log('🔧 PlatformManager methods:', {
-                getAllDaters: typeof this.getAllDaters,
-                addDater: typeof this.addDater,
-                updateDater: typeof this.updateDater,
-                syncWithFirebase: typeof this.syncWithFirebase
-            });
             
         } catch (error) {
             console.error('❌ Firebase initialization failed:', error);
@@ -103,7 +94,7 @@ class PlatformManager {
         }
     }
 
-    // ADDED: syncWithFirebase method
+    // syncWithFirebase method
     async syncWithFirebase() {
         if (!this.useFirebase || !this.db) {
             console.log('📱 Firebase not available, skipping sync');
@@ -140,7 +131,7 @@ class PlatformManager {
         }
     }
 
-    // ADDED: syncToFirebase method
+    // syncToFirebase method
     async syncToFirebase() {
         if (!this.useFirebase || !this.db) {
             return;
@@ -186,7 +177,7 @@ class PlatformManager {
         return daters.filter(dater => dater.isActive !== false);
     }
 
-    // ADDED: addDater method
+    // addDater method
     async addDater(daterData) {
         console.log('🎯 addDater method called with:', daterData);
         
@@ -238,7 +229,7 @@ class PlatformManager {
         }
     }
 
-    // ADDED: updateDater method
+    // updateDater method
     async updateDater(daterId, updates) {
         if (!this.initialized) {
             throw new Error('Platform manager not initialized');
@@ -277,13 +268,13 @@ class PlatformManager {
         return 'dater_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
-    // ADDED: getDater method
+    // getDater method
     async getDater(daterId) {
         const daters = await this.getAllDaters();
         return daters.find(d => d.id === daterId);
     }
 
-    // ADDED: deleteDater method
+    // deleteDater method
     async deleteDater(daterId) {
         if (!this.initialized) {
             throw new Error('Platform manager not initialized');
@@ -305,20 +296,8 @@ class PlatformManager {
             throw error;
         }
     }
-}
 
-// Initialize platform manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing Platform Manager...');
-    window.platformManager = new PlatformManager();
-});
-
-// Export for Node.js/CommonJS
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PlatformManager;
-}
-
-    // ADDED: deleteDaterProfile method for user self-deletion
+    // deleteDaterProfile method for user self-deletion
     async deleteDaterProfile(daterId, confirmation = true) {
         if (!this.initialized) {
             throw new Error('Platform manager not initialized');
@@ -368,3 +347,15 @@ if (typeof module !== 'undefined' && module.exports) {
             throw error;
         }
     }
+}
+
+// Initialize platform manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing Platform Manager...');
+    window.platformManager = new PlatformManager();
+});
+
+// Export for Node.js/CommonJS
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PlatformManager;
+}

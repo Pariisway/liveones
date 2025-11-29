@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cache Refresh</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        body { 
+            font-family: Arial; 
+            text-align: center; 
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        button { 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            background: #8B5CF6; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Cache Refresh Helper</h1>
+    <p>Click the buttons below to test your pages with cache refresh:</p>
+    
+    <button onclick="window.open('https://iaiwaf.com/add-sample-whispers.html', '_blank')">
+        Add Sample Whispers
+    </button>
+    
+    <button onclick="window.open('https://iaiwaf.com/shoot-your-shot.html', '_blank')">
+        Test Shoot Your Shot
+    </button>
+    
+    <button onclick="window.open('https://iaiwaf.com/call-payment.html?whisperId=test', '_blank')">
+        Test Payment Page
+    </button>
+    
+    <div style="margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+        <h3>🎯 What You Should See:</h3>
+        <p>• "Private 5 minute voice chats • $15 per chat • Instant connection"</p>
+        <p>• "Call Now - $15" buttons on whisper cards</p>
+        <p>• Sample whisper profiles after adding them</p>
+    </div>
+    
+    <script>
+        // Force no cache
+        window.onload = function() {
+            if (performance.navigation.type === 1) {
+                console.log('Page was reloaded');
+            }
+        };
+    </script>
+</body>
+</html>

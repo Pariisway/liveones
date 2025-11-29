@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Sample Whispers</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+        }
+        button {
+            padding: 1rem 2rem;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 1rem;
+        }
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Add Sample Whispers</h1>
+        <p>Click the button below to add sample whisper profiles to your database.</p>
+        <button onclick="addSampleWhispers()">Add Sample Whispers</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function addSampleWhispers() {
+            const status = document.getElementById('status');
+            status.innerHTML = 'Adding sample whispers...';
+            
+            const sampleWhispers = [
+                {
+                    username: "whisper_sarah",
+                    displayName: "Sarah 💫",
+                    avatar: "💁‍♀️",
+                    location: "New York",
+                    bio: "Life coach and relationship expert. Let's talk about your dreams and goals!",
+                    rating: 4.8,
+                    verification: "Verified"
+                },
+                {
+                    username: "whisper_mike", 
+                    displayName: "Mike 🎯",
+                    avatar: "💁‍♂️",
+                    location: "Los Angeles",
+                    bio: "Career advisor and motivational speaker. Ready to help you succeed!",
+                    rating: 4.6,
+                    verification: "Verified"
+                },
+                {
+                    username: "whisper_emily",
+                    displayName: "Emily 🌟",
+                    avatar: "👩‍💼",
+                    location: "Chicago", 
+                    bio: "Dating coach and confidence builder. Let's work on your social skills!",
+                    rating: 4.9,
+                    verification: "Verified"
+                },
+                {
+                    username: "whisper_alex",
+                    displayName: "Alex 💪",
+                    avatar: "🧑‍💻",
+                    location: "Miami",
+                    bio: "Fitness enthusiast and wellness coach. Let's get your life balanced!",
+                    rating: 4.7,
+                    verification: "Pending"
+                }
+            ];
+
+            try {
+                for (const whisper of sampleWhispers) {
+                    await db.collection('whispers').add(whisper);
+                    status.innerHTML += `<br>✅ Added: ${whisper.displayName}`;
+                }
+                status.innerHTML += '<br><br>🎉 Sample whispers added! Refresh your Shoot Your Shot page.';
+            } catch (error) {
+                status.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

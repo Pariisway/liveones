@@ -1,0 +1,39 @@
+// SECURE FIREBASE RULES - Replace your current rules with these:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Whispers collection - anyone can read, but only owners can write
+    match /whispers/{whisperId} {
+      allow read: if true; // Anyone can browse whispers
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
+    }
+    
+    // Calls collection - only participants can access
+    match /calls/{callId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.customerId || 
+         request.auth.uid == resource.data.whisperId);
+    }
+    
+    // Earnings collection - only whisper owners can access
+    match /earnings/{earningId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.whisperId;
+    }
+    
+    // Payments collection - only involved users can access
+    match /payments/{paymentId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.customerId || 
+         request.auth.uid == resource.data.whisperId);
+    }
+  }
+}
+
+// TO UPDATE YOUR FIREBASE RULES:
+// 1. Go to: https://console.firebase.google.com/
+// 2. Select your project: house-of-whispers
+// 3. Go to Firestore Database → Rules
+// 4. Replace ALL content with the rules above
+// 5. Click "Publish"

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Payment - House of Whispers</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        .payment-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .payment-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .payment-header p {
+            opacity: 0.9;
+        }
+        
+        .payment-details {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        
+        #payment-form {
+            margin-bottom: 1rem;
+        }
+        
+        #payment-element {
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        #submit-payment {
+            width: 100%;
+            padding: 1rem;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        #submit-payment:hover {
+            background: #7C3AED;
+        }
+        
+        #submit-payment:disabled {
+            background: #6B7280;
+            cursor: not-allowed;
+        }
+        
+        #payment-message {
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 20px;
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+        
+        .payment-message.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #FCA5A5;
+        }
+        
+        .payment-message.success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86EFAC;
+        }
+        
+        .secure-badge {
+            text-align: center;
+            margin-top: 1rem;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .back-button {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #D1D5DB;
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body data-whisper-id="default-whisper">
+    <div class="payment-container">
+        <div class="payment-header">
+            <h1>🎙️ Connect with Whisper</h1>
+            <p>5-minute voice call for $15</p>
+        </div>
+        
+        <div class="payment-details">
+            <div class="detail-row">
+                <span>Service:</span>
+                <span>5-Minute Voice Call</span>
+            </div>
+            <div class="detail-row">
+                <span>Duration:</span>
+                <span>5 minutes</span>
+            </div>
+            <div class="detail-row">
+                <span>Rate:</span>
+                <span>$3/minute</span>
+            </div>
+            <div class="detail-row total">
+                <span>Total:</span>
+                <span>$15.00</span>
+            </div>
+        </div>
+        
+        <form id="payment-form">
+            <div id="payment-element">
+                <!-- Stripe Elements will be inserted here -->
+            </div>
+            <button id="submit-payment" type="submit">Pay $15</button>
+            <div id="payment-message"></div>
+        </form>
+        
+        <div class="secure-badge">
+            🔒 Secure payment by Stripe
+        </div>
+        
+        <a href="shoot-your-shot.html" class="back-button">← Back to Whispers</a>
+    </div>
+
+    <script src="js/stripe-payment.js"></script>
+</body>
+</html>

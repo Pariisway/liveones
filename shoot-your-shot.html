@@ -3,106 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shoot Your Shot - House of Whispers</title>
-    <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
-    <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
+    <title>Shoot Your Shot - Find Your Whisper</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dating.css">
+    <style>
+        .call-button {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .call-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .pricing-badge {
+            background: #10B981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+    </style>
 </head>
-<body class="fonts-loading">
-    <div class="cyber-background"></div>
-    <div class="main-wrap">
-        <header class="site-header">
-            <div class="glowing-title title-large">SHOOT YOUR SHOT</div>
-            <div class="glowing-title title-medium">CONNECT WITH AMAZING WHISPERS</div>
+<body>
+    <div class="container">
+        <header class="main-header">
+            <h1>🎯 Shoot Your Shot</h1>
+            <p>Connect with amazing whispers for 5-minute voice calls for 5-minute voice calls for 5-minute voice calls</p>
         </header>
 
-        <div class="panel">
-            <h2 class="glowing-title title-medium">💘 Available Whispers</h2>
-            <p style="text-align: center; color: var(--muted); margin-bottom: 25px;">
-                Private 5-minute video chats • $15 per chat • Instant connection
-            </p>
-
-            <!-- Center the "Manage My Whispers" button -->
-            <div style="text-align: center; margin: 20px 0;">
-                <a href="whisper-portal.html" class="btn" style="background: var(--accent2); padding: 12px 24px;">
-                    📊 Manage My Whispers
-                </a>
+        <div class="filters-section">
+            <div class="filter-group">
+                <input type="text" id="searchInput" placeholder="Search whispers..." class="search-input">
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="dating">Dating Advice</option>
+                    <option value="life">Life Coaching</option>
+                    <option value="fun">Just for Fun</option>
+                    <option value="professional">Professional</option>
+                </select>
             </div>
+        </div>
 
-            <div id="loadingMessage" style="text-align: center;">
-                <div class="loading-spinner"></div>
-                <p>Loading amazing whispers...</p>
+        <div class="content-section">
+            <div id="loadingMessage" class="loading-message">
+                <div class="spinner"></div>
+                <p>Loading whispers...</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <h3>No whispers available yet - Be the first to sign up!</h3>
+                <p>The first whispers are signing up now! Join them and start earning.</p>
+                <a href="become-a-whisper.html" class="btn primary">Become a Whisper</a>
             </div>
 
             <div id="girlsGrid" class="girls-grid">
-                <!-- Whispers will be loaded here dynamically -->
-            </div>
-
-            <div id="errorMessage" style="display: none; text-align: center;">
-                <h3>No Whispers Available</h3>
-                <p>Check back soon or <a href="become-a-whisper.html">become a whisper</a> yourself!</p>
+                <!-- Whisper cards will be loaded here -->
             </div>
         </div>
     </div>
 
-    <script src="js/platform-manager.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
-        console.log('DOM loaded, initializing shoot-your-shot...');
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
 
-        async function loadWhispersDirectly() {
-            console.log('🔄 Loading whispers directly from platform manager...');
-            
-            try {
-                // Wait for platform manager with better timeout handling
-                await waitForPlatformManager();
-                
-                console.log('✅ Platform manager ready, loading whispers...');
-                const whispers = await window.platformManager.getAllDaters();
-                console.log('📊 Retrieved whispers:', whispers);
-                
-                if (!whispers || whispers.length === 0) {
-                    showNoWhispers();
-                    return;
-                }
-
-                displayWhispers(whispers);
-                
-            } catch (error) {
-                console.error('❌ Error loading whispers:', error);
-                showError('Failed to load whispers: ' + error.message);
-            }
-        }
-
-        function waitForPlatformManager() {
-            return new Promise((resolve, reject) => {
-                let attempts = 0;
-                const maxAttempts = 30; // 15 seconds max
-                
-                function check() {
-                    attempts++;
-                    console.log(`🔄 Checking platform manager (attempt ${attempts}/${maxAttempts})...`);
-                    
-                    if (window.platformManager && window.platformManager.initialized && typeof window.platformManager.getAllDaters === 'function') {
-                        console.log('✅ Platform manager found and ready!');
-                        resolve();
-                    } else if (attempts < maxAttempts) {
-                        setTimeout(check, 500);
-                    } else {
-                        console.warn('⚠️ Platform manager not found after maximum attempts');
-                        // Try to initialize it ourselves
-                        if (typeof PlatformManager !== 'undefined') {
-                            console.log('🔄 Creating new platform manager instance...');
-                            window.platformManager = new PlatformManager();
-                            setTimeout(() => resolve(), 1000);
-                        } else {
-                            reject(new Error('Platform manager not available'));
-                        }
-                    }
-                }
-                
-                check();
-            });
-        }
-
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <script src="js/dating-system.js"></script>
+    <script>
+        // Enhanced displayWhispers function with payment buttons
         function displayWhispers(whispers) {
             document.getElementById('loadingMessage').style.display = 'none';
             
@@ -118,7 +119,9 @@
                         <div class="online-indicator online"></div>
                     </div>
                     <div class="girl-info">
-                        <h3>${whisper.displayName || whisper.username}</h3>
+                        <h3>${whisper.displayName || whisper.username}
+                            <span class="pricing-badge">$15/5min</span>
+                        </h3>
                         <p class="girl-location">📍 ${whisper.location || 'Location not set'}</p>
                         <p class="girl-bio">${whisper.bio || 'No bio yet'}</p>
                         <div class="girl-stats">
@@ -126,14 +129,19 @@
                             <span class="rating">⭐ ${whisper.rating || '0.0'}</span>
                         </div>
                     </div>
-                    <button class="btn primary start-chat-btn" onclick="viewProfile('${whisper.id}')">
-                        💘 View Profile
-                    </button>
+                    <div class="button-group">
+                        <button class="btn primary start-chat-btn" onclick="viewProfile('${whisper.id}')">
+                            💘 View Profile
+                        </button>
+                        <a href="call-payment.html?whisperId=${whisper.id}" class="call-button">
+                            🎙️ Call Now - $15
+                        </a>
+                    </div>
                 `;
                 girlsGrid.appendChild(girlCard);
             });
 
-            console.log('✅ Whispers displayed successfully');
+            console.log('✅ Whispers displayed with payment buttons');
         }
 
         function showNoWhispers() {
@@ -151,14 +159,16 @@
             `;
         }
 
+        // View profile function
         function viewProfile(whisperId) {
-            window.location.href = `girl-profile.html?girl=${whisperId}`;
+            // For now, redirect to payment page. Later you can create profile pages.
+            window.location.href = `call-payment.html?whisperId=${whisperId}`;
         }
 
-        // Initialize when DOM is loaded
+        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Starting shoot-your-shot initialization...');
-            loadWhispersDirectly();
+            console.log('🚀 Shoot Your Shot page loaded');
+            // Your existing loadWhispers function will be called from dating-system.js
         });
     </script>
 </body>

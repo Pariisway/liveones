@@ -1,0 +1,15 @@
+#!/bin/bash
+echo "🚀 TESTING COMPLETE FLOW"
+
+echo "1. First, add sample whispers:"
+echo "   Visit: https://iaiwaf.com/add-sample-whispers.html"
+echo "   Click 'Add Sample Whispers'"
+echo ""
+echo "2. Then test the main page:"
+echo "   Visit: https://iaiwaf.com/shoot-your-shot.html"
+echo ""
+echo "3. You should see:"
+echo "   ✅ Header: 'Connect with amazing whispers for 5-minute voice calls'"
+echo "   ✅ Subtitle: 'Private 5 minute voice chats • $15 per chat • Instant connection'"
+echo "   ✅ Whisper cards with 'Call Now - $15' buttons"
+echo "   ✅ If no whispers: 'No whispers available yet - Be the first to sign up!'"

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Starting - House of Whispers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .success-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            color: #FFD700;
+        }
+        
+        .call-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+        
+        .button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #8B5CF6;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            margin: 0.5rem;
+            transition: background 0.3s;
+        }
+        
+        .button:hover {
+            background: #7C3AED;
+        }
+        
+        .button.secondary {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .button.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Payment Successful!</h1>
+        <p>Your 5-minute voice call is being prepared...</p>
+        
+        <div class="call-info">
+            <p><strong>Call Duration:</strong> 5 minutes</p>
+            <p><strong>Amount Paid:</strong> $15.00</p>
+            <p><strong>Status:</strong> Connecting to whisper...</p>
+        </div>
+        
+        <div class="countdown" id="countdown">05:00</div>
+        
+        <p>You will be connected shortly. Please wait while we connect you with your whisper.</p>
+        
+        <div>
+            <a href="shoot-your-shot.html" class="button">Find More Whispers</a>
+            <a href="index.html" class="button secondary">Return Home</a>
+        </div>
+    </div>
+
+    <script>
+        // Countdown timer
+        let timeLeft = 300; // 5 minutes in seconds
+        
+        function updateCountdown() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('countdown').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft > 0) {
+                timeLeft--;
+                setTimeout(updateCountdown, 1000);
+            } else {
+                document.getElementById('countdown').textContent = "Call Ended";
+            }
+        }
+        
+        // Start countdown when page loads
+        document.addEventListener('DOMContentLoaded', updateCountdown);
+        
+        // Simulate connecting to call (in real implementation, this would connect to Agora)
+        setTimeout(() => {
+            const statusElement = document.querySelector('.call-info p:last-child');
+            if (statusElement) {
+                statusElement.innerHTML = '<strong>Status:</strong> <span style="color: #4ADE80;">Connected! Start talking!</span>';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

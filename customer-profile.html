@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - House of Whispers</title>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        .profile-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .call-history {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .call-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s;
+        }
+        
+        .call-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .call-item:last-child {
+            border-bottom: none;
+        }
+        
+        .whisper-avatar {
+            font-size: 2rem;
+        }
+        
+        .whisper-avatar img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .call-details {
+            flex: 1;
+        }
+        
+        .call-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .call-rating {
+            color: #F59E0B;
+        }
+        
+        .no-calls {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+            margin: 40px 0 20px 0;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">House of Whispers</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="shoot-your-shot.html">Find Whispers</a>
+                <a href="become-a-whisper.html">Become a Whisper</a>
+                <a href="customer-profile.html" class="active">My Profile</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="profile-header">
+            <h1>👤 My Profile</h1>
+            <p>Your call history and activity</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCalls">0</div>
+                <div class="stat-label">Total Calls</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalSpent">$0</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgRating">-</div>
+                <div class="stat-label">Avg Rating</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="favoriteWhisper">-</div>
+                <div class="stat-label">Favorite Whisper</div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">📞 Recent Calls</h2>
+        <div class="call-history">
+            <div id="callsList">
+                <div class="no-calls">
+                    <p>You haven't made any calls yet</p>
+                    <a href="shoot-your-shot.html" class="btn" style="margin-top: 15px;">
+                        Find Your First Whisper
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title" style="margin-top: 40px;">⭐ Your Reviews</h2>
+        <div class="call-history">
+            <div id="reviewsList">
+                <div class="no-calls">
+                    <p>You haven't left any reviews yet</p>
+                    <p style="opacity: 0.7; margin-top: 10px;">Rate your calls to see them here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Load customer data
+        async function loadCustomerData(userId) {
+            try {
+                // Load call history
+                const callsQuery = await db.collection('calls')
+                    .where('customerId', '==', userId)
+                    .orderBy('endedAt', 'desc')
+                    .limit(20)
+                    .get();
+
+                updateCallHistory(callsQuery);
+                updateStats(callsQuery);
+
+                // Load reviews
+                const reviewsQuery = await db.collection('feedback')
+                    .where('customerId', '==', userId)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                updateReviews(reviewsQuery);
+
+            } catch (error) {
+                console.error('Error loading customer data:', error);
+            }
+        }
+
+        function updateCallHistory(callsSnapshot) {
+            const callsList = document.getElementById('callsList');
+            
+            if (callsSnapshot.empty) {
+                return; // Keep the "no calls" message
+            }
+
+            callsList.innerHTML = '';
+            
+            callsSnapshot.forEach(async (doc) => {
+                const call = doc.data();
+                const callItem = document.createElement('div');
+                callItem.className = 'call-item';
+                
+                // Load whisper details
+                let whisperName = 'Unknown Whisper';
+                let whisperAvatar = '👤';
+                let whisperPhoto = null;
+                
+                try {
+                    const whisperDoc = await db.collection('whispers').doc(call.whisperId).get();
+                    if (whisperDoc.exists) {
+                        const whisperData = whisperDoc.data();
+                        whisperName = whisperData.displayName;
+                        whisperAvatar = whisperData.avatar;
+                        whisperPhoto = whisperData.photoURL;
+                    }
+                } catch (error) {
+                    console.error('Error loading whisper details:', error);
+                }
+                
+                const callDate = call.endedAt ? call.endedAt.toDate() : new Date();
+                const duration = call.duration ? Math.round(call.duration / 60) : 5;
+                
+                callItem.innerHTML = `
+                    <div class="whisper-avatar">
+                        ${whisperPhoto ? 
+                            `<img src="${whisperPhoto}" alt="${whisperName}">` :
+                            `<span>${whisperAvatar}</span>`
+                        }
+                    </div>
+                    <div class="call-details">
+                        <strong>${whisperName}</strong>
+                        <div class="call-meta">
+                            <span>${callDate.toLocaleDateString()}</span>
+                            <span>${duration} min call</span>
+                            <span>$${call.amount || 15}</span>
+                            ${call.rating ? `<span class="call-rating">⭐ ${call.rating}/5</span>` : ''}
+                        </div>
+                    </div>
+                    <div>
+                        <a href="call-room.html?whisperId=${call.whisperId}" class="btn secondary">
+                            Call Again
+                        </a>
+                    </div>
+                `;
+                
+                callsList.appendChild(callItem);
+            });
+        }
+
+        function updateStats(callsSnapshot) {
+            let totalCalls = 0;
+            let totalSpent = 0;
+            let totalRating = 0;
+            let ratedCalls = 0;
+            const whisperCounts = {};
+            let favoriteWhisper = '-';
+            let maxCalls = 0;
+
+            callsSnapshot.forEach(doc => {
+                const call = doc.data();
+                totalCalls++;
+                totalSpent += call.amount || 15;
+                
+                if (call.rating) {
+                    totalRating += call.rating;
+                    ratedCalls++;
+                }
+                
+                // Count calls per whisper
+                whisperCounts[call.whisperId] = (whisperCounts[call.whisperId] || 0) + 1;
+                if (whisperCounts[call.whisperId] > maxCalls) {
+                    maxCalls = whisperCounts[call.whisperId];
+                    favoriteWhisper = call.whisperId;
+                }
+            });
+
+            document.getElementById('totalCalls').textContent = totalCalls;
+            document.getElementById('totalSpent').textContent = `$${totalSpent}`;
+            document.getElementById('avgRating').textContent = ratedCalls > 0 ? (totalRating / ratedCalls).toFixed(1) : '-';
+            
+            // Load favorite whisper name
+            if (favoriteWhisper !== '-' && favoriteWhisper !== 'Unknown') {
+                db.collection('whispers').doc(favoriteWhisper).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            document.getElementById('favoriteWhisper').textContent = 
+                                doc.data().displayName.split(' ')[0]; // First name only
+                        }
+                    });
+            }
+        }
+
+        function updateReviews(reviewsSnapshot) {
+            const reviewsList = document.getElementById('reviewsList');
+            
+            if (reviewsSnapshot.empty) {
+                return; // Keep the "no reviews" message
+            }
+
+            reviewsList.innerHTML = '';
+            
+            reviewsSnapshot.forEach(async (doc) => {
+                const review = doc.data();
+                const reviewItem = document.createElement('div');
+                reviewItem.className = 'call-item';
+                
+                // Load whisper details
+                let whisperName = 'Unknown Whisper';
+                let whisperAvatar = '👤';
+                let whisperPhoto = null;
+                
+                try {
+                    const whisperDoc = await db.collection('whispers').doc(review.whisperId).get();
+                    if (whisperDoc.exists) {
+                        const whisperData = whisperDoc.data();
+                        whisperName = whisperData.displayName;
+                        whisperAvatar = whisperData.avatar;
+                        whisperPhoto = whisperData.photoURL;
+                    }
+                } catch (error) {
+                    console.error('Error loading whisper details:', error);
+                }
+                
+                const reviewDate = review.createdAt ? review.createdAt.toDate() : new Date();
+                const stars = '⭐'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                
+                reviewItem.innerHTML = `
+                    <div class="whisper-avatar">
+                        ${whisperPhoto ? 
+                            `<img src="${whisperPhoto}" alt="${whisperName}">` :
+                            `<span>${whisperAvatar}</span>`
+                        }
+                    </div>
+                    <div class="call-details">
+                        <strong>${whisperName}</strong>
+                        <div class="call-rating" style="margin: 5px 0;">${stars}</div>
+                        ${review.feedback ? `<p style="margin: 5px 0; opacity: 0.9;">"${review.feedback}"</p>` : ''}
+                        <div class="call-meta">
+                            <span>${reviewDate.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+                
+                reviewsList.appendChild(reviewItem);
+            });
+        }
+
+        // Initialize profile
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            loadCustomerData(user.uid);
+        });
+    </script>
+</body>
+</html>

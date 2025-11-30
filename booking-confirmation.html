@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Confirmed - House of Whispers</title>
-    <!-- Global Styles -->
     <link rel="stylesheet" href="css/global.css">
     <style>
         .header {
@@ -62,6 +61,15 @@
             box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
         }
         
+        .tech-info {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #8B5CF6;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
         .next-steps {
             text-align: left;
             margin: 30px 0;
@@ -110,10 +118,17 @@
             border-radius: 50%;
             object-fit: cover;
         }
+        
+        .browser-support {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 10px;
+            border-left: 4px solid #F59E0B;
+        }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="main-nav">
         <div class="nav-container">
             <div class="nav-logo">
@@ -140,14 +155,14 @@
         <div class="confirmation-card">
             <div class="confirmation-icon">✅</div>
             <h2>Your 5-Minute Call is Booked!</h2>
-            <p><strong>Amount: $15</strong></p>
+            <p><strong>Amount: $15</strong> (Test Mode - No real charge)</p>
             <p id="topicDisplay"></p>
             <p>Ready to start your conversation?</p>
         </div>
         
         <div class="call-action">
             <h3>🎙️ Ready to Connect?</h3>
-            <p>Join your private voice call now</p>
+            <p>Join your private voice call now using WebRTC technology</p>
             <a href="#" id="joinCallBtn" class="join-call-btn">
                 Join Voice Call Now
             </a>
@@ -156,11 +171,27 @@
             </p>
         </div>
         
+        <div class="tech-info">
+            <h3>🔧 WebRTC Technology</h3>
+            <p>This call uses <strong>peer-to-peer WebRTC</strong> for crystal-clear audio:</p>
+            <ul>
+                <li>✅ Direct browser-to-browser connection</li>
+                <li>✅ No plugins or downloads required</li>
+                <li>✅ Encrypted for privacy</li>
+                <li>✅ Low latency, high quality</li>
+            </ul>
+        </div>
+        
+        <div class="browser-support">
+            <strong>Supported Browsers:</strong> Chrome, Firefox, Safari, Edge (latest versions)
+        </div>
+        
         <div class="next-steps">
             <h3>What to Expect:</h3>
             <ol>
                 <li><strong>Join the Call</strong> - Click the button above to start</li>
                 <li><strong>Allow Microphone Access</strong> - Your browser will ask for permission</li>
+                <li><strong>WebRTC Connection</strong> - Direct peer-to-peer connection established</li>
                 <li><strong>Start Talking</strong> - You'll be connected directly with the whisper</li>
                 <li><strong>5-Minute Timer</strong> - The call automatically ends after 5 minutes</li>
                 <li><strong>Provide Feedback</strong> - Rate your experience after the call</li>
@@ -177,6 +208,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- WebRTC Utilities -->
+    <script src="js/webrtc-signaling.js"></script>
     
     <script>
         const firebaseConfig = {
@@ -228,24 +262,72 @@
                             </div>
                         `;
                         
-                        // Setup call link
-                        document.getElementById('joinCallBtn').href = 
-                            `call-room.html?whisperId=${whisperId}&topic=${encodeURIComponent(topic || 'General Conversation')}`;
+                        // Generate unique call ID and setup call link
+                        const callId = generateCallId();
+                        const callLink = `call-room.html?callId=${callId}&whisperId=${whisperId}&topic=${encodeURIComponent(topic || 'General Conversation')}&role=caller`;
+                        
+                        document.getElementById('joinCallBtn').href = callLink;
+                        
+                        // Create booking record (test mode)
+                        await createBookingRecord(callId, whisperId, topic);
+                        
                     }
                 } catch (error) {
                     console.error('Error loading whisper info:', error);
                 }
             }
             
-            // In a real implementation, you would:
-            // 1. Process payment with Stripe (test mode for now)
-            // 2. Create a booking record in Firestore
-            // 3. Generate a unique call room ID
-            // 4. Notify the whisper about the new booking
-            
-            console.log('💰 Payment would be processed here (currently in test mode)');
-            console.log('📞 WebRTC call room would be created here');
+            // Check WebRTC support
+            if (!isWebRTCSupported()) {
+                showWebRTCWarning();
+            }
         });
+
+        // Create booking record in Firestore
+        async function createBookingRecord(callId, whisperId, topic) {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            
+            try {
+                const bookingData = {
+                    callId: callId,
+                    whisperId: whisperId,
+                    customerId: user.uid,
+                    customerEmail: user.email,
+                    topic: topic || 'General Conversation',
+                    amount: 15,
+                    status: 'confirmed',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    callType: 'webrtc',
+                    testMode: true // Flag for test mode
+                };
+                
+                await db.collection('bookings').add(bookingData);
+                console.log('✅ Booking record created (test mode)');
+                
+            } catch (error) {
+                console.error('Error creating booking record:', error);
+            }
+        }
+
+        // Check if WebRTC is supported
+        function isWebRTCSupported() {
+            return !!(navigator.mediaDevices && 
+                     navigator.mediaDevices.getUserMedia &&
+                     window.RTCPeerConnection);
+        }
+
+        // Show warning if WebRTC not supported
+        function showWebRTCWarning() {
+            const callAction = document.querySelector('.call-action');
+            callAction.innerHTML = `
+                <div style="background: rgba(239,68,68,0.2); padding: 20px; border-radius: 10px; border-left: 4px solid #EF4444;">
+                    <h3>❌ Browser Not Supported</h3>
+                    <p>Your browser doesn't support WebRTC voice calls.</p>
+                    <p>Please use Chrome, Firefox, Safari, or Edge to make calls.</p>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>

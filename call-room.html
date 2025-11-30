@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice Call - House of Whispers</title>
-    <!-- Global Styles -->
     <link rel="stylesheet" href="css/global.css">
     <style>
         .header {
@@ -60,6 +59,16 @@
             border-left: 4px solid #F59E0B;
         }
         
+        .call-status.connected {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid #10B981;
+        }
+        
+        .call-status.error {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #EF4444;
+        }
+        
         .call-controls {
             display: flex;
             justify-content: center;
@@ -106,8 +115,11 @@
             color: white;
         }
         
+        .mute-call.muted {
+            background: #EF4444;
+        }
+        
         .mute-call:hover {
-            background: #4B5563;
             transform: scale(1.1);
         }
         
@@ -116,6 +128,25 @@
             font-weight: bold;
             margin: 20px 0;
             font-family: 'Courier New', monospace;
+        }
+        
+        .audio-visualizer {
+            width: 100%;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .visualizer-bar {
+            position: absolute;
+            bottom: 0;
+            width: 4px;
+            background: #8B5CF6;
+            border-radius: 2px 2px 0 0;
+            transition: height 0.1s;
         }
         
         .call-stats {
@@ -130,6 +161,17 @@
             padding: 15px;
             border-radius: 10px;
             text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
         
         .feedback-section {
@@ -157,23 +199,43 @@
             color: #FBBF24;
         }
         
-        .audio-visualizer {
-            width: 100%;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+        .audio-levels {
+            display: flex;
+            justify-content: space-around;
             margin: 20px 0;
+        }
+        
+        .audio-level {
+            text-align: center;
+        }
+        
+        .level-bar {
+            width: 20px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 0 auto 10px;
             position: relative;
             overflow: hidden;
         }
         
-        .visualizer-bar {
+        .level-fill {
             position: absolute;
             bottom: 0;
-            width: 4px;
-            background: #8B5CF6;
-            border-radius: 2px 2px 0 0;
-            transition: height 0.1s;
+            width: 100%;
+            background: #10B981;
+            transition: height 0.2s;
+        }
+        
+        .debug-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            text-align: left;
+            display: none;
         }
     </style>
 </head>
@@ -190,21 +252,32 @@
             </div>
             
             <div id="callStatus" class="call-status">
-                🔄 Connecting to call...
+                🔄 Initializing call...
             </div>
             
             <div class="timer" id="timer">05:00</div>
             
-            <div class="audio-visualizer" id="audioVisualizer">
-                <!-- Audio visualizer bars will be generated here -->
+            <div class="audio-levels">
+                <div class="audio-level">
+                    <div class="level-bar">
+                        <div class="level-fill" id="localLevel" style="height: 0%"></div>
+                    </div>
+                    <div>You</div>
+                </div>
+                <div class="audio-level">
+                    <div class="level-bar">
+                        <div class="level-fill" id="remoteLevel" style="height: 0%"></div>
+                    </div>
+                    <div>Whisper</div>
+                </div>
             </div>
             
             <div class="call-controls">
-                <button id="startCallBtn" class="call-btn start-call" title="Start Call">
+                <button id="startCallBtn" class="call-btn start-call" title="Start Call" disabled>
                     📞
                 </button>
                 <button id="muteBtn" class="call-btn mute-call" title="Mute" disabled>
-                    🔇
+                    🎤
                 </button>
                 <button id="endCallBtn" class="call-btn end-call" title="End Call" disabled>
                     📴
@@ -217,13 +290,22 @@
                     <div class="stat-label">Duration</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="callCost">$15.00</div>
-                    <div class="stat-label">Cost</div>
+                    <div class="stat-number" id="callQuality">Good</div>
+                    <div class="stat-label">Quality</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="callEarnings">$12.00</div>
-                    <div class="stat-label">Whisper Earnings</div>
+                    <div class="stat-number" id="connectionState">-</div>
+                    <div class="stat-label">Connection</div>
                 </div>
+            </div>
+            
+            <button id="debugToggle" class="btn secondary" style="margin: 10px;">
+                🐛 Debug Info
+            </button>
+            
+            <div id="debugInfo" class="debug-info">
+                <strong>WebRTC Debug Information:</strong><br>
+                <div id="debugContent">Loading...</div>
             </div>
             
             <div id="feedbackSection" class="feedback-section">
@@ -248,13 +330,19 @@
         </div>
     </div>
 
+    <!-- Audio elements for WebRTC streams -->
+    <audio id="localAudio" muted></audio>
+    <audio id="remoteAudio" autoplay></audio>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
+    <!-- WebRTC Signaling -->
+    <script src="js/webrtc-signaling.js"></script>
+    
     <script>
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
             authDomain: "house-of-whispers.firebaseapp.com",
@@ -265,7 +353,6 @@
             measurementId: "G-06QR5LFKJ9"
         };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -274,48 +361,369 @@
         const auth = firebase.auth();
 
         // Call state variables
-        let callActive = false;
         let callTimer = null;
         let callStartTime = null;
-        let localStream = null;
-        let peerConnection = null;
-        let currentCallId = null;
+        let callDuration = 0;
+        let isMuted = false;
+        let audioContext = null;
+        let localAnalyser = null;
+        let remoteAnalyser = null;
 
         // Get call parameters from URL
         function getCallParameters() {
             const urlParams = new URLSearchParams(window.location.search);
             return {
-                callId: urlParams.get('callId'),
+                callId: urlParams.get('callId') || generateCallId(),
                 whisperId: urlParams.get('whisperId'),
+                role: urlParams.get('role') || 'caller', // 'caller' or 'callee'
                 bookingId: urlParams.get('bookingId')
             };
         }
 
-        // Initialize audio visualizer
-        function initAudioVisualizer() {
-            const visualizer = document.getElementById('audioVisualizer');
-            visualizer.innerHTML = '';
+        // Initialize audio level monitoring
+        function initAudioLevels() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // These will be set when streams are available
+                console.log('🎵 Audio context initialized');
+            } catch (error) {
+                console.error('Error initializing audio context:', error);
+            }
+        }
+
+        // Monitor audio levels for a stream
+        function setupAudioAnalyser(stream, elementId) {
+            if (!audioContext) return null;
             
-            // Create 20 bars for the visualizer
-            for (let i = 0; i < 20; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'visualizer-bar';
-                bar.style.left = `${i * 6}px`;
-                bar.style.height = '0px';
-                visualizer.appendChild(bar);
+            try {
+                const source = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+                
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                
+                function updateLevel() {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        sum += dataArray[i];
+                    }
+                    const average = sum / dataArray.length;
+                    const level = Math.min(100, (average / 128) * 100);
+                    
+                    document.getElementById(elementId).style.height = level + '%';
+                    
+                    if (level > 0) {
+                        requestAnimationFrame(updateLevel);
+                    }
+                }
+                
+                updateLevel();
+                return analyser;
+            } catch (error) {
+                console.error('Error setting up audio analyser:', error);
+                return null;
+            }
+        }
+
+        // Start WebRTC call
+        async function startWebRTCCall() {
+            const params = getCallParameters();
+            const user = auth.currentUser;
+            
+            if (!user) {
+                alert('Please sign in to start a call');
+                return;
+            }
+
+            try {
+                updateCallStatus('🔄 Starting WebRTC call...', 'default');
+                
+                // Initialize WebRTC
+                await initializeWebRTC(params.callId, params.role, params.whisperId);
+                
+                // Set up WebRTC event handlers
+                webRTCManager.onRemoteStream = (stream) => {
+                    console.log('🎧 Remote stream available');
+                    const remoteAudio = document.getElementById('remoteAudio');
+                    remoteAudio.srcObject = stream;
+                    
+                    // Set up audio level monitoring for remote stream
+                    remoteAnalyser = setupAudioAnalyser(stream, 'remoteLevel');
+                    
+                    updateCallStatus('✅ Call connected!', 'connected');
+                    enableCallControls();
+                    startCallTimer();
+                };
+                
+                webRTCManager.onCallConnected = () => {
+                    console.log('📞 WebRTC call connected');
+                    updateCallStatus('✅ Call connected!', 'connected');
+                    enableCallControls();
+                    startCallTimer();
+                };
+                
+                webRTCManager.onCallDisconnected = () => {
+                    console.log('📞 WebRTC call disconnected');
+                    updateCallStatus('❌ Call disconnected', 'error');
+                    disableCallControls();
+                };
+                
+                webRTCManager.onCallEnded = () => {
+                    console.log('📞 WebRTC call ended');
+                    endCall();
+                };
+                
+                webRTCManager.onCallEndedByPeer = () => {
+                    console.log('📞 Call ended by peer');
+                    updateCallStatus('📞 Call ended by other person', 'error');
+                    endCall();
+                };
+                
+                // Set up local stream audio level monitoring
+                if (webRTCManager.localStream) {
+                    const localAudio = document.getElementById('localAudio');
+                    localAudio.srcObject = webRTCManager.localStream;
+                    localAnalyser = setupAudioAnalyser(webRTCManager.localStream, 'localLevel');
+                }
+                
+                updateCallStatus('✅ WebRTC initialized', 'default');
+                document.getElementById('startCallBtn').disabled = true;
+                
+            } catch (error) {
+                console.error('Error starting WebRTC call:', error);
+                updateCallStatus('❌ Failed to start call: ' + error.message, 'error');
+            }
+        }
+
+        // Update call status display
+        function updateCallStatus(message, type = 'default') {
+            const statusElement = document.getElementById('callStatus');
+            statusElement.textContent = message;
+            statusElement.className = 'call-status';
+            
+            if (type === 'connected') {
+                statusElement.classList.add('connected');
+            } else if (type === 'error') {
+                statusElement.classList.add('error');
+            }
+        }
+
+        // Enable call controls
+        function enableCallControls() {
+            document.getElementById('muteBtn').disabled = false;
+            document.getElementById('endCallBtn').disabled = false;
+        }
+
+        // Disable call controls
+        function disableCallControls() {
+            document.getElementById('muteBtn').disabled = true;
+            document.getElementById('endCallBtn').disabled = true;
+        }
+
+        // Start call timer
+        function startCallTimer() {
+            let timeLeft = 5 * 60; // 5 minutes in seconds
+            const timerElement = document.getElementById('timer');
+            const durationElement = document.getElementById('callDuration');
+            callStartTime = new Date();
+            
+            callTimer = setInterval(() => {
+                timeLeft--;
+                callDuration++;
+                
+                if (timeLeft <= 0) {
+                    endCall();
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                timerElement.textContent = timeString;
+                
+                // Update duration for stats
+                const elapsedMinutes = Math.floor(callDuration / 60);
+                const elapsedSeconds = callDuration % 60;
+                durationElement.textContent = `${elapsedMinutes}:${elapsedSeconds.toString().padStart(2, '0')}`;
+                
+                // Update connection quality
+                updateConnectionQuality();
+                
+            }, 1000);
+        }
+
+        // Update connection quality display
+        function updateConnectionQuality() {
+            if (!webRTCManager) return;
+            
+            const stats = webRTCManager.getCallStats();
+            if (stats) {
+                document.getElementById('connectionState').textContent = 
+                    stats.connectionState || 'unknown';
+                
+                let quality = 'Good';
+                if (stats.iceConnectionState === 'disconnected' || stats.iceConnectionState === 'failed') {
+                    quality = 'Poor';
+                } else if (stats.iceConnectionState === 'checking') {
+                    quality = 'Connecting';
+                }
+                
+                document.getElementById('callQuality').textContent = quality;
+            }
+        }
+
+        // End the call
+        function endCall() {
+            // Stop timer
+            if (callTimer) {
+                clearInterval(callTimer);
+                callTimer = null;
             }
             
-            // Simulate audio levels for now
-            // In real implementation, this would connect to audio analyser
-            setInterval(() => {
-                if (callActive) {
-                    const bars = document.querySelectorAll('.visualizer-bar');
-                    bars.forEach(bar => {
-                        const height = Math.random() * 80 + 10;
-                        bar.style.height = `${height}px`;
+            // End WebRTC call
+            if (webRTCManager) {
+                webRTCManager.endCall();
+            }
+            
+            // Update UI
+            updateCallStatus('✅ Call completed', 'default');
+            disableCallControls();
+            
+            // Show feedback section
+            document.getElementById('feedbackSection').style.display = 'block';
+            
+            // Record call completion
+            recordCallCompletion();
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            if (!webRTCManager) return;
+            
+            isMuted = webRTCManager.toggleMute();
+            const muteBtn = document.getElementById('muteBtn');
+            
+            if (isMuted) {
+                muteBtn.innerHTML = '🔇';
+                muteBtn.classList.add('muted');
+                muteBtn.title = 'Unmute';
+            } else {
+                muteBtn.innerHTML = '🎤';
+                muteBtn.classList.remove('muted');
+                muteBtn.title = 'Mute';
+            }
+        }
+
+        // Record call completion
+        async function recordCallCompletion() {
+            const params = getCallParameters();
+            const user = auth.currentUser;
+            
+            if (!user || !params.whisperId) return;
+            
+            try {
+                const callData = {
+                    whisperId: params.whisperId,
+                    customerId: user.uid,
+                    duration: callDuration,
+                    amount: 15, // Test amount
+                    whisperEarnings: 12, // Test earnings
+                    status: 'completed',
+                    endedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    startedAt: callStartTime ? callStartTime.toISOString() : new Date().toISOString(),
+                    callId: params.callId,
+                    role: params.role
+                };
+                
+                // Save call record
+                await db.collection('calls').add(callData);
+                
+                console.log('✅ Call recorded successfully');
+                
+            } catch (error) {
+                console.error('Error recording call:', error);
+            }
+        }
+
+        // Setup feedback system
+        function setupFeedback() {
+            const stars = document.querySelectorAll('.star');
+            let selectedRating = 0;
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.getAttribute('data-rating'));
+                    
+                    // Update stars display
+                    stars.forEach((s, index) => {
+                        s.textContent = index < selectedRating ? '⭐' : '☆';
                     });
+                });
+            });
+            
+            document.getElementById('submitFeedback').addEventListener('click', async function() {
+                if (selectedRating === 0) {
+                    alert('Please select a rating');
+                    return;
                 }
-            }, 100);
+                
+                const feedbackText = document.getElementById('feedbackText').value;
+                const params = getCallParameters();
+                
+                try {
+                    await db.collection('feedback').add({
+                        whisperId: params.whisperId,
+                        customerId: auth.currentUser.uid,
+                        rating: selectedRating,
+                        feedback: feedbackText,
+                        callId: params.callId,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    alert('Thank you for your feedback!');
+                    window.location.href = 'index.html';
+                    
+                } catch (error) {
+                    console.error('Error submitting feedback:', error);
+                    alert('Error submitting feedback');
+                }
+            });
+        }
+
+        // Debug information
+        function setupDebugInfo() {
+            document.getElementById('debugToggle').addEventListener('click', function() {
+                const debugInfo = document.getElementById('debugInfo');
+                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // Update debug info periodically
+            setInterval(() => {
+                if (!webRTCManager) return;
+                
+                const stats = webRTCManager.getCallStats();
+                const debugContent = document.getElementById('debugContent');
+                
+                let debugText = '';
+                if (stats) {
+                    debugText = `
+                        Connection State: ${stats.connectionState}<br>
+                        ICE State: ${stats.iceConnectionState}<br>
+                        Signaling State: ${stats.signalingState}<br>
+                        Call Active: ${webRTCManager.isCallActive}<br>
+                        Call ID: ${webRTCManager.callId}<br>
+                        Role: ${webRTCManager.role}
+                    `;
+                } else {
+                    debugText = 'WebRTC not initialized';
+                }
+                
+                debugContent.innerHTML = debugText;
+            }, 1000);
         }
 
         // Load call information
@@ -349,203 +757,14 @@
                     `;
                 }
 
-                // For now, we'll simulate the call setup
-                // In real implementation, this would establish WebRTC connection
-                document.getElementById('callStatus').textContent = '✅ Ready to start call';
+                // Enable start call button
                 document.getElementById('startCallBtn').disabled = false;
+                updateCallStatus('✅ Ready to start call', 'default');
 
             } catch (error) {
                 console.error('Error loading call info:', error);
-                document.getElementById('callStatus').textContent = '❌ Error loading call details';
+                updateCallStatus('❌ Error loading call details', 'error');
             }
-        }
-
-        // Start the call
-        async function startCall() {
-            if (callActive) return;
-            
-            try {
-                // Request microphone access
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: true, 
-                    video: false 
-                });
-                
-                callActive = true;
-                callStartTime = new Date();
-                
-                // Update UI
-                document.getElementById('callStatus').textContent = '🎙️ Call in progress...';
-                document.getElementById('startCallBtn').disabled = true;
-                document.getElementById('muteBtn').disabled = false;
-                document.getElementById('endCallBtn').disabled = false;
-                
-                // Start timer
-                startCallTimer();
-                
-                // In real implementation, this is where WebRTC connection would be established
-                console.log('🚀 Call started - WebRTC would connect here');
-                
-            } catch (error) {
-                console.error('Error starting call:', error);
-                document.getElementById('callStatus').textContent = '❌ Failed to access microphone';
-            }
-        }
-
-        // Start call timer
-        function startCallTimer() {
-            let timeLeft = 5 * 60; // 5 minutes in seconds
-            const timerElement = document.getElementById('timer');
-            const durationElement = document.getElementById('callDuration');
-            
-            callTimer = setInterval(() => {
-                timeLeft--;
-                
-                if (timeLeft <= 0) {
-                    endCall();
-                    return;
-                }
-                
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                timerElement.textContent = timeString;
-                
-                // Update duration for stats
-                const elapsed = 5 * 60 - timeLeft;
-                const elapsedMinutes = Math.floor(elapsed / 60);
-                const elapsedSeconds = elapsed % 60;
-                durationElement.textContent = `${elapsedMinutes}:${elapsedSeconds.toString().padStart(2, '0')}`;
-                
-            }, 1000);
-        }
-
-        // End the call
-        function endCall() {
-            callActive = false;
-            
-            // Stop timer
-            if (callTimer) {
-                clearInterval(callTimer);
-                callTimer = null;
-            }
-            
-            // Stop local stream
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            // Update UI
-            document.getElementById('callStatus').textContent = '✅ Call ended';
-            document.getElementById('startCallBtn').disabled = true;
-            document.getElementById('muteBtn').disabled = true;
-            document.getElementById('endCallBtn').disabled = true;
-            
-            // Show feedback section
-            document.getElementById('feedbackSection').style.display = 'block';
-            
-            // In real implementation, this would close WebRTC connection
-            console.log('🛑 Call ended - WebRTC would disconnect here');
-            
-            // Record call completion (simulated for now)
-            recordCallCompletion();
-        }
-
-        // Record call completion in Firestore
-        async function recordCallCompletion() {
-            const params = getCallParameters();
-            const user = auth.currentUser;
-            
-            if (!user || !params.whisperId) return;
-            
-            try {
-                const callData = {
-                    whisperId: params.whisperId,
-                    customerId: user.uid,
-                    duration: 5 * 60, // 5 minutes in seconds
-                    amount: 15,
-                    whisperEarnings: 12,
-                    status: 'completed',
-                    endedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    // In real implementation, this would be the actual start time
-                    startedAt: callStartTime ? callStartTime.toISOString() : new Date().toISOString()
-                };
-                
-                // Save call record
-                await db.collection('calls').add(callData);
-                
-                // Update whisper's stats
-                const whisperRef = db.collection('whispers').doc(params.whisperId);
-                await whisperRef.update({
-                    totalCalls: firebase.firestore.FieldValue.increment(1),
-                    totalEarnings: firebase.firestore.FieldValue.increment(12)
-                });
-                
-                console.log('✅ Call recorded successfully');
-                
-            } catch (error) {
-                console.error('Error recording call:', error);
-            }
-        }
-
-        // Toggle mute
-        function toggleMute() {
-            if (!localStream) return;
-            
-            const audioTracks = localStream.getAudioTracks();
-            const isMuted = audioTracks[0].enabled;
-            
-            audioTracks[0].enabled = !isMuted;
-            
-            const muteBtn = document.getElementById('muteBtn');
-            muteBtn.innerHTML = isMuted ? '🔊' : '🔇';
-            muteBtn.title = isMuted ? 'Unmute' : 'Mute';
-        }
-
-        // Handle feedback submission
-        function setupFeedback() {
-            const stars = document.querySelectorAll('.star');
-            let selectedRating = 0;
-            
-            stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    selectedRating = parseInt(this.getAttribute('data-rating'));
-                    
-                    // Update stars display
-                    stars.forEach((s, index) => {
-                        s.textContent = index < selectedRating ? '⭐' : '☆';
-                    });
-                });
-            });
-            
-            document.getElementById('submitFeedback').addEventListener('click', async function() {
-                if (selectedRating === 0) {
-                    alert('Please select a rating');
-                    return;
-                }
-                
-                const feedbackText = document.getElementById('feedbackText').value;
-                const params = getCallParameters();
-                
-                try {
-                    await db.collection('feedback').add({
-                        whisperId: params.whisperId,
-                        customerId: auth.currentUser.uid,
-                        rating: selectedRating,
-                        feedback: feedbackText,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    alert('Thank you for your feedback!');
-                    window.location.href = 'index.html';
-                    
-                } catch (error) {
-                    console.error('Error submitting feedback:', error);
-                    alert('Error submitting feedback');
-                }
-            });
         }
 
         // Initialize page
@@ -558,13 +777,14 @@
                     return;
                 }
                 
+                initAudioLevels();
                 loadCallInfo();
-                initAudioVisualizer();
                 setupFeedback();
+                setupDebugInfo();
             });
 
             // Event listeners
-            document.getElementById('startCallBtn').addEventListener('click', startCall);
+            document.getElementById('startCallBtn').addEventListener('click', startWebRTCCall);
             document.getElementById('endCallBtn').addEventListener('click', endCall);
             document.getElementById('muteBtn').addEventListener('click', toggleMute);
         });

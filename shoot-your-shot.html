@@ -6,6 +6,79 @@
     <title>Find Whispers - House of Whispers</title>
     <link rel="stylesheet" href="css/global.css">
     <style>
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(16, 185, 129, 0.3));
+            border-radius: 20px;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .whispers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .whisper-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .whisper-card:hover {
+            transform: translateY(-5px);
+            border-color: #8B5CF6;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+        
+        .whisper-avatar {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .whisper-avatar img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #8B5CF6;
+        }
+        
+        .whisper-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .whisper-location {
+            color: #10B981;
+            margin-bottom: 1rem;
+        }
+        
+        .whisper-interests {
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
         .booking-modal {
             display: none;
             position: fixed;
@@ -31,93 +104,95 @@
             overflow-y: auto;
         }
         
-        .booking-header {
-            text-align: center;
-            margin-bottom: 2rem;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
         
-        .booking-price {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #8B5CF6;
-            text-align: center;
-            margin: 1rem 0;
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
         
-        .payment-features {
-            background: rgba(16, 185, 129, 0.1);
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
             padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
-            border-left: 4px solid #10B981;
-        }
-        
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .feature-list li {
-            margin: 10px 0;
-            padding-left: 25px;
-            position: relative;
-        }
-        
-        .feature-list li:before {
-            content: '✅';
-            position: absolute;
-            left: 0;
-        }
-        
-        .test-mode-notice {
-            background: rgba(245, 158, 11, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 4px solid #F59E0B;
-            text-align: center;
+            border-left: 4px solid #EF4444;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- Existing content remains the same, just updating the booking modal -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">House of Whispers</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="shoot-your-shot.html" class="active">Find Whispers</a>
+                <a href="become-a-whisper.html">Become a Whisper</a>
+                <div class="auth-element">
+                    <a href="login.html" class="btn">Sign In</a>
+                </div>
+                <div class="user-element" style="display: none;">
+                    <span class="user-name"></span>
+                    <a href="#" onclick="signOut()" class="btn secondary">Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <!-- Booking Modal (updated for payments) -->
+    <div class="container">
+        <div class="hero">
+            <h1>Find Your Whisper</h1>
+            <p>Connect with amazing people for meaningful 5-minute conversations</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <div id="whispersContainer">
+            <div class="loading">
+                <p>Loading whispers...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
     <div id="bookingModal" class="booking-modal">
         <div class="booking-content">
-            <div class="booking-header">
+            <div style="text-align: center; margin-bottom: 2rem;">
                 <h2>Book Voice Call</h2>
-                <p>5-minute private conversation</p>
+                <p>5-minute private conversation - $15</p>
             </div>
             
             <div id="bookingWhisperInfo" class="whisper-info">
                 <!-- Whisper info will be loaded here -->
             </div>
             
-            <div class="booking-price">$15.00</div>
-            
-            <div class="payment-features">
-                <h4>What's included:</h4>
-                <ul class="feature-list">
-                    <li>5-minute private voice call</li>
-                    <li>Direct WebRTC connection</li>
-                    <li>Crystal clear audio quality</li>
-                    <li>Secure payment processing</li>
-                    <li>Money-back guarantee if call fails</li>
-                </ul>
-            </div>
-            
-            <div class="test-mode-notice">
-                <strong>🧪 Test Mode Active</strong><br>
-                Use test card: 4242 4242 4242 4242
-            </div>
-            
             <form id="bookingForm">
                 <div class="form-group">
                     <label for="topic">What would you like to discuss?</label>
-                    <textarea id="topic" name="topic" rows="3" 
-                             placeholder="Briefly describe what you'd like to talk about..."
-                             style="width: 100%; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);"></textarea>
+                    <textarea id="topic" name="topic" placeholder="Briefly describe what you'd like to talk about..."></textarea>
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -132,12 +207,108 @@
         </div>
     </div>
 
-    <!-- Same scripts as before, plus Stripe -->
-    <script src="https://js.stripe.com/v3/"></script>
-    <script src="js/stripe-payments.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- Auth Manager -->
+    <script src="js/auth-manager.js"></script>
     
     <script>
-        // Update the booking form submission to go to payment page
+        let currentBookingWhisper = null;
+        const db = getFirestore();
+
+        // Load whispers from Firestore
+        async function loadWhispers() {
+            try {
+                console.log('📡 Loading whispers...');
+                const whispersSnapshot = await db.collection('whispers').get();
+                
+                if (whispersSnapshot.empty) {
+                    document.getElementById('whispersContainer').innerHTML = `
+                        <div style="text-align: center; padding: 3rem;">
+                            <h3>No whispers available yet</h3>
+                            <p>Be the first to become a whisper!</p>
+                            <a href="become-a-whisper.html" class="btn">Become a Whisper</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let whispersHTML = '<div class="whispers-grid">';
+                
+                whispersSnapshot.forEach(doc => {
+                    const whisper = doc.data();
+                    whispersHTML += `
+                        <div class="whisper-card" data-whisper-id="${doc.id}">
+                            <div class="whisper-avatar">
+                                ${whisper.photoURL ? 
+                                    `<img src="${whisper.photoURL}" alt="${whisper.displayName}">` :
+                                    `<span>${whisper.avatar || '👤'}</span>`
+                                }
+                            </div>
+                            <div class="whisper-name">${whisper.displayName}</div>
+                            <div class="whisper-location">📍 ${whisper.location}</div>
+                            <div class="whisper-interests">${whisper.interests}</div>
+                            <button class="btn book-btn" onclick="openBookingModal('${doc.id}')">
+                                Book Now - $15
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                whispersHTML += '</div>';
+                document.getElementById('whispersContainer').innerHTML = whispersHTML;
+                console.log('✅ Whispers loaded successfully');
+                
+            } catch (error) {
+                console.error('Error loading whispers:', error);
+                document.getElementById('whispersContainer').innerHTML = `
+                    <div class="error-message">
+                        Error loading whispers: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Open booking modal
+        function openBookingModal(whisperId) {
+            if (!isAuthenticated()) {
+                alert('Please sign in to book a call');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            currentBookingWhisper = whisperId;
+            const whisperCard = document.querySelector(`[data-whisper-id="${whisperId}"]`);
+            const whisperName = whisperCard.querySelector('.whisper-name').textContent;
+            const whisperAvatar = whisperCard.querySelector('.whisper-avatar').innerHTML;
+            
+            document.getElementById('bookingWhisperInfo').innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div class="whisper-avatar">${whisperAvatar}</div>
+                    <div>
+                        <h3>${whisperName}</h3>
+                        <p>5-minute voice call</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('bookingModal').style.display = 'flex';
+            document.getElementById('topic').value = '';
+        }
+
+        // Close booking modal
+        function closeBookingModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+            currentBookingWhisper = null;
+        }
+
+        // Handle booking form submission
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -149,14 +320,45 @@
                 return;
             }
             
-            // Close modal
-            document.getElementById('bookingModal').style.display = 'none';
+            if (!topic.trim()) {
+                alert('Please enter a discussion topic');
+                return;
+            }
             
-            // Redirect to payment page
+            // Close modal and redirect to payment
+            closeBookingModal();
             window.location.href = `payment.html?whisperId=${whisperId}&topic=${encodeURIComponent(topic)}`;
         });
 
-        // Rest of existing JavaScript remains the same...
+        // Event listeners
+        document.getElementById('cancelBooking').addEventListener('click', closeBookingModal);
+        
+        // Close modal when clicking outside
+        document.getElementById('bookingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBookingModal();
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Initializing shoot-your-shot page...');
+            
+            // Wait for Firebase to be ready
+            await waitForFirebase();
+            console.log('✅ Firebase ready');
+            
+            // Load whispers
+            await loadWhispers();
+            console.log('✅ Page initialized successfully');
+            
+            // Update auth UI
+            authManager.updateAuthUI(getCurrentUser());
+        });
+
+        // Global functions for buttons
+        window.openBookingModal = openBookingModal;
+        window.closeBookingModal = closeBookingModal;
     </script>
 </body>
 </html>

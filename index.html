@@ -1,386 +1,243 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Preconnect to critical origins -->
-  <link rel="preconnect" href="https://www.googletagmanager.com">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://www.youtube.com">
-  <link rel="preconnect" href="https://download.agora.io">
-  
-  <!-- Google tag (gtag.js) - Load asynchronously -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4QYRJLTXTT"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4QYRJLTXTT');
-  </script>
-  
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="House of Whispers - Watch viral videos together with live voice chat. Join our community for real connections and synchronized video experiences.">
-  <title>House of Whispers - Watch & Chat Live</title>
-
-  <!-- Google AdSense -->
-  <meta name="google-adsense-account" content="ca-pub-1184595877548269">
-
-  <!-- Optimized Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
-  </noscript>
-
-  <!-- CSS Files -->
-  <link rel="stylesheet" href="https://iaiwaf.com/css/style.css">
-  <link rel="stylesheet" href="https://iaiwaf.com/css/dating.css">
-</head>
-<body class="fonts-loading">
-  <!-- ENHANCED CYBER BACKGROUND ART -->
-  <div class="cyber-background"></div>
-  <div class="grid-overlay"></div>
-  <div class="floating-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
-    <div class="shape shape-4"></div>
-  </div>
-  <div class="pulse-dots">
-    <div class="pulse-dot dot-1"></div>
-    <div class="pulse-dot dot-2"></div>
-    <div class="pulse-dot dot-3"></div>
-    <div class="pulse-dot dot-4"></div>
-    <div class="pulse-dot dot-5"></div>
-  </div>
-
-  <!-- HOME PAGE -->
-  <div id="homePage">
-    <!-- HIP HEADER -->
-    <header class="site-header">
-      <div class="glowing-title title-large">HOUSE OF WHISPERS</div>
-      <div class="glowing-title title-medium">WATCH VIRAL VIDEOS • LIVE VOICE CHAT • REAL CONNECTIONS</div>
-    </header>
-
-    <main class="main-wrap">
-      
-      <!-- USERNAME SETUP -->
-      <div class="panel username-setup" id="usernameSetup">
-        <h2 class="glowing-title title-medium">CHOOSE YOUR NAME</h2>
-        <input type="text" class="username-input" id="usernameInput" placeholder="ENTER YOUR DISPLAY NAME" maxlength="20">
-        <div style="margin: 20px 0;">
-          <button class="btn primary" id="setUsernameBtn">START CHATTING</button>
-        </div>
-        <div style="color: var(--muted); font-size: 14px; margin-top: 15px;">
-          Your name will be visible to everyone in the chat
-        </div>
-      </div>
-
-      <!-- MAIN INTERFACE (HIDDEN UNTIL USERNAME SET) -->
-      <div id="mainInterface" class="hidden" style="width: 100%;">
-
-        <!-- NOW PLAYING VIDEO - FIRST SECTION -->
-        <div class="panel">
-          <h2 class="glowing-title title-medium">🎬 NOW PLAYING</h2>
-          <div class="video-container">
-            <div class="video-player">
-              <div id="mainVideoContainer">
-                <!-- Video will be loaded here -->
-                <div class="loading">Loading featured video...</div>
-              </div>
-            </div>
-            <!-- Video Title -->
-            <div class="current-video-title" id="mainVideoTitle">Featured Content</div>
-            <!-- Video Controls -->
-            <div class="video-controls">
-              <button class="video-control-btn" id="prevMainBtn">⏮️ PREVIOUS</button>
-              <button class="video-control-btn" id="nextMainBtn">⏭️ NEXT</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ADSENSE SLOT -->
-        <div class="ad-container">
-          <div class="ad-slot">
-            <div id="ad-home-1"></div>
-          </div>
-        </div>
-
-        <!-- SINGLE SHOOT YOUR SHOT DATING SECTION (WITH 2 BUTTONS) -->
-        <div class="panel dating-section">
-          <h2 class="glowing-title title-medium">💘 SHOOT YOUR SHOT</h2>
-          <p style="text-align: center; color: var(--muted); margin-bottom: 20px; font-size: 18px;">
-            Private 5-minute video chats with amazing people<br>
-            <span style="color: var(--accent3);">Connect instantly or get paid to chat! 💖</span>
-          </p>
-          
-          <div class="dating-features">
-            <div class="dating-feature">
-              <div class="dating-feature-icon">🔥</div>
-              <div class="dating-feature-title">Meet New People</div>
-              <div class="dating-feature-desc">$15 for 5-minute private chats</div>
-            </div>
-            
-            <div class="dating-feature">
-              <div class="dating-feature-icon">💰</div>
-              <div class="dating-feature-title">Get Paid to Chat</div>
-              <div class="dating-feature-desc">Earn $11.25 per chat</div>
-            </div>
-            
-            <div class="dating-feature">
-              <div class="dating-feature-icon">⚡</div>
-              <div class="dating-feature-title">Instant Connection</div>
-              <div class="dating-feature-desc">Live video and voice chat</div>
-            </div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px;">
-            <a href="shoot-your-shot.html" class="btn primary" style="font-size: 16px; padding: 15px;">
-              💘 Start Dating
-            </a>
-            <a href="become-a-whisper.html" class="btn" style="font-size: 16px; padding: 15px; background: linear-gradient(145deg, var(--accent3), #ffdd44); color: #000;">
-              💰 Earn Money
-            </a>
-          </div>
-          
-          <div style="margin-top: 15px; color: var(--accent3); font-size: 14px; text-align: center;">
-            🔥 12 people chatting right now • 💵 $2,340 earned this week
-          </div>
-
-          <div style="text-align: center; margin: 20px 0;">
-            <a href="whisper-portal.html" class="btn" style="background: var(--accent2); padding: 12px 24px; font-size: 16px;">
-              📊 Manage My Whispers
-            </a>
-          </div>
-        </div>
-
-        <!-- COME WHISPER WITH US SECTION -->
-        <div class="panel">
-          <h2 class="glowing-title title-medium">💬 COME WHISPER WITH US</h2>
-          <p style="color: var(--muted); margin-bottom: 25px; font-size: 16px;">Join voice chat rooms and connect with others</p>
-          
-          <div class="whisper-rooms">
-            <div class="whisper-room" data-room="hear">
-              <div class="room-icon">👂</div>
-              <div>Did Y'all Hear</div>
-            </div>
-            <div class="whisper-room" data-room="relationships">
-              <div class="room-icon">💔</div>
-              <div>Bad Relationships</div>
-            </div>
-            <div class="whisper-room" data-room="drizzle">
-              <div class="room-icon">💧</div>
-              <div>Drizzle Drizzle</div>
-            </div>
-            <div class="whisper-room" data-room="sprinkle">
-              <div class="room-icon">✨</div>
-              <div>Sprinkle Sprinkle</div>
-            </div>
-          </div>
-
-          <!-- Voice Chat Controls -->
-          <div style="margin: 30px 0;">
-            <button id="joinBtn" class="btn primary">JOIN VOICE CHAT</button>
-            <button id="leaveBtn" class="btn" disabled>LEAVE CHAT</button>
-            <button id="muteBtn" class="btn" disabled>MUTE MIC</button>
-          </div>
-          <div id="status" style="color: var(--accent2); font-size: 16px; margin: 15px 0;">Status: Ready to connect</div>
-          
-          <!-- Live Users in Current Room -->
-          <div style="margin-top: 25px;">
-            <h3 class="glowing-title title-small">LIVE IN THIS ROOM</h3>
-            <div class="users-grid" id="usersGrid">
-              <!-- Users populated dynamically -->
-            </div>
-          </div>
-        </div>
-
-        <!-- ADSENSE SLOT -->
-        <div class="ad-container">
-          <div class="ad-slot">
-            <div id="ad-home-2"></div>
-          </div>
-        </div>
-
-        <!-- VIDEO ROOMS SELECTION -->
-        <div class="panel">
-          <h2 class="glowing-title title-medium">🎥 CHOOSE YOUR VIDEO ROOM</h2>
-          <p style="color: var(--muted); margin-bottom: 25px; font-size: 16px;">Each room has synchronized videos and voice chat</p>
-          
-          <div class="video-rooms-grid" id="videoRoomsGrid">
-            <!-- Video rooms populated by JavaScript -->
-          </div>
-        </div>
-
-        <!-- ADSENSE SLOT -->
-        <div class="ad-container">
-          <div class="ad-slot">
-            <div id="ad-home-3"></div>
-          </div>
-        </div>
-
-        <!-- COMMUNITY MESSAGE BOARD -->
-        <div class="panel">
-          <h2 class="glowing-title title-medium">📢 COMMUNITY MESSAGE BOARD</h2>
-          <div class="message-board">
-            <div class="message-board-content">
-              <div class="message-board-title">LATEST UPDATES & ANNOUNCEMENTS</div>
-              
-              <div class="community-message">
-                <div class="message-date">!Whisper! - WELCOME!</div>
-                <div class="message-content">
-                  Welcome to House of Whispers! We're excited to have you here. This is our community space where we'll post updates, announcements, and important information. Check back regularly for the latest news about new features, room updates, and community events.
-                </div>
-              </div>
-              
-              <div class="community-message">
-                <div class="message-date">!Whisper!- NEW WORLD WIDE ROOM!</div>
-                <div class="message-content">
-                  We've added a brand new "🌍 WORLD WIDE" room featuring international content from around the globe. Explore different cultures, trending videos from various countries, and connect with people worldwide through our voice chat feature.
-                </div>
-              </div>
-              
-              <div class="community-message">
-                <div class="message-date">!Whisper! - VIDEO CONTROLS UPDATED</div>
-                <div class="message-content">
-                  Videos now play automatically with seamless transitions. Use the Previous and Next buttons to navigate between videos in each room!
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </main>
-  </div>
-
-  <!-- VIDEO ROOM PAGES -->
-  <div id="videoRoomPage" class="hidden">
-    <header class="site-header">
-      <div class="video-room-header">
-        <div class="glowing-title title-large" id="roomTitle">VIDEO ROOM</div>
-        <button class="main-menu-btn" id="mainMenuBtn">🏠 MAIN MENU</button>
-      </div>
-    </header>
-
-    <main class="main-wrap">
-      <!-- VIDEO PLAYER -->
-      <div class="panel">
-        <h2 class="glowing-title title-medium" id="roomVideoTitle">🎬 NOW PLAYING</h2>
-        <div class="video-container">
-          <div class="video-player" id="videoPlayerContainer">
-            <!-- Video content will be loaded here dynamically -->
-            <div class="loading">Loading room video...</div>
-          </div>
-          <!-- Room Video Info -->
-          <div class="current-video-title" id="currentVideoTitle">Now Playing: </div>
-          <!-- Room Video Controls -->
-          <div class="video-controls">
-            <button class="video-control-btn" id="prevRoomBtn">⏮️ PREVIOUS</button>
-            <button class="video-control-btn" id="nextRoomBtn">⏭️ NEXT</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ADSENSE SLOT -->
-      <div class="ad-container">
-        <div class="ad-slot">
-          <div id="ad-room-1"></div>
-        </div>
-      </div>
-
-      <!-- VOICE CHAT CONTROLS -->
-      <div class="panel">
-        <h2 class="glowing-title title-medium">💬 VOICE CHAT CONTROLS</h2>
-        <div style="margin: 20px 0;">
-          <button id="roomJoinBtn" class="btn primary">JOIN VOICE CHAT</button>
-          <button id="roomLeaveBtn" class="btn" disabled>LEAVE CHAT</button>
-          <button id="roomMuteBtn" class="btn" disabled>MUTE MIC</button>
-        </div>
-        <div id="roomStatus" style="color: var(--accent2); font-size: 16px; margin: 15px 0;">Status: Ready to connect</div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House of Whispers - Private 5-Minute Voice Calls</title>
+    <!-- Google Adsense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            margin: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
         
-        <!-- Live Users in Room -->
-        <div style="margin-top: 25px;">
-          <h3 class="glowing-title title-small">LIVE IN THIS ROOM</h3>
-          <div class="users-grid" id="roomUsersGrid">
-            <!-- Users populated dynamically -->
-          </div>
-        </div>
-      </div>
-
-      <!-- ADSENSE SLOT -->
-      <div class="ad-container">
-        <div class="ad-slot">
-          <div id="ad-room-2"></div>
-        </div>
-      </div>
-
-      <!-- COMMUNITY MESSAGE BOARD IN ROOM -->
-      <div class="panel">
-        <h2 class="glowing-title title-medium">📢 COMMUNITY UPDATES</h2>
-        <div class="message-board">
-          <div class="message-board-content">
-            <div class="community-message">
-              <div class="message-date">CURRENT ROOM INFO</div>
-              <div class="message-content">
-                Join the voice chat to talk with others watching the same content. Use the Previous and Next buttons to navigate between videos in this room. Use the mute button if you need to temporarily disable your microphone.
-              </div>
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 60px 0;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin: 60px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            padding: 20px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #8B5CF6;
+            display: block;
+        }
+        
+        .testimonials {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 20px;
+            margin: 40px 0;
+        }
+        
+        .testimonial {
+            text-align: center;
+            font-style: italic;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">House of Whispers</a>
             </div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Home</a>
+                <a href="shoot-your-shot.html">Find Whispers</a>
+                <a href="become-a-whisper.html">Become a Whisper</a>
+                <div class="auth-element logged-out">
+                    <a href="login.html" class="btn secondary">Sign In</a>
+                </div>
+                <div class="auth-element logged-in" style="display: none;">
+                    <a href="whisper-portal.html" class="btn primary">My Portal</a>
+                    <a href="#" onclick="signOutUser()" class="btn secondary">Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>House of Whispers</h1>
+            <p>Private 5-minute voice calls with amazing people worldwide</p>
+            <p>Connect instantly • $15 per call • Meaningful conversations</p>
             
-            <div class="community-message">
-              <div class="message-date">COMMUNITY GUIDELINES</div>
-              <div class="message-content">
-                A quick kitchen announcement: We're cooking up good vibes in here. Season your chat with your own flavor, but leave the extra-spicy language out of the recipe. Too much salt ruins the stew. Report any issues to the site administrator through the CONTACT US button. Let's create a positive environment for everyone to enjoy!
-              </div>
+            <div class="cta-buttons">
+                <a href="shoot-your-shot.html" class="btn" style="padding: 15px 30px; font-size: 1.2rem;">
+                    🎯 Find Whispers
+                </a>
+                <a href="become-a-whisper.html" class="btn secondary" style="padding: 15px 30px; font-size: 1.2rem;">
+                    🎙️ Become a Whisper
+                </a>
             </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+        </section>
 
-  <!-- CONTACT BUTTON AT BOTTOM -->
-  <div class="contact-bottom">
-    <button class="contact-btn" id="contactBtn">📞 CONTACT US</button>
-  </div>
+        <!-- Features -->
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <h3>Earn Money</h3>
+                <p>Get paid $12 for every 5-minute call. Work from anywhere, anytime.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Instant Connection</h3>
+                <p>Connect with interesting people instantly through private voice calls.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌎</div>
+                <h3>Global Community</h3>
+                <p>Meet people from around the world and share experiences.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Safe & Private</h3>
+                <p>Secure, encrypted calls with verified community members.</p>
+            </div>
+        </section>
 
-  <!-- CENTERED FOOTER -->
-  <footer class="site-footer">
-    <div>HOUSE OF WHISPERS © 2024 • LIVE SOCIAL VIDEO EXPERIENCE</div>
-    <div style="margin-top: 10px; font-size: 12px;">WATCH TOGETHER • CHAT TOGETHER • GROW TOGETHER</div>
-  </footer>
+        <!-- Stats -->
+        <section class="stats">
+            <div class="stat-item">
+                <span class="stat-number">5-min</span>
+                <span>Call Duration</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">$15</span>
+                <span>Per Call</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">$12</span>
+                <span>Whisper Earnings</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">24/7</span>
+                <span>Availability</span>
+            </div>
+        </section>
 
-  <!-- CONTACT MODAL -->
-  <div id="contactModal" class="modal hidden">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModalBtn">&times;</span>
-      <h2 class="glowing-title title-medium">📞 CONTACT US</h2>
-      <form id="contactForm" class="contact-form">
-        <div class="form-group">
-          <input type="text" class="form-input" id="contactName" placeholder="Your Name" required maxlength="50">
-        </div>
-        <div class="form-group">
-          <input type="email" class="form-input" id="contactEmail" placeholder="Your Email" required maxlength="100">
-        </div>
-        <div class="form-group">
-          <input type="text" class="form-input" id="contactSubject" placeholder="Subject" required maxlength="100">
-        </div>
-        <div class="form-group">
-          <textarea class="form-textarea" id="contactMessage" placeholder="Your Message" required maxlength="1000"></textarea>
-        </div>
-        <button type="submit" class="form-submit-btn">SEND MESSAGE</button>
-      </form>
-      <div id="contactResult"></div>
+        <!-- Testimonials -->
+        <section class="testimonials">
+            <h2 style="text-align: center; margin-bottom: 40px;">What People Are Saying</h2>
+            <div class="testimonial">
+                <p>"I've made over $500 in my first month as a Whisper! The calls are fun and the money is great."</p>
+                <strong>- Sarah, Life Coach</strong>
+            </div>
+            <div class="testimonial">
+                <p>"Amazing way to meet interesting people. The 5-minute format is perfect for meaningful conversations."</p>
+                <strong>- Mike, Entrepreneur</strong>
+            </div>
+            <div class="testimonial">
+                <p>"As a busy professional, I love that I can earn money during my breaks. The platform is so easy to use!"</p>
+                <strong>- Emily, Marketing Director</strong>
+            </div>
+        </section>
     </div>
-  </div>
 
-  <!-- JavaScript Files -->
-  <script src="https://iaiwaf.com/js/app.js"></script>
-  <script src="https://iaiwaf.com/js/agora-voice.js"></script>
-  <script src="https://iaiwaf.com/js/dating-system.js"></script>
-  
-  <!-- Initialize AdSense -->
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Auth state management
+        firebase.auth().onAuthStateChanged((user) => {
+            const loggedInElements = document.querySelectorAll('.logged-in');
+            const loggedOutElements = document.querySelectorAll('.logged-out');
+            
+            if (user) {
+                loggedInElements.forEach(el => el.style.display = 'block');
+                loggedOutElements.forEach(el => el.style.display = 'none');
+            } else {
+                loggedInElements.forEach(el => el.style.display = 'none');
+                loggedOutElements.forEach(el => el.style.display = 'block');
+            }
+        });
+
+        function signOutUser() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
 </body>
 </html>

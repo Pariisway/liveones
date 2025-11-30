@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - House of Whispers</title>
+    <!-- Global Styles -->
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .confirmation-card {
+            text-align: center;
+            padding: 40px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            border-left: 4px solid #10B981;
+            margin: 20px 0;
+        }
+        
+        .confirmation-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .next-steps {
+            text-align: left;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        .next-steps ol {
+            display: inline-block;
+            text-align: left;
+            margin: 20px auto;
+        }
+        
+        .next-steps li {
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">House of Whispers</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="shoot-your-shot.html">Find Whispers</a>
+                <a href="become-a-whisper.html">Become a Whisper</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Booking Confirmed!</h1>
+            <p>Your voice call has been scheduled successfully</p>
+        </div>
+        
+        <div class="confirmation-card">
+            <div class="confirmation-icon">✅</div>
+            <h2>Your 5-Minute Call is Booked!</h2>
+            <p><strong>Amount Paid: $15</strong></p>
+            <p id="topicDisplay"></p>
+            <p>You will receive a confirmation email with call details shortly.</p>
+        </div>
+        
+        <div class="next-steps">
+            <h3>What Happens Next:</h3>
+            <ol>
+                <li><strong>Confirmation Email</strong> - You'll receive call details within 5 minutes</li>
+                <li><strong>Prepare for Call</strong> - Find a quiet, private space</li>
+                <li><strong>Join the Call</strong> - Use the link provided in your email</li>
+                <li><strong>Enjoy Your Conversation</strong> - You have 5 minutes for your voice call</li>
+                <li><strong>Provide Feedback</strong> - Rate your experience after the call</li>
+            </ol>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="shoot-your-shot.html" class="btn">Book Another Call</a>
+            <a href="index.html" class="btn secondary">Return Home</a>
+        </div>
+    </div>
+
+    <script>
+        // Display the call topic from URL parameters
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const topic = urlParams.get('topic');
+            const whisperId = urlParams.get('whisperId');
+            
+            if (topic) {
+                document.getElementById('topicDisplay').textContent = `Discussion Topic: ${decodeURIComponent(topic)}`;
+            }
+            
+            // In a real implementation, you would:
+            // 1. Process payment with Stripe
+            // 2. Send confirmation emails to both customer and whisper
+            // 3. Schedule the actual call
+            // 4. Update the whisper's earnings
+        });
+    </script>
+</body>
+</html>

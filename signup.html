@@ -85,6 +85,11 @@
             margin: 1rem 0;
             text-align: center;
         }
+        
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -136,7 +141,7 @@
                            placeholder="Confirm your password">
                 </div>
                 
-                <button type="submit" class="btn" style="width: 100%;">
+                <button type="submit" class="btn" style="width: 100%;" id="submitBtn">
                     Create Account
                 </button>
             </form>
@@ -153,28 +158,18 @@
         </div>
     </div>
 
-    <!-- Firebase -->
+    <!-- Firebase MUST BE LOADED FIRST -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Firebase Auth -->
+    <!-- Firebase Initialization MUST BE SECOND -->
+    <script src="js/firebase-init.js"></script>
+    
+    <!-- Firebase Auth THIRD -->
     <script src="js/firebase-auth.js"></script>
     
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
-            authDomain: "house-of-whispers.firebaseapp.com",
-            projectId: "house-of-whispers",
-            storageBucket: "house-of-whispers.firebasestorage.app",
-            messagingSenderId: "1063333130646",
-            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-            measurementId: "G-06QR5LFKJ9"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
         // Form submission handler
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -186,6 +181,7 @@
             
             const errorElement = document.getElementById('errorMessage');
             const successElement = document.getElementById('successMessage');
+            const submitBtn = document.getElementById('submitBtn');
             
             // Hide previous messages
             errorElement.style.display = 'none';
@@ -204,12 +200,11 @@
             
             try {
                 // Show loading state
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
                 submitBtn.textContent = 'Creating Account...';
                 submitBtn.disabled = true;
+                document.getElementById('signupForm').classList.add('loading');
                 
-                // Create account
+                // Create account using the fixed function
                 await signUpWithEmail(email, password, displayName);
                 
                 // Show success message
@@ -221,12 +216,13 @@
                 }, 2000);
                 
             } catch (error) {
-                showError(error.message);
+                console.error('Signup error:', error);
+                showError(error.message || 'Error creating account. Please try again.');
                 
                 // Reset button
-                const submitBtn = e.target.querySelector('button[type="submit"]');
                 submitBtn.textContent = 'Create Account';
                 submitBtn.disabled = false;
+                document.getElementById('signupForm').classList.remove('loading');
             }
         });
 
@@ -234,6 +230,9 @@
             const errorElement = document.getElementById('errorMessage');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
+            
+            // Scroll to error
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function showSuccess(message) {
@@ -255,11 +254,13 @@
         });
 
         // Check if user is already logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is already signed in, redirect to home
-                window.location.href = 'index.html';
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (isAuthenticated()) {
+                    console.log('User already logged in, redirecting...');
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
         });
     </script>
 </body>

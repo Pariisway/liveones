@@ -90,6 +90,24 @@
             opacity: 0.7;
             pointer-events: none;
         }
+        
+        .init-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .init-status.loading {
+            background: rgba(245, 158, 11, 0.2);
+            border-left: 4px solid #F59E0B;
+        }
+        
+        .init-status.success {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid #10B981;
+        }
     </style>
 </head>
 <body>
@@ -112,10 +130,14 @@
                 <p>Join House of Whispers today</p>
             </div>
             
+            <div id="initStatus" class="init-status loading">
+                🔄 Initializing Firebase...
+            </div>
+            
             <div id="errorMessage" class="error-message"></div>
             <div id="successMessage" class="success-message"></div>
             
-            <form id="signupForm">
+            <form id="signupForm" style="display: none;">
                 <div class="form-group">
                     <label for="displayName">Full Name</label>
                     <input type="text" id="displayName" name="displayName" required 
@@ -158,18 +180,49 @@
         </div>
     </div>
 
-    <!-- Firebase MUST BE LOADED FIRST -->
+    <!-- Load Firebase SDKs FIRST -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- Firebase Initialization MUST BE SECOND -->
-    <script src="js/firebase-init.js"></script>
-    
-    <!-- Firebase Auth THIRD -->
-    <script src="js/firebase-auth.js"></script>
+    <!-- Load our SIMPLE Firebase initialization SECOND -->
+    <script src="js/firebase-simple.js"></script>
     
     <script>
+        // Wait for everything to load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, checking Firebase...');
+            checkFirebaseReady();
+        });
+
+        // Check if Firebase is ready
+        function checkFirebaseReady() {
+            const initStatus = document.getElementById('initStatus');
+            const signupForm = document.getElementById('signupForm');
+            
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                // Firebase is ready!
+                initStatus.textContent = '✅ Firebase ready!';
+                initStatus.className = 'init-status success';
+                signupForm.style.display = 'block';
+                
+                // Check if user is already logged in
+                setTimeout(() => {
+                    if (firebaseAuth.isAuthenticated()) {
+                        showSuccess('Already signed in! Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    }
+                }, 500);
+                
+            } else {
+                // Firebase not ready yet, check again
+                initStatus.textContent = '🔄 Waiting for Firebase...';
+                setTimeout(checkFirebaseReady, 500);
+            }
+        }
+
         // Form submission handler
         document.getElementById('signupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -197,27 +250,27 @@
                 showError('Password must be at least 6 characters long');
                 return;
             }
-            
+
             try {
                 // Show loading state
                 submitBtn.textContent = 'Creating Account...';
                 submitBtn.disabled = true;
                 document.getElementById('signupForm').classList.add('loading');
                 
-                // Create account using the fixed function
-                await signUpWithEmail(email, password, displayName);
+                // Use the SIMPLE auth function
+                await firebaseAuth.signUp(email, password, displayName);
                 
                 // Show success message
                 showSuccess('Account created successfully! Redirecting...');
                 
-                // Redirect to home page after short delay
+                // Redirect to home page
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 2000);
                 
             } catch (error) {
                 console.error('Signup error:', error);
-                showError(error.message || 'Error creating account. Please try again.');
+                showError(error.message);
                 
                 // Reset button
                 submitBtn.textContent = 'Create Account';
@@ -230,8 +283,6 @@
             const errorElement = document.getElementById('errorMessage');
             errorElement.textContent = message;
             errorElement.style.display = 'block';
-            
-            // Scroll to error
             errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
@@ -239,6 +290,7 @@
             const successElement = document.getElementById('successMessage');
             successElement.textContent = message;
             successElement.style.display = 'block';
+            successElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         // Real-time password confirmation validation
@@ -251,16 +303,6 @@
             } else {
                 this.style.borderColor = '#10B981';
             }
-        });
-
-        // Check if user is already logged in
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                if (isAuthenticated()) {
-                    console.log('User already logged in, redirecting...');
-                    window.location.href = 'index.html';
-                }
-            }, 1000);
         });
     </script>
 </body>

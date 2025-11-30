@@ -32,6 +32,36 @@
             margin-bottom: 20px;
         }
         
+        .call-action {
+            background: rgba(59, 130, 246, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 4px solid #3B82F6;
+            margin: 30px 0;
+        }
+        
+        .join-call-btn {
+            padding: 20px 40px;
+            background: #10B981;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 20px 0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .join-call-btn:hover {
+            background: #059669;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
+        
         .next-steps {
             text-align: left;
             margin: 30px 0;
@@ -58,6 +88,28 @@
             margin-top: 30px;
             flex-wrap: wrap;
         }
+        
+        .whisper-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        
+        .whisper-avatar {
+            font-size: 3rem;
+        }
+        
+        .whisper-avatar img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -81,21 +133,36 @@
             <p>Your voice call has been scheduled successfully</p>
         </div>
         
+        <div id="whisperInfo" class="whisper-info">
+            <!-- Whisper info will be loaded here -->
+        </div>
+        
         <div class="confirmation-card">
             <div class="confirmation-icon">✅</div>
             <h2>Your 5-Minute Call is Booked!</h2>
-            <p><strong>Amount Paid: $15</strong></p>
+            <p><strong>Amount: $15</strong></p>
             <p id="topicDisplay"></p>
-            <p>You will receive a confirmation email with call details shortly.</p>
+            <p>Ready to start your conversation?</p>
+        </div>
+        
+        <div class="call-action">
+            <h3>🎙️ Ready to Connect?</h3>
+            <p>Join your private voice call now</p>
+            <a href="#" id="joinCallBtn" class="join-call-btn">
+                Join Voice Call Now
+            </a>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
+                You have 5 minutes for your conversation
+            </p>
         </div>
         
         <div class="next-steps">
-            <h3>What Happens Next:</h3>
+            <h3>What to Expect:</h3>
             <ol>
-                <li><strong>Confirmation Email</strong> - You'll receive call details within 5 minutes</li>
-                <li><strong>Prepare for Call</strong> - Find a quiet, private space</li>
-                <li><strong>Join the Call</strong> - Use the link provided in your email</li>
-                <li><strong>Enjoy Your Conversation</strong> - You have 5 minutes for your voice call</li>
+                <li><strong>Join the Call</strong> - Click the button above to start</li>
+                <li><strong>Allow Microphone Access</strong> - Your browser will ask for permission</li>
+                <li><strong>Start Talking</strong> - You'll be connected directly with the whisper</li>
+                <li><strong>5-Minute Timer</strong> - The call automatically ends after 5 minutes</li>
                 <li><strong>Provide Feedback</strong> - Rate your experience after the call</li>
             </ol>
         </div>
@@ -106,22 +173,78 @@
         </div>
     </div>
 
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
     <script>
-        // Display the call topic from URL parameters
-        document.addEventListener('DOMContentLoaded', function() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+
+        // Load booking details and setup call link
+        document.addEventListener('DOMContentLoaded', async function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const topic = urlParams.get('topic');
             const whisperId = urlParams.get('whisperId');
+            const topic = urlParams.get('topic');
             
+            // Display topic
             if (topic) {
                 document.getElementById('topicDisplay').textContent = `Discussion Topic: ${decodeURIComponent(topic)}`;
             }
             
+            // Load whisper info
+            if (whisperId) {
+                try {
+                    const whisperDoc = await db.collection('whispers').doc(whisperId).get();
+                    
+                    if (whisperDoc.exists) {
+                        const whisper = whisperDoc.data();
+                        
+                        document.getElementById('whisperInfo').innerHTML = `
+                            <div class="whisper-avatar">
+                                ${whisper.photoURL ? 
+                                    `<img src="${whisper.photoURL}" alt="${whisper.displayName}">` :
+                                    `<span>${whisper.avatar || '👤'}</span>`
+                                }
+                            </div>
+                            <div class="whisper-details">
+                                <h3>${whisper.displayName}</h3>
+                                <p>📍 ${whisper.location}</p>
+                                <p>${whisper.interests}</p>
+                            </div>
+                        `;
+                        
+                        // Setup call link
+                        document.getElementById('joinCallBtn').href = 
+                            `call-room.html?whisperId=${whisperId}&topic=${encodeURIComponent(topic || 'General Conversation')}`;
+                    }
+                } catch (error) {
+                    console.error('Error loading whisper info:', error);
+                }
+            }
+            
             // In a real implementation, you would:
-            // 1. Process payment with Stripe
-            // 2. Send confirmation emails to both customer and whisper
-            // 3. Schedule the actual call
-            // 4. Update the whisper's earnings
+            // 1. Process payment with Stripe (test mode for now)
+            // 2. Create a booking record in Firestore
+            // 3. Generate a unique call room ID
+            // 4. Notify the whisper about the new booking
+            
+            console.log('💰 Payment would be processed here (currently in test mode)');
+            console.log('📞 WebRTC call room would be created here');
         });
     </script>
 </body>

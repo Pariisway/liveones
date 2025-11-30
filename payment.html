@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - House of Whispers</title>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .payment-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .payment-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .payment-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .amount-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #8B5CF6;
+        }
+        
+        .whisper-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .whisper-avatar {
+            font-size: 2rem;
+        }
+        
+        .whisper-avatar img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .card-element-container {
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+        }
+        
+        .test-card-info {
+            background: rgba(245, 158, 11, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #F59E0B;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        .test-card-item {
+            margin: 5px 0;
+        }
+        
+        .error-message {
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #EF4444;
+            display: none;
+        }
+        
+        .success-message {
+            color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #10B981;
+            display: none;
+        }
+        
+        .processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .processing-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .secure-notice {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #10B981;
+        }
+        
+        .payment-summary {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        
+        .summary-total {
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">House of Whispers</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="shoot-your-shot.html">Find Whispers</a>
+                <a href="become-a-whisper.html">Become a Whisper</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="payment-container">
+            <div class="payment-header">
+                <h1>Payment</h1>
+                <p>Complete your booking</p>
+            </div>
+            
+            <div id="whisperInfo" class="whisper-info">
+                <!-- Whisper info will be loaded here -->
+            </div>
+            
+            <div class="payment-summary">
+                <div class="summary-item">
+                    <span>5-minute voice call:</span>
+                    <span>$15.00</span>
+                </div>
+                <div class="summary-item">
+                    <span>Platform fee:</span>
+                    <span>$0.00</span>
+                </div>
+                <div class="summary-item summary-total">
+                    <span>Total:</span>
+                    <span class="amount-display">$15.00</span>
+                </div>
+            </div>
+            
+            <div class="test-card-info">
+                <h4>🧪 Test Card Information</h4>
+                <div class="test-card-item">
+                    <strong>Card Number:</strong> 4242 4242 4242 4242
+                </div>
+                <div class="test-card-item">
+                    <strong>Expiry:</strong> Any future date (e.g., 12/34)
+                </div>
+                <div class="test-card-item">
+                    <strong>CVC:</strong> Any 3 digits (e.g., 123)
+                </div>
+                <div class="test-card-item">
+                    <strong>ZIP:</strong> Any 5 digits (e.g., 12345)
+                </div>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="cardElement">Card Details</label>
+                    <div id="cardElement" class="card-element-container">
+                        <!-- Stripe Card Element will be inserted here -->
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" style="width: 100%;">
+                    Pay $15.00
+                </button>
+            </form>
+            
+            <div class="secure-notice">
+                🔒 Secure payment processed by Stripe. Your card details are never stored on our servers.
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay -->
+    <div id="processingOverlay" class="processing-overlay">
+        <div class="processing-content">
+            <div class="loading-spinner"></div>
+            <h3>Processing Payment</h3>
+            <p>Please wait while we secure your booking...</p>
+        </div>
+    </div>
+
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Stripe Payments -->
+    <script src="js/stripe-payments.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Load whisper info and initialize Stripe
+        document.addEventListener('DOMContentLoaded', async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const whisperId = urlParams.get('whisperId');
+            const topic = urlParams.get('topic');
+            
+            // Check authentication
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    alert('Please sign in to make a payment');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Load whisper info
+                if (whisperId) {
+                    await loadWhisperInfo(whisperId);
+                }
+                
+                // Initialize Stripe
+                await initializeStripe();
+            });
+        });
+
+        // Load whisper information
+        async function loadWhisperInfo(whisperId) {
+            try {
+                const whisperDoc = await db.collection('whispers').doc(whisperId).get();
+                
+                if (whisperDoc.exists) {
+                    const whisper = whisperDoc.data();
+                    
+                    document.getElementById('whisperInfo').innerHTML = `
+                        <div class="whisper-avatar">
+                            ${whisper.photoURL ? 
+                                `<img src="${whisper.photoURL}" alt="${whisper.displayName}">` :
+                                `<span>${whisper.avatar || '👤'}</span>`
+                            }
+                        </div>
+                        <div class="whisper-details">
+                            <h3>${whisper.displayName}</h3>
+                            <p>📍 ${whisper.location}</p>
+                            <p>${whisper.interests}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading whisper info:', error);
+            }
+        }
+
+        // Initialize Stripe
+        async function initializeStripe() {
+            try {
+                const cardElement = initializeStripePayments();
+                stripePaymentManager.mountCardElement('#cardElement');
+                console.log('✅ Stripe initialized');
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+                showError('Failed to initialize payment system');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const whisperId = urlParams.get('whisperId');
+            const topic = urlParams.get('topic');
+            const callId = generateCallId();
+            
+            const errorElement = document.getElementById('errorMessage');
+            const successElement = document.getElementById('successMessage');
+            
+            // Hide previous messages
+            errorElement.style.display = 'none';
+            successElement.style.display = 'none';
+            
+            try {
+                // Show processing overlay
+                document.getElementById('processingOverlay').style.display = 'flex';
+                
+                // Process payment
+                const result = await processStripePayment(whisperId, topic, callId);
+                
+                if (result.success) {
+                    showSuccess('Payment successful! Redirecting to call...');
+                    
+                    // Redirect to call room after short delay
+                    setTimeout(() => {
+                        window.location.href = `call-room.html?callId=${callId}&whisperId=${whisperId}&topic=${encodeURIComponent(topic || 'General Conversation')}&role=caller&paymentId=${result.paymentId}`;
+                    }, 2000);
+                } else {
+                    throw new Error('Payment failed');
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError(error.message || 'Payment failed. Please try again.');
+                
+                // Hide processing overlay
+                document.getElementById('processingOverlay').style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successElement = document.getElementById('successMessage');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+        }
+
+        // Utility function to generate call ID
+        function generateCallId() {
+            return 'call_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+    </script>
+</body>
+</html>

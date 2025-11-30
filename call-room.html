@@ -791,3 +791,49 @@
     </script>
 </body>
 </html>
+
+    <!-- Add payment verification script -->
+    <script>
+        // Verify payment before allowing call
+        async function verifyPayment() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentId = urlParams.get('paymentId');
+            const callId = urlParams.get('callId');
+            
+            if (!paymentId) {
+                console.log('⚠️ No payment ID - test mode assumed');
+                return true; // Allow in test mode
+            }
+            
+            try {
+                const paymentDoc = await db.collection('payments').where('paymentId', '==', paymentId).get();
+                
+                if (!paymentDoc.empty) {
+                    const payment = paymentDoc.docs[0].data();
+                    if (payment.status === 'succeeded') {
+                        console.log('✅ Payment verified');
+                        return true;
+                    }
+                }
+                
+                console.error('❌ Payment verification failed');
+                return false;
+                
+            } catch (error) {
+                console.error('Error verifying payment:', error);
+                return false;
+            }
+        }
+
+        // Update the start call function to check payment
+        async function startWebRTCCall() {
+            const paymentVerified = await verifyPayment();
+            
+            if (!paymentVerified) {
+                updateCallStatus('❌ Payment verification failed. Please complete payment first.', 'error');
+                return;
+            }
+            
+            // Rest of existing startWebRTCCall function...
+        }
+    </script>

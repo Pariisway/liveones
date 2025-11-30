@@ -1,4 +1,4 @@
-// WebRTC Signaling System using Firebase
+// WebRTC Signaling System using Firebase - FIXED VERSION
 class WebRTCManager {
     constructor() {
         this.peerConnection = null;
@@ -72,10 +72,17 @@ class WebRTCManager {
             this.onRemoteStream(this.remoteStream);
         };
         
-        // Handle ICE candidates
+        // Handle ICE candidates - FIXED: Convert to serializable format
         this.peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-                this.sendSignal('ice-candidate', event.candidate);
+                // Convert RTCIceCandidate to plain object for Firestore
+                const candidateData = {
+                    candidate: event.candidate.candidate,
+                    sdpMid: event.candidate.sdpMid,
+                    sdpMLineIndex: event.candidate.sdpMLineIndex,
+                    usernameFragment: event.candidate.usernameFragment || null
+                };
+                this.sendSignal('ice-candidate', candidateData);
             }
         };
         
@@ -123,27 +130,46 @@ class WebRTCManager {
         try {
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
-            await this.sendSignal('offer', offer);
+            
+            // Convert RTCSessionDescription to plain object
+            const offerData = {
+                type: offer.type,
+                sdp: offer.sdp
+            };
+            
+            await this.sendSignal('offer', offerData);
             console.log('📤 Offer created and sent');
         } catch (error) {
             console.error('Error creating offer:', error);
         }
     }
 
-    async handleOffer(offer) {
+    async handleOffer(offerData) {
         try {
+            // Convert back to RTCSessionDescription
+            const offer = new RTCSessionDescription(offerData);
             await this.peerConnection.setRemoteDescription(offer);
+            
             const answer = await this.peerConnection.createAnswer();
             await this.peerConnection.setLocalDescription(answer);
-            await this.sendSignal('answer', answer);
+            
+            // Convert RTCSessionDescription to plain object
+            const answerData = {
+                type: answer.type,
+                sdp: answer.sdp
+            };
+            
+            await this.sendSignal('answer', answerData);
             console.log('📥 Offer received, answer sent');
         } catch (error) {
             console.error('Error handling offer:', error);
         }
     }
 
-    async handleAnswer(answer) {
+    async handleAnswer(answerData) {
         try {
+            // Convert back to RTCSessionDescription
+            const answer = new RTCSessionDescription(answerData);
             await this.peerConnection.setRemoteDescription(answer);
             console.log('✅ Answer received, call connected');
         } catch (error) {
@@ -151,8 +177,10 @@ class WebRTCManager {
         }
     }
 
-    async handleIceCandidate(candidate) {
+    async handleIceCandidate(candidateData) {
         try {
+            // Convert back to RTCIceCandidate
+            const candidate = new RTCIceCandidate(candidateData);
             await this.peerConnection.addIceCandidate(candidate);
         } catch (error) {
             console.error('Error adding ICE candidate:', error);

@@ -37,6 +37,20 @@
             margin-bottom: 10px;
         }
         
+        .main-header .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
         .content-section {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -103,6 +117,14 @@
             position: relative;
         }
 
+        .girl-avatar img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
         .online-indicator {
             position: absolute;
             bottom: 10px;
@@ -136,6 +158,12 @@
             margin: 10px 0;
             font-size: 0.9rem;
             line-height: 1.4;
+        }
+
+        .girl-interests {
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #D1D5DB;
         }
 
         .girl-stats {
@@ -211,31 +239,20 @@
     </style>
 </head>
 <body>
-    <nav class="main-nav">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html">House of Whispers</a>
-            </div>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="shoot-your-shot.html" class="active">Find Whispers</a>
-                <a href="become-a-whisper.html">Become a Whisper</a>
-                <div class="auth-element logged-out">
-                    <a href="login.html" class="btn secondary">Sign In</a>
-                </div>
-                <div class="auth-element logged-in" style="display: none;">
-                    <a href="whisper-portal.html" class="btn primary">My Portal</a>
-                    <a href="#" onclick="signOutUser()" class="btn secondary">Sign Out</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- REMOVED: The entire navigation bar -->
     
     <div class="container">
         <header class="main-header">
             <h1>🎯 Shoot Your Shot</h1>
             <p>Connect with amazing whispers for 5-minute voice calls</p>
             <p class="subtitle">Private 5 minute voice chats • $15 per chat • Instant connection</p>
+            
+            <!-- NEW: Buttons moved under the subtitle -->
+            <div class="header-buttons">
+                <a href="index.html" class="btn secondary">🏠 Home</a>
+                <a href="whisper-portal.html" class="btn secondary">🎪 My Portal</a>
+                <a href="#" onclick="signOutUser()" class="btn secondary">🚪 Sign Out</a>
+            </div>
         </header>
 
         <div class="content-section">
@@ -264,5 +281,51 @@
     <!-- Then load our systems -->
     <script src="js/firebase-auth.js"></script>
     <script src="js/dating-system.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
+            authDomain: "house-of-whispers.firebaseapp.com",
+            projectId: "house-of-whispers",
+            storageBucket: "house-of-whispers.firebasestorage.app",
+            messagingSenderId: "1063333130646",
+            appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
+            measurementId: "G-06QR5LFKJ9"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Sign out function
+        function signOutUser() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error('Sign out error:', error);
+            });
+        }
+
+        // Update button visibility based on auth state
+        firebase.auth().onAuthStateChanged((user) => {
+            const headerButtons = document.querySelector('.header-buttons');
+            if (user) {
+                // User is signed in - show My Portal and Sign Out
+                headerButtons.innerHTML = `
+                    <a href="index.html" class="btn secondary">🏠 Home</a>
+                    <a href="whisper-portal.html" class="btn secondary">🎪 My Portal</a>
+                    <a href="#" onclick="signOutUser()" class="btn secondary">🚪 Sign Out</a>
+                `;
+            } else {
+                // User is signed out - show Home and Sign In
+                headerButtons.innerHTML = `
+                    <a href="index.html" class="btn secondary">🏠 Home</a>
+                    <a href="login.html" class="btn secondary">🔐 Sign In</a>
+                `;
+            }
+        });
+    </script>
 </body>
 </html>

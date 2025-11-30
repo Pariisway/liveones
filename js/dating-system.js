@@ -1,5 +1,5 @@
-// Dating System - With Purchase Links
-console.log('💘 Dating System: Purchase Version Loaded');
+// Dating System - With Photos and Social Media
+console.log('💘 Dating System: Photos Version Loaded');
 
 let db;
 let girlsData = [];
@@ -66,11 +66,13 @@ async function getGirlsData() {
                 username: data.username || 'unknown',
                 displayName: data.displayName || data.username || 'Whisper',
                 avatar: data.avatar || '👤',
+                photoURL: data.photoURL || null,
                 location: data.location || 'Online',
                 bio: data.bio || 'Ready to connect with you!',
                 rating: data.rating || 4.5,
                 verification: data.verification || 'Verified',
-                interests: data.interests || 'General conversation'
+                interests: data.interests || 'General conversation',
+                socialMedia: data.socialMedia || {}
             });
         });
         
@@ -94,11 +96,13 @@ function getFallbackGirlsData() {
             username: 'whisper_sarah',
             displayName: 'Sarah 💫',
             avatar: '💁‍♀️',
+            photoURL: null,
             location: 'New York',
             bio: 'Life coach and relationship expert. Lets talk about your dreams and goals!',
             rating: 4.8,
             verification: 'Verified',
-            interests: 'Dating, Relationships, Personal Growth'
+            interests: 'Dating, Relationships, Personal Growth',
+            socialMedia: {}
         }
     ];
 }
@@ -145,9 +149,18 @@ function displayWhispers(whispers) {
     whispers.forEach(whisper => {
         const girlCard = document.createElement('div');
         girlCard.className = 'girl-card';
+        
+        // Determine what to show as profile image
+        let profileImage = '';
+        if (whisper.photoURL) {
+            profileImage = `<img src="${whisper.photoURL}" alt="${whisper.displayName}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3);">`;
+        } else {
+            profileImage = `<span style="font-size: 60px;">${whisper.avatar || '👤'}</span>`;
+        }
+        
         girlCard.innerHTML = `
             <div class="girl-avatar">
-                <span style="font-size: 60px;">${whisper.avatar || '👤'}</span>
+                ${profileImage}
                 <div class="online-indicator online"></div>
             </div>
             <div class="girl-info">
@@ -210,7 +223,7 @@ async function loadWhispers() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Shoot Your Shot page loaded - Purchase Version');
+    console.log('🚀 Shoot Your Shot page loaded - Photos Version');
     setTimeout(loadWhispers, 1000);
 });
 

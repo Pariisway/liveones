@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Portal - House of Whispers</title>
-    <!-- Global Styles -->
     <link rel="stylesheet" href="css/global.css">
     <style>
         .header {
@@ -40,10 +39,77 @@
             text-align: center;
             margin-top: 30px;
         }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .profile-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .profile-details h2 {
+            margin-bottom: 10px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            transition: background 0.3s;
+        }
+        
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #8B5CF6;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="main-nav">
         <div class="nav-container">
             <div class="nav-logo">
@@ -90,7 +156,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <script>
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBU2tbinWSOw-N8ce6zMQ9AMKXt-5fj23g",
             authDomain: "house-of-whispers.firebaseapp.com",
@@ -101,7 +166,6 @@
             measurementId: "G-06QR5LFKJ9"
         };
 
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -109,7 +173,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Check authentication state
         auth.onAuthStateChanged((user) => {
             const loadingSection = document.getElementById('loadingSection');
             const profileSection = document.getElementById('profileSection');
@@ -143,18 +206,68 @@
                 if (doc.exists) {
                     const data = doc.data();
                     console.log('✅ Profile found:', data.displayName);
+                    
+                    // Generate social media links HTML
+                    let socialLinksHTML = '';
+                    if (data.socialMedia) {
+                        const socialIcons = {
+                            instagram: '📷',
+                            twitter: '🐦',
+                            linkedin: '💼',
+                            facebook: '👥',
+                            tiktok: '🎵',
+                            website: '🔗'
+                        };
+                        
+                        Object.entries(data.socialMedia).forEach(([platform, url]) => {
+                            if (url && socialIcons[platform]) {
+                                socialLinksHTML += `
+                                    <a href="${url}" target="_blank" class="social-link">
+                                        ${socialIcons[platform]} ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+                                    </a>
+                                `;
+                            }
+                        });
+                    }
+                    
                     profileSection.innerHTML = `
                         <div class="card has-profile">
-                            <h2>Welcome, ${data.displayName}! 👋</h2>
+                            <div class="profile-header">
+                                ${data.photoURL ? 
+                                    `<img src="${data.photoURL}" alt="${data.displayName}" class="profile-photo">` :
+                                    `<div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 2rem;">👤</div>`
+                                }
+                                <div class="profile-details">
+                                    <h2>${data.displayName} 👋</h2>
+                                    <p>📍 ${data.location} • ⭐ ${data.rating || '5.0'} • ${data.verification || 'Verified'} ✅</p>
+                                    ${socialLinksHTML ? `<div class="social-links">${socialLinksHTML}</div>` : ''}
+                                </div>
+                            </div>
+                            
                             <div class="profile-info">
                                 <p><strong>Bio:</strong> ${data.bio}</p>
-                                <p><strong>Location:</strong> ${data.location}</p>
                                 <p><strong>Interests:</strong> ${data.interests}</p>
-                                <p><strong>Rating:</strong> ⭐ ${data.rating || '5.0'}</p>
-                                <p><strong>Status:</strong> ${data.verification || 'Verified'} ✅</p>
-                                <p><strong>Total Calls:</strong> ${data.totalCalls || 0}</p>
-                                <p><strong>Total Earnings:</strong> $${(data.totalEarnings || 0).toFixed(2)}</p>
                             </div>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <span class="stat-number">${data.totalCalls || 0}</span>
+                                    <span class="stat-label">Total Calls</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number">$${(data.totalEarnings || 0).toFixed(2)}</span>
+                                    <span class="stat-label">Total Earnings</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number">${data.rating || '5.0'}</span>
+                                    <span class="stat-label">Rating</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number">${data.verification || 'Verified'}</span>
+                                    <span class="stat-label">Status</span>
+                                </div>
+                            </div>
+                            
                             <div style="text-align: center; margin-top: 20px;">
                                 <a href="whisper-signup.html" class="btn">Edit Profile</a>
                             </div>

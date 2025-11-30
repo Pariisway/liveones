@@ -8,7 +8,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Arial', sans-serif; min-height: 100vh; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
-        .container { max-width: 500px; width: 100%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 3rem; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
+        .container { max-width: 600px; width: 100%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 3rem; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); }
         h1 { text-align: center; margin-bottom: 2rem; font-size: 2.5rem; }
         .form-group { margin-bottom: 1.5rem; }
         label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
@@ -25,6 +25,22 @@
         .loading { text-align: center; padding: 1rem; display: none; }
         .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid white; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Photo Upload Styles */
+        .photo-upload-container { text-align: center; margin: 20px 0; }
+        .photo-preview { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255, 255, 255, 0.3); margin: 0 auto 15px; display: none; }
+        .upload-btn { background: rgba(255, 255, 255, 0.2); padding: 10px 20px; border-radius: 10px; cursor: pointer; display: inline-block; margin: 10px; transition: background 0.3s; }
+        .upload-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        .remove-photo { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; padding: 8px 15px; border-radius: 8px; cursor: pointer; display: inline-block; margin: 5px; }
+        .remove-photo:hover { background: rgba(239, 68, 68, 0.3); }
+        
+        /* Social Media Styles */
+        .social-media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
+        .social-input { display: flex; align-items: center; gap: 10px; }
+        .social-icon { font-size: 1.5rem; width: 30px; text-align: center; }
+        
+        /* Section Headers */
+        .section-header { border-bottom: 2px solid rgba(255, 255, 255, 0.3); padding-bottom: 10px; margin: 30px 0 20px 0; font-size: 1.3rem; }
     </style>
 </head>
 <body>
@@ -40,29 +56,87 @@
         <div id="successMessage" class="success-message"></div>
         
         <form id="whisperForm">
+            <h3 class="section-header">📸 Profile Photo</h3>
+            <div class="photo-upload-container">
+                <img id="photoPreview" class="photo-preview" alt="Profile preview">
+                <div>
+                    <label for="photoUpload" class="upload-btn">
+                        📷 Upload Photo
+                    </label>
+                    <input type="file" id="photoUpload" accept="image/*" style="display: none;">
+                    <div id="removePhotoBtn" class="remove-photo" style="display: none;">Remove Photo</div>
+                </div>
+                <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">
+                    Optional: Upload a clear profile photo to get more calls
+                </p>
+            </div>
+
+            <h3 class="section-header">👤 Basic Information</h3>
             <div class="form-group">
-                <label for="displayName">Display Name</label>
+                <label for="displayName">Display Name *</label>
                 <input type="text" id="displayName" placeholder="Enter your display name" required>
             </div>
             
             <div class="form-group">
-                <label for="bio">Bio</label>
-                <textarea id="bio" rows="4" placeholder="Tell people about yourself..." required></textarea>
+                <label for="bio">Bio *</label>
+                <textarea id="bio" rows="4" placeholder="Tell people about yourself... What makes you a great conversation partner?" required></textarea>
             </div>
             
             <div class="form-group">
-                <label for="interests">Interests</label>
-                <input type="text" id="interests" placeholder="e.g., Dating, Career, Life Advice" required>
+                <label for="interests">Interests & Expertise *</label>
+                <input type="text" id="interests" placeholder="e.g., Dating Coach, Career Advice, Life Coaching, Mental Health" required>
             </div>
             
             <div class="form-group">
-                <label for="location">Location</label>
+                <label for="location">Location *</label>
                 <input type="text" id="location" placeholder="Your city or country" required>
             </div>
+
+            <h3 class="section-header">🌐 Social Media Links</h3>
+            <p style="margin-bottom: 15px; opacity: 0.8;">Optional: Link your social profiles to build trust</p>
             
-            <div class="form-group">
-                <label for="avatar">Avatar Emoji</label>
-                <input type="text" id="avatar" placeholder="e.g., 👩‍💼, 💁‍♀️, 👨‍🎓" value="👤" required>
+            <div class="social-media-grid">
+                <div class="form-group">
+                    <div class="social-input">
+                        <span class="social-icon">📷</span>
+                        <input type="url" id="instagram" placeholder="Instagram URL">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="social-input">
+                        <span class="social-icon">🐦</span>
+                        <input type="url" id="twitter" placeholder="Twitter URL">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="social-input">
+                        <span class="social-icon">💼</span>
+                        <input type="url" id="linkedin" placeholder="LinkedIn URL">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="social-input">
+                        <span class="social-icon">👥</span>
+                        <input type="url" id="facebook" placeholder="Facebook URL">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="social-input">
+                        <span class="social-icon">🎵</span>
+                        <input type="url" id="tiktok" placeholder="TikTok URL">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="social-input">
+                        <span class="social-icon">🔗</span>
+                        <input type="url" id="website" placeholder="Website URL">
+                    </div>
+                </div>
             </div>
             
             <button type="submit" class="btn" id="submitBtn">Create Profile</button>
@@ -78,7 +152,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     
     <script>
         const firebaseConfig = {
@@ -88,8 +162,7 @@
             storageBucket: "house-of-whispers.firebasestorage.app",
             messagingSenderId: "1063333130646",
             appId: "1:1063333130646:web:9f0d6ddc2927692aaaadb7",
-            measurementId: "G-06QR5LFKJ9",
-            databaseURL: "https://house-of-whispers-default-rtdb.firebaseio.com/"
+            measurementId: "G-06QR5LFKJ9"
         };
 
         // Initialize Firebase
@@ -99,7 +172,70 @@
 
         const db = firebase.firestore();
         const auth = firebase.auth();
-        const realtimeDb = firebase.database();
+        const storage = firebase.storage();
+        
+        let selectedPhotoFile = null;
+
+        // Photo upload functionality
+        document.getElementById('photoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showError('Please select an image file (JPEG, PNG, etc.)');
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('Please select an image smaller than 5MB');
+                    return;
+                }
+                
+                selectedPhotoFile = file;
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photoPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('removePhotoBtn').style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove photo functionality
+        document.getElementById('removePhotoBtn').addEventListener('click', function() {
+            selectedPhotoFile = null;
+            document.getElementById('photoPreview').style.display = 'none';
+            document.getElementById('removePhotoBtn').style.display = 'none';
+            document.getElementById('photoUpload').value = '';
+        });
+
+        // Upload photo to Firebase Storage
+        async function uploadProfilePhoto(userId) {
+            if (!selectedPhotoFile) return null;
+            
+            try {
+                const fileExtension = selectedPhotoFile.name.split('.').pop();
+                const fileName = `profile-${Date.now()}.${fileExtension}`;
+                const storageRef = storage.ref(`profile-images/${userId}/${fileName}`);
+                
+                // Upload file
+                const snapshot = await storageRef.put(selectedPhotoFile);
+                
+                // Get download URL
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                
+                console.log('✅ Photo uploaded:', downloadURL);
+                return downloadURL;
+            } catch (error) {
+                console.error('❌ Photo upload error:', error);
+                throw new Error('Failed to upload photo: ' + error.message);
+            }
+        }
 
         // Check authentication
         auth.onAuthStateChanged((user) => {
@@ -146,37 +282,55 @@
             showLoading();
             document.getElementById('submitBtn').disabled = true;
             
-            const profileData = {
-                displayName: document.getElementById('displayName').value,
-                bio: document.getElementById('bio').value,
-                interests: document.getElementById('interests').value,
-                location: document.getElementById('location').value,
-                avatar: document.getElementById('avatar').value,
-                userId: user.uid,
-                username: user.email ? user.email.split('@')[0] : 'user',
-                email: user.email,
-                createdAt: new Date().toISOString(),
-                isActive: true,
-                rating: 5.0,
-                verification: 'Verified',
-                totalCalls: 0,
-                totalEarnings: 0
-            };
-            
             try {
-                console.log('📝 Attempting to create profile...');
+                let photoURL = null;
                 
-                // Try Firestore first
-                try {
-                    await db.collection('whispers').doc(user.uid).set(profileData);
-                    console.log('✅ Profile created in Firestore');
-                } catch (firestoreError) {
-                    console.log('❌ Firestore failed, trying Realtime Database:', firestoreError.message);
-                    
-                    // Fallback to Realtime Database
-                    await realtimeDb.ref('whispers/' + user.uid).set(profileData);
-                    console.log('✅ Profile created in Realtime Database');
+                // Upload photo if selected
+                if (selectedPhotoFile) {
+                    photoURL = await uploadProfilePhoto(user.uid);
                 }
+                
+                // Prepare social media links
+                const socialMedia = {
+                    instagram: document.getElementById('instagram').value || null,
+                    twitter: document.getElementById('twitter').value || null,
+                    linkedin: document.getElementById('linkedin').value || null,
+                    facebook: document.getElementById('facebook').value || null,
+                    tiktok: document.getElementById('tiktok').value || null,
+                    website: document.getElementById('website').value || null
+                };
+                
+                // Remove empty social media fields
+                Object.keys(socialMedia).forEach(key => {
+                    if (socialMedia[key] === null) {
+                        delete socialMedia[key];
+                    }
+                });
+
+                const profileData = {
+                    displayName: document.getElementById('displayName').value,
+                    bio: document.getElementById('bio').value,
+                    interests: document.getElementById('interests').value,
+                    location: document.getElementById('location').value,
+                    photoURL: photoURL,
+                    socialMedia: socialMedia,
+                    userId: user.uid,
+                    username: user.email ? user.email.split('@')[0] : 'user',
+                    email: user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    isActive: true,
+                    rating: 5.0,
+                    verification: 'Verified',
+                    totalCalls: 0,
+                    totalEarnings: 0
+                };
+                
+                console.log('📝 Creating profile with data:', profileData);
+                
+                // Save to Firestore
+                await db.collection('whispers').doc(user.uid).set(profileData);
+                
+                console.log('✅ Profile created successfully');
                 
                 hideLoading();
                 showSuccess('Profile created successfully! Redirecting to portal...');
@@ -186,10 +340,15 @@
                 }, 2000);
                 
             } catch (error) {
-                console.error('❌ All storage methods failed:', error);
+                console.error('❌ Error creating profile:', error);
                 hideLoading();
                 document.getElementById('submitBtn').disabled = false;
-                showError('Failed to create profile. Please try again or contact support.');
+                
+                if (error.code === 'permission-denied') {
+                    showError('Permission denied. Please check Firestore security rules.');
+                } else {
+                    showError('Error creating profile: ' + error.message);
+                }
             }
         });
     </script>

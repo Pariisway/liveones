@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4QYRJLTXTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4QYRJLTXTT');
+</script>
+    <title>Payment - House of Whispers</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1><i class="fas fa-moon"></i> Complete Your Purchase</h1>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="payment-container">
+            <div class="payment-header">
+                <h2><i class="fas fa-phone"></i> 5-Minute Private Chat</h2>
+                <div class="whisper-info" id="whisperInfo">
+                    <!-- Whisper info will be loaded here -->
+                </div>
+            </div>
+
+            <div class="payment-steps">
+                <div class="step active">
+                    <span class="step-number">1</span>
+                    <span class="step-text">Enter Details</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-text">Payment</span>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-text">Start Call</span>
+                </div>
+            </div>
+
+            <form id="paymentForm">
+                <div class="form-section">
+                    <h3>Your Information</h3>
+                    <div class="form-group">
+                        <label for="buyerEmail">Email Address *</label>
+                        <input type="email" id="buyerEmail" required>
+                        <small>We'll send the call link to this email</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="buyerName">Your Name (Optional)</label>
+                        <input type="text" id="buyerName">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Payment Information</h3>
+                    <div class="payment-methods">
+                        <div class="payment-method active">
+                            <i class="fab fa-cc-stripe"></i>
+                            <span>Credit/Debit Card</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Stripe Card Element -->
+                    <div class="card-element-container">
+                        <div id="card-element"></div>
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+                </div>
+
+                <div class="payment-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-item">
+                        <span>5-minute Private Chat</span>
+                        <span>$15.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Service Fee</span>
+                        <span>$0.00</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span>$15.00</span>
+                    </div>
+                </div>
+
+                <div class="terms-agreement">
+                    <label>
+                        <input type="checkbox" id="termsAgreement" required>
+                        I agree to the <a href="#">Terms of Service</a> and understand there are no refunds for early call termination
+                    </label>
+                </div>
+
+                <button type="submit" id="submitPayment" class="btn-primary">
+                    <i class="fas fa-lock"></i> Pay $15.00
+                </button>
+                
+                <div class="security-info">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure payment powered by Stripe. Your payment information is encrypted.</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="payment.js"></script>
+</body>
+</html>

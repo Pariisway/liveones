@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4QYRJLTXTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4QYRJLTXTT');
+</script>
+    <title>Whisper Dashboard - House of Whispers</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1><i class="fas fa-moon"></i> Whisper Dashboard</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="#" class="nav-link" onclick="showSection('profile')"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                <a href="#" id="dashboardLogout" class="nav-link"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection('overview')" class="active"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a href="#" onclick="showSection('profile')"><i class="fas fa-user-edit"></i> Edit Profile</a></li>
+                <li><a href="#" onclick="showSection('calls')"><i class="fas fa-phone"></i> Call History</a></li>
+                <li><a href="#" onclick="showSection('payments')"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                <li><a href="#" onclick="showSection('bank')"><i class="fas fa-university"></i> Bank Info</a></li>
+                <li><a href="#" onclick="showSection('settings')"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+            
+            <div class="toggle-switch">
+                <label for="availabilityToggle">Available for Calls</label>
+                <label class="switch">
+                    <input type="checkbox" id="availabilityToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="payment-info">
+                <h4>Next Payout</h4>
+                <div class="payment-item">
+                    <span>Balance:</span>
+                    <span id="balanceAmount">$0.00</span>
+                </div>
+                <div class="payment-item">
+                    <span>Next Payout:</span>
+                    <span id="nextPayout">In 3 days</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="dashboard-content">
+            <!-- Overview Section -->
+            <section id="overview" class="section active">
+                <h2><i class="fas fa-chart-line"></i> Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Earnings</h3>
+                        <p id="totalEarnings">$0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Calls</h3>
+                        <p id="totalCalls">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Calls</h3>
+                        <p id="todayCalls">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Rating</h3>
+                        <p id="whisperRating">No ratings yet</p>
+                    </div>
+                </div>
+                
+                <h3>Recent Calls</h3>
+                <div id="recentCalls" class="call-history">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Customer</th>
+                                <th>Duration</th>
+                                <th>Earnings</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentCallsBody">
+                            <!-- Recent calls will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Edit Profile Section -->
+            <section id="profile" class="section">
+                <h2><i class="fas fa-user-edit"></i> Edit Profile</h2>
+                <div class="profile-header">
+                    <div class="avatar-upload">
+                        <img id="profileAvatar" src="https://via.placeholder.com/120" alt="Profile Picture">
+                        <div class="upload-overlay">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*">
+                    </div>
+                    <div>
+                        <h3 id="profileName">Your Name</h3>
+                        <p id="profileEmail">email@example.com</p>
+                    </div>
+                </div>
+                
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="editName">Full Name</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBio">Bio (max 150 characters)</label>
+                        <textarea id="editBio" maxlength="150"></textarea>
+                        <small><span id="bioCount">0</span>/150</small>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </form>
+            </section>
+
+            <!-- Call History Section -->
+            <section id="calls" class="section">
+                <h2><i class="fas fa-phone"></i> Call History</h2>
+                <div class="call-history">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Customer Email</th>
+                                <th>Duration</th>
+                                <th>Earnings</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="callHistoryBody">
+                            <!-- Call history will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Payments Section -->
+            <section id="payments" class="section">
+                <h2><i class="fas fa-money-bill-wave"></i> Payment History</h2>
+                <div class="payment-history">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Payout Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Transactions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentHistoryBody">
+                            <!-- Payment history will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="payment-info">
+                    <h3>Payout Schedule</h3>
+                    <p>You are paid every 3 days for completed calls. The next payout is scheduled for <span id="payoutDate">...</span>.</p>
+                    <p>Minimum payout amount: $50. Current balance available for payout: <strong id="availableBalance">$0.00</strong></p>
+                </div>
+            </section>
+
+            <!-- Bank Info Section -->
+            <section id="bank" class="section">
+                <h2><i class="fas fa-university"></i> Bank Information</h2>
+                <form id="bankForm">
+                    <div class="form-group">
+                        <label for="bankName">Bank Name</label>
+                        <input type="text" id="bankName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="accountName">Account Holder Name</label>
+                        <input type="text" id="accountName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="accountNumber">Account Number</label>
+                        <input type="text" id="accountNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="routingNumber">Routing Number</label>
+                        <input type="text" id="routingNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="accountType">Account Type</label>
+                        <select id="accountType" required>
+                            <option value="checking">Checking</option>
+                            <option value="savings">Savings</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Bank Info</button>
+                </form>
+                
+                <div class="security-note">
+                    <i class="fas fa-shield-alt"></i>
+                    <p>Your bank information is encrypted and stored securely. We never store your full banking details on our servers.</p>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                
+                <div class="settings-group">
+                    <h3>Notification Settings</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="emailNotifications" checked>
+                            Email notifications for new calls
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="soundNotifications" checked>
+                            Sound notifications
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <h3>Privacy Settings</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="showOnlineStatus" checked>
+                            Show when I'm online
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="allowCallRecording">
+                            Allow call recording (for quality assurance)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="danger-zone">
+                    <h3>Danger Zone</h3>
+                    <button id="deleteDashboardAccount" class="btn-danger">
+                        <i class="fas fa-trash"></i> Delete My Account
+                    </button>
+                    <p class="warning">This action cannot be undone. All your data will be permanently deleted.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Waiting Calls Sidebar -->
+    <div id="waitingCalls" class="waiting-calls" style="display: none;">
+        <h4>Waiting Calls</h4>
+        <div id="waitingCallsList">
+            <!-- Waiting calls will appear here -->
+        </div>
+    </div>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>

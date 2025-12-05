@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4QYRJLTXTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4QYRJLTXTT');
+</script>
+    <title>Private Chat Room - House of Whispers</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.agora.io/sdk/release/AgoraRTC_N.js"></script>
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="chat-room">
+        <div class="chat-header">
+            <h1><i class="fas fa-phone"></i> Private Chat Room</h1>
+            <div class="call-info" id="callInfo">
+                <!-- Call information will be loaded here -->
+            </div>
+        </div>
+
+        <div class="timer-container">
+            <div class="timer" id="timer">05:00</div>
+            <div class="timer-label">Time Remaining</div>
+        </div>
+
+        <div class="call-status">
+            <div class="status-message" id="statusMessage">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Connecting to call...</span>
+            </div>
+            
+            <div class="participants">
+                <div class="participant" id="localParticipant">
+                    <div class="participant-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="participant-info">
+                        <span class="participant-name">You</span>
+                        <span class="participant-status">Connected</span>
+                    </div>
+                    <div class="audio-indicator">
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                    </div>
+                </div>
+                
+                <div class="participant" id="remoteParticipant">
+                    <div class="participant-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="participant-info">
+                        <span class="participant-name" id="remoteName">Connecting...</span>
+                        <span class="participant-status" id="remoteStatus">Waiting</span>
+                    </div>
+                    <div class="audio-indicator">
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="call-controls">
+            <button id="muteBtn" class="control-btn">
+                <i class="fas fa-microphone"></i>
+                <span>Mute</span>
+            </button>
+            <button id="endCallBtn" class="end-call-btn">
+                <i class="fas fa-phone-slash"></i>
+                <span>End Call</span>
+            </button>
+            <button id="speakerBtn" class="control-btn">
+                <i class="fas fa-volume-up"></i>
+                <span>Speaker</span>
+            </button>
+        </div>
+
+        <div class="call-notes">
+            <h3><i class="fas fa-info-circle"></i> Important Notes</h3>
+            <ul>
+                <li>This is a 5-minute private voice call</li>
+                <li>No video is being recorded or transmitted</li>
+                <li>The call will automatically end when time expires</li>
+                <li>No refunds for early termination</li>
+                <li>Be respectful and follow community guidelines</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Call Ended Modal -->
+    <div id="callEndedModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-phone-slash"></i> Call Ended</h2>
+            <div class="call-summary" id="callSummary">
+                <!-- Call summary will be loaded here -->
+            </div>
+            <div class="modal-buttons">
+                <button onclick="window.location.href='index.html'" class="btn-primary">
+                    <i class="fas fa-home"></i> Return Home
+                </button>
+                <button onclick="window.location.href='search.html'" class="btn-secondary">
+                    <i class="fas fa-phone"></i> Start Another Call
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="chatroom.js"></script>
+</body>
+</html>

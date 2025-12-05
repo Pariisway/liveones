@@ -1,2 +1,33 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /chatroom.html
+Disallow: /payment.html
+Disallow: /*?*
+Crawl-delay: 2
+
+Sitemap: https://iaiwaf.com/sitemap.xml
+
+# Block sensitive files
+Disallow: /firebase-config.js
+Disallow: /*.js$
+Disallow: /*.css$
+
+# Google Adsense verification
+User-agent: Mediapartners-Google
+Allow: /
+
+# Block AI crawlers
+User-agent: ChatGPT-User
+Disallow: /
+User-agent: GPTBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
+User-agent: Claude-Web
+Disallow: /
+
+# Allow image indexing for profile pictures
+Allow: /profile-pictures/

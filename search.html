@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4QYRJLTXTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4QYRJLTXTT');
+</script>
+    <title>Search Whispers - House of Whispers</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h1><i class="fas fa-moon"></i> Find a Whisper</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                <a href="dashboard.html" id="dashboardBtn" class="nav-link" style="display: none;"><i class="fas fa-user"></i> Dashboard</a>
+                <a href="#" id="searchSignup" class="nav-link"><i class="fas fa-user-plus"></i> Sign Up</a>
+                <a href="#" id="searchLogin" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="search-container">
+        <div class="hero">
+            <h2>Find Your Perfect Whisper</h2>
+            <p>Browse available whispers and start a private 5-minute conversation for $15</p>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search whispers by name or bio...">
+            <button class="btn-primary" onclick="searchWhispers()">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="availableFilter" checked>
+                    Show Available Only
+                </label>
+            </div>
+            <div class="filter-group">
+                <label>Sort by:</label>
+                <select id="sortBy">
+                    <option value="availability">Availability</option>
+                    <option value="rating">Rating</option>
+                    <option value="name">Name</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="searchResults" class="whispers-grid">
+            <!-- Search results will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+            <h3>Start Your Call</h3>
+            <form id="customerForm">
+                <div class="form-group">
+                    <label for="customerEmail">Your Email Address</label>
+                    <input type="email" id="customerEmail" required placeholder="Enter your email">
+                    <small>We'll send you a confirmation and receipt</small>
+                </div>
+                <div class="form-group">
+                    <label for="customerName">Your Name (Optional)</label>
+                    <input type="text" id="customerName" placeholder="Enter your name">
+                </div>
+                <div class="payment-summary">
+                    <h4>Payment Summary</h4>
+                    <div class="payment-item">
+                        <span>5-Minute Private Chat:</span>
+                        <span>$15.00</span>
+                    </div>
+                    <div class="payment-item">
+                        <span>Whisper Receives:</span>
+                        <span>$12.00</span>
+                    </div>
+                    <div class="payment-item">
+                        <span>Platform Fee:</span>
+                        <span>$3.00</span>
+                    </div>
+                    <div class="payment-total">
+                        <span>Total:</span>
+                        <span>$15.00</span>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-lock"></i> Proceed to Payment
+                </button>
+                <p class="security-note">
+                    <i class="fas fa-shield-alt"></i> Secure payment powered by Stripe
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="search.js"></script>
+</body>
+</html>

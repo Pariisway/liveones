@@ -12,21 +12,35 @@ let currentUser = null;
 let currentCall = null;
 let agoraClient = null;
 let agoraLocalTracks = null;
+let appInitialized = false;
 
 // Initialize app
-document.addEventListener('DOMContentDidLoad', initApp);
+document.addEventListener('DOMContentLoaded', initApp);
 
 async function initApp() {
+    if (appInitialized) {
+        console.log('App already initialized');
+        return;
+    }
+    appInitialized = true;
+    
+    console.log('App initializing...');
+    
     // Check authentication state
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            currentUser = user;
-            updateUIForLoggedInUser();
-            await loadUserProfile(user.uid);
-            setupRealtimeListeners(user.uid);
-        } else {
-            currentUser = null;
-            updateUIForLoggedOutUser();
+        console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
+        try {
+            if (user) {
+                currentUser = user;
+                updateUIForLoggedInUser();
+                await loadUserProfile(user.uid);
+                setupRealtimeListeners(user.uid);
+            } else {
+                currentUser = null;
+                updateUIForLoggedOutUser();
+            }
+        } catch (error) {
+            console.error('Error in auth state change:', error);
         }
     });
 
@@ -38,11 +52,13 @@ async function initApp() {
 }
 
 function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
     // Auth modal
     const signupBtn = document.getElementById('signupBtn');
     const loginBtn = document.getElementById('loginBtn');
     const modal = document.getElementById('authModal');
-    const closeBtn = modal?.querySelector('.close');
+    const closeBtn = modal ? modal.querySelector('.close') : null;
     const switchToLogin = document.getElementById('switchToLogin');
     const switchToSignup = document.getElementById('switchToSignup');
     const signupForm = document.getElementById('signupForm');
@@ -52,38 +68,76 @@ function setupEventListeners() {
     const startWhisperingBtn = document.getElementById('startWhispering');
     const availableOnlyToggle = document.getElementById('availableOnly');
 
-    if (signupBtn) signupBtn.addEventListener('click', () => openAuthModal('signup'));
-    if (loginBtn) loginBtn.addEventListener('click', () => openAuthModal('login'));
-    if (closeBtn) closeBtn.addEventListener('click', () => closeAuthModal());
-    if (switchToLogin) switchToLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchAuthForm('login');
-    });
-    if (switchToSignup) switchToSignup.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchAuthForm('signup');
-    });
+    if (signupBtn) {
+        console.log('Signup button found');
+        signupBtn.addEventListener('click', () => {
+            console.log('Signup button clicked');
+            openAuthModal('signup');
+        });
+    }
     
-    if (signupForm) signupForm.addEventListener('submit', handleSignup);
-    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (loginBtn) {
+        console.log('Login button found');
+        loginBtn.addEventListener('click', () => {
+            console.log('Login button clicked');
+            openAuthModal('login');
+        });
+    }
+    
+    if (closeBtn) closeBtn.addEventListener('click', () => closeAuthModal());
+    
+    if (switchToLogin) {
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchAuthForm('login');
+        });
+    }
+    
+    if (switchToSignup) {
+        switchToSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchAuthForm('signup');
+        });
+    }
+    
+    if (signupForm) {
+        signupForm.addEventListener('submit', handleSignup);
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
     if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    
     if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', handleDeleteAccount);
-    if (startWhisperingBtn) startWhisperingBtn.addEventListener('click', () => openAuthModal('signup'));
+    
+    if (startWhisperingBtn) {
+        console.log('Start Whispering button found');
+        startWhisperingBtn.addEventListener('click', () => {
+            console.log('Start Whispering button clicked');
+            openAuthModal('signup');
+        });
+    }
+    
     if (availableOnlyToggle) availableOnlyToggle.addEventListener('change', filterAvailableWhispers);
 
     // Close modal when clicking outside
     window.addEventListener('click', (e) => {
-        if (e.target === modal) {
+        if (modal && e.target === modal) {
             closeAuthModal();
         }
     });
 }
 
 function openAuthModal(formType) {
+    console.log('Opening auth modal for:', formType);
     const modal = document.getElementById('authModal');
     if (modal) {
         modal.style.display = 'block';
         switchAuthForm(formType);
+    } else {
+        console.error('Auth modal not found!');
     }
 }
 
@@ -101,16 +155,23 @@ function switchAuthForm(formType) {
     forms.forEach(form => form.style.display = 'none');
     
     if (formType === 'signup') {
-        document.querySelector('#signupForm').parentElement.style.display = 'block';
-        formTitle.textContent = 'Sign Up';
+        const signupFormContainer = document.querySelector('#signupForm').parentElement;
+        if (signupFormContainer) {
+            signupFormContainer.style.display = 'block';
+        }
+        if (formTitle) formTitle.textContent = 'Sign Up';
     } else {
-        document.querySelector('#loginForm').parentElement.style.display = 'block';
-        formTitle.textContent = 'Login';
+        const loginFormContainer = document.querySelector('#loginForm').parentElement;
+        if (loginFormContainer) {
+            loginFormContainer.style.display = 'block';
+        }
+        if (formTitle) formTitle.textContent = 'Login';
     }
 }
 
 async function handleSignup(e) {
     e.preventDefault();
+    console.log('Handling signup...');
     
     const name = document.getElementById('signupName').value;
     const email = document.getElementById('signupEmail').value;
@@ -142,15 +203,18 @@ async function handleSignup(e) {
         });
         
         closeAuthModal();
-        alert('Account created successfully!');
+        alert('Account created successfully! You can now log in.');
     } catch (error) {
-        console.error('Signup error:', error);
-        alert(`Error: ${error.message}`);
+        console.error('Signup error object:', error);
+        console.error('Signup error code:', error.code);
+        console.error('Signup error message:', error.message);
+        alert(`Signup Error: ${error.message || 'Unknown error'}`);
     }
 }
 
 async function handleLogin(e) {
     e.preventDefault();
+    console.log('Handling login...');
     
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -160,7 +224,9 @@ async function handleLogin(e) {
         closeAuthModal();
     } catch (error) {
         console.error('Login error:', error);
-        alert(`Error: ${error.message}`);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        alert(`Login Error: ${error.message}`);
     }
 }
 
@@ -177,6 +243,7 @@ async function handleLogout() {
         await signOut(auth);
     } catch (error) {
         console.error('Logout error:', error);
+        alert(`Logout Error: ${error.message}`);
     }
 }
 
@@ -213,28 +280,34 @@ async function handleDeleteAccount() {
 }
 
 function updateUIForLoggedInUser() {
+    console.log('Updating UI for logged in user');
     const signupBtn = document.getElementById('signupBtn');
     const loginBtn = document.getElementById('loginBtn');
+    const dashboardBtn = document.getElementById('dashboardBtn');
     const searchBtn = document.getElementById('searchBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const deleteAccountBtn = document.getElementById('deleteAccountBtn');
     
     if (signupBtn) signupBtn.style.display = 'none';
     if (loginBtn) loginBtn.style.display = 'none';
+    if (dashboardBtn) dashboardBtn.style.display = 'flex';
     if (searchBtn) searchBtn.style.display = 'flex';
     if (logoutBtn) logoutBtn.style.display = 'flex';
     if (deleteAccountBtn) deleteAccountBtn.style.display = 'flex';
 }
 
 function updateUIForLoggedOutUser() {
+    console.log('Updating UI for logged out user');
     const signupBtn = document.getElementById('signupBtn');
     const loginBtn = document.getElementById('loginBtn');
+    const dashboardBtn = document.getElementById('dashboardBtn');
     const searchBtn = document.getElementById('searchBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const deleteAccountBtn = document.getElementById('deleteAccountBtn');
     
     if (signupBtn) signupBtn.style.display = 'flex';
     if (loginBtn) loginBtn.style.display = 'flex';
+    if (dashboardBtn) dashboardBtn.style.display = 'none';
     if (searchBtn) searchBtn.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'none';
     if (deleteAccountBtn) deleteAccountBtn.style.display = 'none';
@@ -257,10 +330,15 @@ async function loadWhispers() {
     if (!whispersGrid) return;
     
     try {
-        const q = query(collection(db, 'users'), where('isWhisper', '==', true'));
+        const q = query(collection(db, 'users'), where('isWhisper', '==', true));
         const querySnapshot = await getDocs(q);
         
         whispersGrid.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+            whispersGrid.innerHTML = '<div class="loading">No whispers found. Be the first to sign up!</div>';
+            return;
+        }
         
         querySnapshot.forEach((doc) => {
             const whisper = doc.data();
@@ -275,7 +353,7 @@ async function loadWhispers() {
         
     } catch (error) {
         console.error('Error loading whispers:', error);
-        whispersGrid.innerHTML = '<div class="error">Error loading whispers</div>';
+        whispersGrid.innerHTML = '<div class="error">Error loading whispers. Please refresh the page.</div>';
     }
 }
 
@@ -322,12 +400,12 @@ function updateWhisperStatuses(statuses) {
                 statusDot.className = 'status-dot available';
                 statusText.textContent = 'Available Now';
                 card.classList.add('available');
-                callBtn.disabled = false;
+                if (callBtn) callBtn.disabled = false;
             } else {
                 statusDot.className = 'status-dot busy';
                 statusText.textContent = 'Busy';
                 card.classList.remove('available');
-                callBtn.disabled = true;
+                if (callBtn) callBtn.disabled = true;
             }
         }
     });

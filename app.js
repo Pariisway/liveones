@@ -1,21 +1,53 @@
 import { 
     auth, db, storage, realtimeDb,
     createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
-    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, serverTimestamp,
+    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, serverTimestamp, addDoc,
     ref, uploadBytes, getDownloadURL,
     dbRef, set, onValue, push
 } from './firebase-config.js';
 
-// Remove the Stripe import since it's not in firebase-config.js anymore
-// import { stripe } from './firebase-config.js'; // <-- REMOVE THIS LINE
-
 // DOM Elements
 const elements = {
-    // ... (keep your existing elements)
+    // Auth elements
+    loginBtn: document.getElementById('loginBtn'),
+    signupBtn: document.getElementById('signupBtn'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    authModal: document.getElementById('authModal'),
+    loginForm: document.getElementById('loginForm'),
+    signupForm: document.getElementById('signupForm'),
+    authCancelBtn: document.getElementById('authCancelBtn'),
+    
+    // Auth form inputs
+    loginEmail: document.getElementById('loginEmail'),
+    loginPassword: document.getElementById('loginPassword'),
+    signupName: document.getElementById('signupName'),
+    signupEmail: document.getElementById('signupEmail'),
+    signupPassword: document.getElementById('signupPassword'),
+    signupConfirmPassword: document.getElementById('signupConfirmPassword'),
+    
+    // User info
+    userInfo: document.getElementById('userInfo'),
+    userName: document.getElementById('userName'),
+    userBalance: document.getElementById('userBalance'),
+    authButtons: document.getElementById('authButtons'),
+    dashboardBtn: document.getElementById('dashboardBtn'),
+    
+    // Listeners list
+    listenersList: document.getElementById('listenersList'),
+    
+    // Call elements
+    becomeListenerBtn: document.getElementById('becomeListenerBtn'),
+    endCallBtn: document.getElementById('endCallBtn'),
+    toggleMuteBtn: document.getElementById('toggleMuteBtn'),
+    toggleVideoBtn: document.getElementById('toggleVideoBtn'),
+    
+    // Payment
+    paymentForm: document.getElementById('paymentForm')
 };
 
 // Global variables
 let currentUser = null;
+let userProfile = null;
 let agoraClient = null;
 let agoraStream = null;
 let currentChannel = null;
@@ -24,17 +56,46 @@ let currentCallStartTime = null;
 let callTimer = null;
 let callDuration = 0;
 
+// Navigation functions - make them globally available
+window.goToHome = function() {
+    window.location.href = 'index.html';
+};
+
+window.goToFindWhisper = function() {
+    // Scroll to listeners section
+    const listenersSection = document.getElementById('listenersSection');
+    if (listenersSection) {
+        listenersSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        // If on homepage, just show the listeners
+        loadAvailableListeners();
+    }
+};
+
+window.goToBecomeListener = function() {
+    if (currentUser) {
+        window.location.href = 'dashboard.html';
+    } else {
+        showSignupForm();
+        alert('Please sign up first to become a listener!');
+    }
+};
+
+window.goToDashboard = function() {
+    if (currentUser) {
+        window.location.href = 'dashboard.html';
+    } else {
+        showLoginForm();
+        alert('Please login to access your dashboard!');
+    }
+};
+
 // Initialize app
 function initApp() {
     console.log('Initializing WhisperChat...');
     setupEventListeners();
     checkAuthState();
     loadAvailableListeners();
-    
-    // Remove any Stripe initialization code
-    // if (typeof Stripe !== 'undefined') {
-    //     // Stripe initialization removed
-    // }
 }
 
 function setupEventListeners() {
@@ -60,16 +121,14 @@ function setupEventListeners() {
         elements.signupForm.addEventListener('submit', handleSignup);
     }
     
-    // Navigation
+    // Navigation buttons (already handled by onclick, but adding for consistency)
     if (elements.becomeListenerBtn) {
-        elements.becomeListenerBtn.addEventListener('click', () => {
-            if (currentUser) {
-                window.location.href = 'dashboard.html';
-            } else {
-                showSignupForm();
-                alert('Please sign up first to become a listener!');
-            }
-        });
+        elements.becomeListenerBtn.addEventListener('click', window.goToBecomeListener);
+    }
+    
+    // Dashboard button
+    if (elements.dashboardBtn) {
+        elements.dashboardBtn.addEventListener('click', window.goToDashboard);
     }
     
     // Call controls (if they exist)
@@ -82,11 +141,6 @@ function setupEventListeners() {
     if (elements.toggleVideoBtn) {
         elements.toggleVideoBtn.addEventListener('click', toggleVideo);
     }
-    
-    // Payment (remove or comment out Stripe payment)
-    // if (elements.paymentForm) {
-    //     elements.paymentForm.addEventListener('submit', handlePayment);
-    // }
 }
 
 function checkAuthState() {
@@ -114,15 +168,15 @@ async function loadUserProfile(userId) {
     try {
         const userDoc = await getDoc(doc(db, 'users', userId));
         if (userDoc.exists()) {
-            const userData = userDoc.data();
+            userProfile = userDoc.data();
             
             // Update UI with user data
             if (elements.userName) {
-                elements.userName.textContent = userData.name || 'User';
+                elements.userName.textContent = userProfile.name || userProfile.email || 'User';
             }
             
             if (elements.userBalance) {
-                elements.userBalance.textContent = `$${userData.balance || 0}`;
+                elements.userBalance.textContent = `$${userProfile.balance || 0}`;
             }
             
             // Show/hide listener dashboard button
@@ -149,7 +203,7 @@ async function updateUserStatus(userId, isOnline) {
 }
 
 async function loadAvailableListeners() {
-    const listenersList = document.getElementById('listenersList');
+    const listenersList = elements.listenersList;
     if (!listenersList) return;
     
     listenersList.innerHTML = '<div class="loading">Loading available listeners...</div>';
@@ -180,7 +234,7 @@ async function loadAvailableListeners() {
                             <span><i class="fas fa-phone"></i> ${listener.totalCalls || 0} calls</span>
                         </div>
                     </div>
-                    <button class="btn btn-primary call-btn" onclick="startCallWithListener('${doc.id}', '${listener.name || 'Listener'}')">
+                    <button class="btn btn-primary call-btn" onclick="window.startCallWithListener('${doc.id}', '${listener.name || 'Listener'}')">
                         <i class="fas fa-phone"></i> Call Now
                     </button>
                 </div>
@@ -209,7 +263,7 @@ window.startCallWithListener = async function(listenerId, listenerName) {
             listenerId: listenerId,
             status: 'initiating',
             createdAt: serverTimestamp(),
-            callerName: currentUser.displayName || 'Anonymous',
+            callerName: userProfile?.name || currentUser.email || 'Anonymous',
             listenerName: listenerName
         };
         
@@ -224,7 +278,7 @@ window.startCallWithListener = async function(listenerId, listenerName) {
     }
 };
 
-// Auth functions (keep your existing auth functions)
+// Auth functions
 async function handleLogin(e) {
     e.preventDefault();
     const email = elements.loginEmail.value;
@@ -294,6 +348,7 @@ async function handleLogout() {
         
         await signOut(auth);
         alert('Logged out successfully!');
+        window.location.href = 'index.html';
     } catch (error) {
         console.error('Logout error:', error);
         alert(`Logout Error: ${error.message}`);
@@ -401,12 +456,6 @@ function toggleVideo() {
         }
     }
 }
-
-// Payment function (removed Stripe integration for now)
-// function handlePayment(e) {
-//     e.preventDefault();
-//     alert('Payment feature coming soon!');
-// }
 
 // Initialize when DOM is loaded
 if (document.readyState === 'loading') {

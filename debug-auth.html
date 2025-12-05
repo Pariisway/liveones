@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Auth</title>
+    <style>
+        body { background: black; color: white; padding: 20px; }
+        input { display: block; margin: 10px; padding: 10px; width: 300px; }
+        button { padding: 10px 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Authentication</h1>
+    
+    <h2>Test Signup</h2>
+    <input id="signupEmail" type="email" placeholder="Email">
+    <input id="signupPassword" type="password" placeholder="Password">
+    <button onclick="testSignup()">Test Signup</button>
+    
+    <h2>Test Login</h2>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <button onclick="testLogin()">Test Login</button>
+    
+    <div id="result" style="margin-top: 20px; padding: 20px; border: 1px solid white;"></div>
+    
+    <script type="module">
+        import { 
+            auth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from './firebase-config.js';
+        
+        window.testSignup = async function() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                document.getElementById('result').innerHTML = 
+                    `<span style="color:green">✅ Signup successful! User ID: ${userCredential.user.uid}</span>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<span style="color:red">❌ Signup failed: ${error.code} - ${error.message}</span>`;
+            }
+        };
+        
+        window.testLogin = async function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                document.getElementById('result').innerHTML = 
+                    `<span style="color:green">✅ Login successful! User: ${userCredential.user.email}</span>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<span style="color:red">❌ Login failed: ${error.code} - ${error.message}</span>`;
+            }
+        };
+    </script>
+</body>
+</html>

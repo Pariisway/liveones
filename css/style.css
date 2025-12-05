@@ -1,0 +1,244 @@
+/* Global Styles */
+:root {
+  --primary: #667eea;
+  --secondary: #764ba2;
+  --accent: #00ff88;
+  --danger: #ff5555;
+  --dark: #121212;
+  --light: #f8f9fa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Page Transitions */
+.page-transition {
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.page-transition-out {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* Common Components */
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 16px;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.call-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.call-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.end-call-btn {
+  background: var(--danger);
+}
+
+.price-tag {
+  display: inline-block;
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--accent);
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  border: 2px solid var(--accent);
+}
+
+/* Whisper Grid */
+.whisper-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.whisper-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.whisper-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.profile-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary);
+  margin-bottom: 15px;
+}
+
+.online-status {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  background: #00ff00;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+/* Timer */
+.timer-display {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.timer {
+  font-size: 4rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #ff00ff, #00ffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Header */
+.header {
+  padding: 20px 40px;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ff00ff, #00ffff);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 30px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 50px;
+}
+
+/* Loading States */
+.loading {
+  text-align: center;
+  padding: 50px;
+}
+
+.loading i {
+  opacity: 0.5;
+}

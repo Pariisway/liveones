@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment | Voice Connect</title>
+    <link rel="stylesheet" href="css/dynamic-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .payment-success {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 48px;
+            color: white;
+        }
+        .processing {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .processing-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ffaa00, #ff8800);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 48px;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        #stripeCardElement {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Background -->
+    <div class="floating-background">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-ear-listen"></i>
+                </div>
+                <span>VoiceConnect</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Payment Content -->
+    <main style="max-width: 600px; margin: 50px auto; padding: 20px;">
+        <div id="paymentContainer" class="glass-card">
+            <!-- Payment form will be inserted here -->
+            <div class="processing">
+                <div class="processing-icon">
+                    <i class="fas fa-cog fa-spin"></i>
+                </div>
+                <h2>Preparing Payment...</h2>
+                <p>Please wait while we set up your secure payment.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/config.js"></script>
+    
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const whisperId = urlParams.get('whisper');
+        const whisperName = decodeURIComponent(urlParams.get('name') || 'Whisper');
+        
+        // Get customer email from localStorage
+        const customerEmail = localStorage.getItem('customerEmail') || 'guest@example.com';
+        
+        // Initialize payment
+        document.addEventListener('DOMContentLoaded', async function() {
+            const container = document.getElementById('paymentContainer');
+            
+            if (!whisperId) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 50px 20px;">
+                        <div style="color: #ff5555; font-size: 48px; margin-bottom: 20px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h2>Invalid Payment Link</h2>
+                        <p>No whisper selected. Please go back to the home page and select a whisper.</p>
+                        <a href="index.html" class="call-btn" style="margin-top: 30px;">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // For DEMO purposes - we'll simulate payment
+            // In production, you would integrate with Stripe
+            
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <h1 style="font-size: 2.5rem; margin-bottom: 10px; background: var(--primary-gradient);
+                              -webkit-background-clip: text; background-clip: text; color: transparent;">
+                        5-Minute Private Call
+                    </h1>
+                    <p style="color: rgba(255, 255, 255, 0.8);">
+                        With ${whisperName}
+                    </p>
+                </div>
+                
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 30px; margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span>Call Duration:</span>
+                        <span style="font-weight: bold;">5 minutes</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span>Whisper:</span>
+                        <span style="font-weight: bold;">${whisperName}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <span>Your Email:</span>
+                        <span style="font-weight: bold;">${customerEmail}</span>
+                    </div>
+                    <div style="border-top: 2px solid rgba(255, 255, 255, 0.2); padding-top: 15px; margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem;">
+                            <span>Total:</span>
+                            <span style="font-weight: bold; color: #00ff00;">$15.00</span>
+                        </div>
+                        <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); text-align: right;">
+                            $12 to whisper | $3 platform fee
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- In production, you would use Stripe Elements here -->
+                <!-- For demo, we'll use a simple button -->
+                
+                <button id="payButton" class="call-btn" style="font-size: 1.2rem;">
+                    <i class="fas fa-lock"></i> Pay $15.00 with Card
+                </button>
+                
+                <div style="text-align: center; margin-top: 30px; color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
+                    <p><i class="fas fa-shield-alt"></i> Secure payment processing</p>
+                    <p>You'll be redirected to the private chat room after payment</p>
+                </div>
+            `;
+            
+            // Handle payment
+            document.getElementById('payButton').addEventListener('click', processPayment);
+        });
+        
+        async function processPayment() {
+            const button = document.getElementById('payButton');
+            const container = document.getElementById('paymentContainer');
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            button.disabled = true;
+            
+            try {
+                // Generate unique call ID
+                const callId = 'call_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const customerEmail = localStorage.getItem('customerEmail');
+                const whisperId = new URLSearchParams(window.location.search).get('whisper');
+                const whisperName = decodeURIComponent(new URLSearchParams(window.location.search).get('name') || 'Whisper');
+                
+                // Create call in Firestore
+                await firebase.firestore().collection('calls').doc(callId).set({
+                    callId: callId,
+                    whisperId: whisperId,
+                    whisperName: whisperName,
+                    customerEmail: customerEmail,
+                    price: 15,
+                    whisperEarnings: 12,
+                    platformFee: 3,
+                    status: 'pending',
+                    createdAt: new Date(),
+                    expiresAt: new Date(Date.now() + 10 * 60000), // Call expires in 10 minutes
+                    channelName: 'voice_channel_' + callId
+                });
+                
+                // Show success
+                container.innerHTML = `
+                    <div class="payment-success">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h2>Payment Successful!</h2>
+                        <p style="margin: 20px 0; font-size: 1.1rem;">
+                            Your 5-minute private call with ${whisperName} is ready.
+                        </p>
+                        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 30px;">
+                            You'll be redirected to the private chat room in <span id="countdown">5</span> seconds...
+                        </p>
+                        <button onclick="redirectToChat('${callId}')" class="call-btn" style="font-size: 1.1rem;">
+                            <i class="fas fa-phone-alt"></i> Go to Chat Room Now
+                        </button>
+                    </div>
+                `;
+                
+                // Countdown and auto-redirect
+                let count = 5;
+                const countdownElement = document.getElementById('countdown');
+                const countdownInterval = setInterval(() => {
+                    count--;
+                    countdownElement.textContent = count;
+                    if (count <= 0) {
+                        clearInterval(countdownInterval);
+                        redirectToChat(callId);
+                    }
+                }, 1000);
+                
+                // Notify the whisper (they will see the call in their dashboard)
+                // The whisper's dashboard is already listening for new calls
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 50px 20px;">
+                        <div style="color: #ff5555; font-size: 48px; margin-bottom: 20px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h2>Payment Failed</h2>
+                        <p style="margin: 20px 0;">${error.message}</p>
+                        <button onclick="window.location.reload()" class="call-btn">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function redirectToChat(callId) {
+            // Save call ID for chat room
+            localStorage.setItem('currentCallId', callId);
+            localStorage.setItem('callRole', 'customer');
+            
+            // Redirect to chat room
+            window.location.href = `chat-room.html?call=${callId}&role=customer`;
+        }
+    </script>
+</body>
+</html>

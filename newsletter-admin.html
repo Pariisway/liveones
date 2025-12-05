@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Newsletter Subscribers</title>
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        h1 { margin-bottom: 30px; }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td { 
+            padding: 15px; 
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th { 
+            background: rgba(255,255,255,0.2);
+            font-weight: bold;
+        }
+        tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .export-btn { 
+            background: var(--accent); 
+            color: white; 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            margin-bottom: 20px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+    <script src="js/page-stabilizer.js"></script>
+    <script src="js/navigation-guard.js"></script>
+    <script src="js/firebase-init-unified.js"></script>
+</head>
+<body class="page-transition">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <h1>📧 Newsletter Subscribers</h1>
+        <button class="export-btn" onclick="exportToCSV()">Export to CSV</button>
+        <div id="subscribers-list"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        async function loadSubscribers() {
+            const db = firebase.firestore();
+            const snapshot = await db.collection('newsletter')
+                .orderBy('timestamp', 'desc')
+                .get();
+            
+            let html = '<table>';
+            html += '<tr><th>Email</th><th>Source</th><th>Date</th><th>Call ID</th></tr>';
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const date = data.timestamp?.toDate() || new Date();
+                html += `
+                    <tr>
+                        <td>${data.email || 'N/A'}</td>
+                        <td>${data.source || 'N/A'}</td>
+                        <td>${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                        <td>${data.callId || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</table>';
+            document.getElementById('subscribers-list').innerHTML = html;
+        }
+        
+        function exportToCSV() {
+            let csv = 'Email,Source,Date,Call ID\n';
+            const rows = document.querySelectorAll('table tr');
+            
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td, th');
+                const rowData = [];
+                cols.forEach(col => {
+                    rowData.push(`"${col.textContent}"`);
+                });
+                csv += rowData.join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'newsletter-subscribers.csv';
+            a.click();
+        }
+        
+        if (typeof pageStabilizer !== 'undefined') {
+            pageStabilizer.waitForStable(loadSubscribers);
+        } else {
+            document.addEventListener('DOMContentLoaded', loadSubscribers);
+        }
+    </script>
+</body>
+</html>

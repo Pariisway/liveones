@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Become a Whisper | Voice Connect</title>
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <script src="js/page-stabilizer.js"></script>
+    <script src="js/navigation-guard.js"></script>
+    <script src="js/firebase-init-unified.js"></script>
+</head>
+<body class="page-transition">
+    <div style="max-width: 600px; margin: 50px auto; padding: 20px;">
+        <div class="glass-card">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Apply to Become a Whisper</h1>
+                <p style="opacity: 0.8;">Earn $12 for every 5-minute call</p>
+            </div>
+            
+            <form id="signupForm">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img id="profilePreview" src="https://ui-avatars.com/api/?name=New+Whisper&background=667eea&color=fff" 
+                         style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--primary);">
+                    <div>
+                        <button type="button" onclick="uploadPhoto()" class="call-btn" style="padding: 10px 25px;">
+                            <i class="fas fa-camera"></i> Upload Profile Picture
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px;">Email Address *</label>
+                    <input type="email" id="email" class="form-control" placeholder="your@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px;">Password (min. 6 characters) *</label>
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px;">Display Name *</label>
+                    <input type="text" id="username" class="form-control" placeholder="How you'll appear to customers" required>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 8px;">About You *</label>
+                    <textarea id="bio" class="form-control" rows="3" placeholder="Tell customers about yourself..." required>I'm a good listener who enjoys helping people through conversation.</textarea>
+                </div>
+                
+                <div style="margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="terms" required style="margin-top: 3px;">
+                        <span style="opacity: 0.9; font-size: 0.9rem;">
+                            I agree to the Terms of Service and confirm that I am 18+ years old, will maintain professionalism, and understand calls are 5 minutes maximum for $12 each.
+                        </span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="call-btn" style="width: 100%;">
+                    <i class="fas fa-rocket"></i> Start Earning as a Whisper
+                </button>
+                
+                <div style="text-align: center; margin-top: 30px; opacity: 0.8;">
+                    Already a whisper? <a href="whisper-login.html" style="color: var(--accent);">Login here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script>
+        function uploadPhoto() {
+            const url = prompt('Enter image URL for your profile picture:');
+            if (url && url.startsWith('http')) {
+                document.getElementById('profilePreview').src = url;
+            }
+        }
+        
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value;
+            const bio = document.getElementById('bio').value;
+            const profilePic = document.getElementById('profilePreview').src;
+            
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            
+            const button = this.querySelector('button');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+            button.disabled = true;
+            
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    return firebase.firestore().collection('users').doc(user.uid).set({
+                        email: email,
+                        username: username,
+                        userType: 'whisper',
+                        bio: bio,
+                        profilePic: profilePic,
+                        isAvailable: false,
+                        totalEarnings: 0,
+                        totalCalls: 0,
+                        weeklyEarnings: 0,
+                        rating: 5.0,
+                        createdAt: new Date()
+                    });
+                })
+                .then(() => {
+                    alert('Account created! You can now login.');
+                    window.location.href = 'whisper-login.html';
+                })
+                .catch((error) => {
+                    alert('Error: ' + error.message);
+                    button.innerHTML = '<i class="fas fa-rocket"></i> Start Earning as a Whisper';
+                    button.disabled = false;
+                });
+        });
+    </script>
+</body>
+</html>

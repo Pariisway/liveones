@@ -1,244 +1,287 @@
 import { 
-    auth, db, storage, realtimeDb, stripe, agoraConfig,
-    createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser,
-    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, query, where, onSnapshot,
+    auth, db, storage, realtimeDb,
+    createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, getDocs, serverTimestamp,
     ref, uploadBytes, getDownloadURL,
-    dbRef, set, onValue, push, remove, update,
-    serverTimestamp, addDoc
+    dbRef, set, onValue, push
 } from './firebase-config.js';
 
+// Remove the Stripe import since it's not in firebase-config.js anymore
+// import { stripe } from './firebase-config.js'; // <-- REMOVE THIS LINE
+
 // DOM Elements
+const elements = {
+    // ... (keep your existing elements)
+};
+
+// Global variables
 let currentUser = null;
-let currentCall = null;
 let agoraClient = null;
-let agoraLocalTracks = null;
+let agoraStream = null;
+let currentChannel = null;
+let currentCall = null;
+let currentCallStartTime = null;
+let callTimer = null;
+let callDuration = 0;
 
-// Initialize app only once
+// Initialize app
 function initApp() {
-    console.log('App initializing...');
-    
-    // Check authentication state
-    onAuthStateChanged(auth, async (user) => {
-        console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
-        if (user) {
-            currentUser = user;
-            updateUIForLoggedInUser();
-            await loadUserProfile(user.uid);
-            setupRealtimeListeners(user.uid);
-        } else {
-            currentUser = null;
-            updateUIForLoggedOutUser();
-        }
-    });
-
-    // Event Listeners
+    console.log('Initializing WhisperChat...');
     setupEventListeners();
+    checkAuthState();
+    loadAvailableListeners();
     
-    // Load whispers
-    loadWhispers();
+    // Remove any Stripe initialization code
+    // if (typeof Stripe !== 'undefined') {
+    //     // Stripe initialization removed
+    // }
 }
 
 function setupEventListeners() {
-    console.log('Setting up event listeners...');
+    // Auth buttons
+    if (elements.loginBtn) {
+        elements.loginBtn.addEventListener('click', showLoginForm);
+    }
+    if (elements.signupBtn) {
+        elements.signupBtn.addEventListener('click', showSignupForm);
+    }
+    if (elements.logoutBtn) {
+        elements.logoutBtn.addEventListener('click', handleLogout);
+    }
+    if (elements.authCancelBtn) {
+        elements.authCancelBtn.addEventListener('click', hideAuthForm);
+    }
     
-    // Auth modal
-    const signupBtn = document.getElementById('signupBtn');
-    const loginBtn = document.getElementById('loginBtn');
-    const modal = document.getElementById('authModal');
-    const closeBtn = modal ? modal.querySelector('.close') : null;
-    const switchToLogin = document.getElementById('switchToLogin');
-    const switchToSignup = document.getElementById('switchToSignup');
-    const signupForm = document.getElementById('signupForm');
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
-    const startWhisperingBtn = document.getElementById('startWhispering');
-    const availableOnlyToggle = document.getElementById('availableOnly');
+    // Auth forms
+    if (elements.loginForm) {
+        elements.loginForm.addEventListener('submit', handleLogin);
+    }
+    if (elements.signupForm) {
+        elements.signupForm.addEventListener('submit', handleSignup);
+    }
+    
+    // Navigation
+    if (elements.becomeListenerBtn) {
+        elements.becomeListenerBtn.addEventListener('click', () => {
+            if (currentUser) {
+                window.location.href = 'dashboard.html';
+            } else {
+                showSignupForm();
+                alert('Please sign up first to become a listener!');
+            }
+        });
+    }
+    
+    // Call controls (if they exist)
+    if (elements.endCallBtn) {
+        elements.endCallBtn.addEventListener('click', endCurrentCall);
+    }
+    if (elements.toggleMuteBtn) {
+        elements.toggleMuteBtn.addEventListener('click', toggleMute);
+    }
+    if (elements.toggleVideoBtn) {
+        elements.toggleVideoBtn.addEventListener('click', toggleVideo);
+    }
+    
+    // Payment (remove or comment out Stripe payment)
+    // if (elements.paymentForm) {
+    //     elements.paymentForm.addEventListener('submit', handlePayment);
+    // }
+}
 
-    if (signupBtn) {
-        console.log('Signup button found');
-        signupBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Signup button clicked');
-            openAuthModal('signup');
-        });
-    }
-    
-    if (loginBtn) {
-        console.log('Login button found');
-        loginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Login button clicked');
-            openAuthModal('login');
-        });
-    }
-    
-    if (closeBtn) closeBtn.addEventListener('click', () => closeAuthModal());
-    
-    if (switchToLogin) {
-        switchToLogin.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchAuthForm('login');
-        });
-    }
-    
-    if (switchToSignup) {
-        switchToSignup.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchAuthForm('signup');
-        });
-    }
-    
-    if (signupForm) {
-        signupForm.addEventListener('submit', handleSignup);
-    }
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    }
-    
-    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-    
-    if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', handleDeleteAccount);
-    
-    if (startWhisperingBtn) {
-        console.log('Start Whispering button found');
-        startWhisperingBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Start Whispering button clicked');
-            openAuthModal('signup');
-        });
-    }
-    
-    if (availableOnlyToggle) availableOnlyToggle.addEventListener('change', filterAvailableWhispers);
-
-    // Close modal when clicking outside
-    window.addEventListener('click', (e) => {
-        if (modal && e.target === modal) {
-            closeAuthModal();
+function checkAuthState() {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            updateUIForLoggedInUser(user);
+            loadUserProfile(user.uid);
+            
+            // Update user status in Realtime DB
+            updateUserStatus(user.uid, true);
+        } else {
+            currentUser = null;
+            updateUIForLoggedOutUser();
+            
+            // If on call page and not logged in, redirect
+            if (window.location.pathname.includes('call.html')) {
+                window.location.href = 'index.html';
+            }
         }
     });
 }
 
-function openAuthModal(formType) {
-    console.log('Opening auth modal for:', formType);
-    const modal = document.getElementById('authModal');
-    if (modal) {
-        modal.style.display = 'block';
-        switchAuthForm(formType);
-    } else {
-        console.error('Auth modal not found!');
+async function loadUserProfile(userId) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            // Update UI with user data
+            if (elements.userName) {
+                elements.userName.textContent = userData.name || 'User';
+            }
+            
+            if (elements.userBalance) {
+                elements.userBalance.textContent = `$${userData.balance || 0}`;
+            }
+            
+            // Show/hide listener dashboard button
+            if (elements.dashboardBtn) {
+                elements.dashboardBtn.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading user profile:', error);
     }
 }
 
-function closeAuthModal() {
-    const modal = document.getElementById('authModal');
-    if (modal) {
-        modal.style.display = 'none';
+async function updateUserStatus(userId, isOnline) {
+    try {
+        const statusRef = dbRef(realtimeDb, `status/${userId}`);
+        await set(statusRef, {
+            online: isOnline,
+            lastSeen: Date.now(),
+            available: false // Default to not available for calls
+        });
+    } catch (error) {
+        console.error('Error updating user status:', error);
     }
 }
 
-function switchAuthForm(formType) {
-    const forms = document.querySelectorAll('.form-container');
-    const formTitle = document.getElementById('formTitle');
+async function loadAvailableListeners() {
+    const listenersList = document.getElementById('listenersList');
+    if (!listenersList) return;
     
-    forms.forEach(form => form.style.display = 'none');
+    listenersList.innerHTML = '<div class="loading">Loading available listeners...</div>';
     
-    if (formType === 'signup') {
-        const signupFormContainer = document.querySelector('#signupForm').parentElement;
-        if (signupFormContainer) {
-            signupFormContainer.style.display = 'block';
+    try {
+        // Query users who are available
+        const q = query(collection(db, 'users'), where('available', '==', true));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+            listenersList.innerHTML = '<div class="no-listeners">No listeners available right now. Check back later!</div>';
+            return;
         }
-        if (formTitle) formTitle.textContent = 'Sign Up';
-    } else {
-        const loginFormContainer = document.querySelector('#loginForm').parentElement;
-        if (loginFormContainer) {
-            loginFormContainer.style.display = 'block';
-        }
-        if (formTitle) formTitle.textContent = 'Login';
+        
+        let html = '<div class="listeners-grid">';
+        querySnapshot.forEach((doc) => {
+            const listener = doc.data();
+            html += `
+                <div class="listener-card" data-uid="${doc.id}">
+                    <div class="listener-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="listener-info">
+                        <h4>${listener.name || 'Anonymous Listener'}</h4>
+                        <p class="listener-bio">${listener.bio || 'Ready to listen and help'}</p>
+                        <div class="listener-stats">
+                            <span><i class="fas fa-star"></i> ${listener.rating || '4.8'}</span>
+                            <span><i class="fas fa-phone"></i> ${listener.totalCalls || 0} calls</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary call-btn" onclick="startCallWithListener('${doc.id}', '${listener.name || 'Listener'}')">
+                        <i class="fas fa-phone"></i> Call Now
+                    </button>
+                </div>
+            `;
+        });
+        html += '</div>';
+        listenersList.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading listeners:', error);
+        listenersList.innerHTML = '<div class="error">Error loading listeners. Please try again.</div>';
+    }
+}
+
+// Make startCallWithListener globally available
+window.startCallWithListener = async function(listenerId, listenerName) {
+    if (!currentUser) {
+        showLoginForm();
+        alert('Please login or sign up to start a call!');
+        return;
+    }
+    
+    try {
+        // Create a call document
+        const callData = {
+            callerId: currentUser.uid,
+            listenerId: listenerId,
+            status: 'initiating',
+            createdAt: serverTimestamp(),
+            callerName: currentUser.displayName || 'Anonymous',
+            listenerName: listenerName
+        };
+        
+        const callRef = await addDoc(collection(db, 'calls'), callData);
+        currentCall = callRef.id;
+        
+        // Redirect to call page
+        window.location.href = `call.html?callId=${currentCall}&listenerId=${listenerId}`;
+    } catch (error) {
+        console.error('Error starting call:', error);
+        alert('Failed to start call. Please try again.');
+    }
+};
+
+// Auth functions (keep your existing auth functions)
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = elements.loginEmail.value;
+    const password = elements.loginPassword.value;
+    
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('User logged in:', userCredential.user);
+        hideAuthForm();
+        alert('Login successful!');
+    } catch (error) {
+        console.error('Login error:', error);
+        alert(`Login Error: ${error.message}`);
     }
 }
 
 async function handleSignup(e) {
     e.preventDefault();
-    console.log('Handling signup...');
+    const name = elements.signupName.value;
+    const email = elements.signupEmail.value;
+    const password = elements.signupPassword.value;
+    const confirmPassword = elements.signupConfirmPassword.value;
     
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    const bio = document.getElementById('signupBio').value;
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters long!');
+        return;
+    }
     
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         
-        // Create user profile in Firestore
+        // Create user document in Firestore
         await setDoc(doc(db, 'users', user.uid), {
             uid: user.uid,
-            name: name,
             email: email,
-            bio: bio || '',
-            isWhisper: true,
-            available: false,
-            createdAt: serverTimestamp(),
+            name: name,
             balance: 0,
             totalEarnings: 0,
-            totalCalls: 0
-        });
-        
-        // Create realtime status node
-        await set(dbRef(realtimeDb, `status/${user.uid}`), {
+            totalCalls: 0,
+            rating: 0,
             available: false,
-            lastSeen: Date.now()
+            createdAt: serverTimestamp(),
+            bio: 'New WhisperChat user'
         });
         
-        closeAuthModal();
-        alert('Account created successfully! You can now log in.');
+        console.log('User created:', user);
+        hideAuthForm();
+        alert('Account created successfully! You can now become a listener.');
     } catch (error) {
         console.error('Signup error:', error);
-        
-        let errorMessage = 'Error creating account. ';
-        if (error.code === 'auth/email-already-in-use') {
-            errorMessage += 'This email is already registered. Please use a different email or log in.';
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage += 'Password is too weak. Please use at least 6 characters.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage += 'Email address is invalid.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
-    }
-}
-
-async function handleLogin(e) {
-    e.preventDefault();
-    console.log('Handling login...');
-    
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        closeAuthModal();
-    } catch (error) {
-        console.error('Login error:', error);
-        
-        let errorMessage = 'Login failed. ';
-        if (error.code === 'auth/invalid-credential') {
-            errorMessage += 'Invalid email or password. Please try again.';
-        } else if (error.code === 'auth/user-not-found') {
-            errorMessage += 'No account found with this email. Please sign up first.';
-        } else if (error.code === 'auth/wrong-password') {
-            errorMessage += 'Incorrect password. Please try again.';
-        } else if (error.code === 'auth/too-many-requests') {
-            errorMessage += 'Too many failed attempts. Please try again later.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
+        alert(`Signup Error: ${error.message}`);
     }
 }
 
@@ -246,255 +289,136 @@ async function handleLogout() {
     try {
         if (currentUser) {
             // Update status to offline
-            await update(dbRef(realtimeDb, `status/${currentUser.uid}`), {
-                available: false,
-                lastSeen: Date.now()
-            });
+            await updateUserStatus(currentUser.uid, false);
         }
         
         await signOut(auth);
+        alert('Logged out successfully!');
     } catch (error) {
         console.error('Logout error:', error);
         alert(`Logout Error: ${error.message}`);
     }
 }
 
-async function handleDeleteAccount() {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        const user = auth.currentUser;
-        
-        // Delete user data from Firestore
-        await deleteDoc(doc(db, 'users', user.uid));
-        
-        // Delete from Realtime Database
-        await remove(dbRef(realtimeDb, `status/${user.uid}`));
-        
-        // Delete storage files (profile picture)
-        try {
-            const storageRef = ref(storage, `profile-pictures/${user.uid}`);
-            await deleteObject(storageRef);
-        } catch (storageError) {
-            console.log('No profile picture to delete');
-        }
-        
-        // Delete authentication
-        await deleteUser(user);
-        
-        alert('Account deleted successfully');
-    } catch (error) {
-        console.error('Delete account error:', error);
-        alert(`Error: ${error.message}`);
-    }
+// UI Functions
+function showLoginForm() {
+    if (elements.authModal) elements.authModal.style.display = 'flex';
+    if (elements.loginForm) elements.loginForm.style.display = 'block';
+    if (elements.signupForm) elements.signupForm.style.display = 'none';
 }
 
-function updateUIForLoggedInUser() {
-    console.log('Updating UI for logged in user');
-    const signupBtn = document.getElementById('signupBtn');
-    const loginBtn = document.getElementById('loginBtn');
-    const dashboardBtn = document.getElementById('dashboardBtn');
-    const searchBtn = document.getElementById('searchBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+function showSignupForm() {
+    if (elements.authModal) elements.authModal.style.display = 'flex';
+    if (elements.loginForm) elements.loginForm.style.display = 'none';
+    if (elements.signupForm) elements.signupForm.style.display = 'block';
+}
+
+function hideAuthForm() {
+    if (elements.authModal) elements.authModal.style.display = 'none';
+    // Clear form fields
+    if (elements.loginEmail) elements.loginEmail.value = '';
+    if (elements.loginPassword) elements.loginPassword.value = '';
+    if (elements.signupName) elements.signupName.value = '';
+    if (elements.signupEmail) elements.signupEmail.value = '';
+    if (elements.signupPassword) elements.signupPassword.value = '';
+    if (elements.signupConfirmPassword) elements.signupConfirmPassword.value = '';
+}
+
+function updateUIForLoggedInUser(user) {
+    // Show user info and hide auth buttons
+    if (elements.userInfo) elements.userInfo.style.display = 'flex';
+    if (elements.authButtons) elements.authButtons.style.display = 'none';
+    if (elements.dashboardBtn) elements.dashboardBtn.style.display = 'block';
     
-    if (signupBtn) signupBtn.style.display = 'none';
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (dashboardBtn) dashboardBtn.style.display = 'flex';
-    if (searchBtn) searchBtn.style.display = 'flex';
-    if (logoutBtn) logoutBtn.style.display = 'flex';
-    if (deleteAccountBtn) deleteAccountBtn.style.display = 'flex';
+    // Update user name
+    if (elements.userName) {
+        elements.userName.textContent = user.displayName || user.email || 'User';
+    }
 }
 
 function updateUIForLoggedOutUser() {
-    console.log('Updating UI for logged out user');
-    const signupBtn = document.getElementById('signupBtn');
-    const loginBtn = document.getElementById('loginBtn');
-    const dashboardBtn = document.getElementById('dashboardBtn');
-    const searchBtn = document.getElementById('searchBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
-    
-    if (signupBtn) signupBtn.style.display = 'flex';
-    if (loginBtn) loginBtn.style.display = 'flex';
-    if (dashboardBtn) dashboardBtn.style.display = 'none';
-    if (searchBtn) searchBtn.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    if (deleteAccountBtn) deleteAccountBtn.style.display = 'none';
+    // Hide user info and show auth buttons
+    if (elements.userInfo) elements.userInfo.style.display = 'none';
+    if (elements.authButtons) elements.authButtons.style.display = 'flex';
+    if (elements.dashboardBtn) elements.dashboardBtn.style.display = 'none';
 }
 
-async function loadUserProfile(userId) {
-    try {
-        const userDoc = await getDoc(doc(db, 'users', userId));
-        if (userDoc.exists()) {
-            return userDoc.data();
-        }
-    } catch (error) {
-        console.error('Error loading user profile:', error);
-    }
-    return null;
-}
-
-async function loadWhispers() {
-    const whispersGrid = document.getElementById('whispersGrid');
-    if (!whispersGrid) return;
-    
-    try {
-        const q = query(collection(db, 'users'), where('isWhisper', '==', true));
-        const querySnapshot = await getDocs(q);
-        
-        whispersGrid.innerHTML = '';
-        
-        if (querySnapshot.empty) {
-            whispersGrid.innerHTML = '<div class="loading">No whispers found. Be the first to sign up!</div>';
-            return;
+// Call functions (simplified for now)
+async function endCurrentCall() {
+    if (currentCall) {
+        // Update call status in Firestore
+        try {
+            await updateDoc(doc(db, 'calls', currentCall), {
+                status: 'ended',
+                endedAt: serverTimestamp(),
+                duration: callDuration
+            });
+        } catch (error) {
+            console.error('Error updating call:', error);
         }
         
-        querySnapshot.forEach((doc) => {
-            const whisper = doc.data();
-            createWhisperCard(whisper);
-        });
+        // Reset call variables
+        currentCall = null;
+        currentCallStartTime = null;
+        callDuration = 0;
         
-        // Listen for real-time status updates
-        onValue(dbRef(realtimeDb, 'status'), (snapshot) => {
-            const statuses = snapshot.val() || {};
-            updateWhisperStatuses(statuses);
-        });
+        if (callTimer) {
+            clearInterval(callTimer);
+            callTimer = null;
+        }
         
-    } catch (error) {
-        console.error('Error loading whispers:', error);
-        whispersGrid.innerHTML = '<div class="error">Error loading whispers. Please refresh the page.</div>';
+        // Redirect to home
+        window.location.href = 'index.html';
     }
 }
 
-function createWhisperCard(whisper) {
-    const whispersGrid = document.getElementById('whispersGrid');
-    if (!whispersGrid) return;
-    
-    const card = document.createElement('div');
-    card.className = 'whisper-card';
-    card.id = `whisper-${whisper.uid}`;
-    card.innerHTML = `
-        <div class="whisper-header">
-            <img src="${whisper.photoURL || 'https://via.placeholder.com/60'}" 
-                 alt="${whisper.name}" 
-                 class="whisper-avatar"
-                 onerror="this.src='https://via.placeholder.com/60'">
-            <div>
-                <h3 class="whisper-name">${whisper.name}</h3>
-                <div class="status-indicator">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Loading...</span>
-                </div>
-            </div>
-        </div>
-        <p class="whisper-bio">${whisper.bio || 'No bio provided'}</p>
-        <button class="call-btn" onclick="startCall('${whisper.uid}')">
-            <i class="fas fa-phone"></i> Call Now - $15
-        </button>
-    `;
-    
-    whispersGrid.appendChild(card);
-}
-
-function updateWhisperStatuses(statuses) {
-    Object.keys(statuses).forEach(uid => {
-        const status = statuses[uid];
-        const card = document.getElementById(`whisper-${uid}`);
-        if (card) {
-            const statusDot = card.querySelector('.status-dot');
-            const statusText = card.querySelector('.status-text');
-            const callBtn = card.querySelector('.call-btn');
-            
-            if (status.available) {
-                statusDot.className = 'status-dot available';
-                statusText.textContent = 'Available Now';
-                card.classList.add('available');
-                if (callBtn) callBtn.disabled = false;
-            } else {
-                statusDot.className = 'status-dot busy';
-                statusText.textContent = 'Busy';
-                card.classList.remove('available');
-                if (callBtn) callBtn.disabled = true;
+function toggleMute() {
+    if (agoraStream) {
+        const audioTrack = agoraStream.getAudioTrack();
+        if (audioTrack) {
+            audioTrack.setEnabled(!audioTrack.enabled);
+            const muteBtn = document.getElementById('toggleMuteBtn');
+            if (muteBtn) {
+                muteBtn.innerHTML = audioTrack.enabled ? 
+                    '<i class="fas fa-microphone"></i>' : 
+                    '<i class="fas fa-microphone-slash"></i>';
             }
         }
-    });
-}
-
-function filterAvailableWhispers() {
-    const showAvailableOnly = document.getElementById('availableOnly').checked;
-    const cards = document.querySelectorAll('.whisper-card');
-    
-    cards.forEach(card => {
-        if (showAvailableOnly) {
-            card.style.display = card.classList.contains('available') ? 'block' : 'none';
-        } else {
-            card.style.display = 'block';
-        }
-    });
-}
-
-async function startCall(whisperId) {
-    if (!currentUser) {
-        openAuthModal('login');
-        return;
     }
-    
-    // Check if whisper is available
-    const statusRef = dbRef(realtimeDb, `status/${whisperId}`);
-    onValue(statusRef, (snapshot) => {
-        const status = snapshot.val();
-        if (!status || !status.available) {
-            alert('This whisper is currently unavailable. Please choose another.');
-            return;
+}
+
+function toggleVideo() {
+    if (agoraStream) {
+        const videoTrack = agoraStream.getVideoTrack();
+        if (videoTrack) {
+            videoTrack.setEnabled(!videoTrack.enabled);
+            const videoBtn = document.getElementById('toggleVideoBtn');
+            if (videoBtn) {
+                videoBtn.innerHTML = videoTrack.enabled ? 
+                    '<i class="fas fa-video"></i>' : 
+                    '<i class="fas fa-video-slash"></i>';
+            }
         }
-        
-        // Redirect to payment page
-        window.location.href = `payment.html?whisper=${whisperId}`;
-    }, { once: true });
+    }
 }
 
-function setupRealtimeListeners(userId) {
-    // Listen for incoming calls
-    const callsRef = dbRef(realtimeDb, `calls/${userId}/waiting`);
-    onValue(callsRef, (snapshot) => {
-        const calls = snapshot.val();
-        if (calls) {
-            showCallNotification(Object.values(calls)[0]);
-        }
-    });
-}
+// Payment function (removed Stripe integration for now)
+// function handlePayment(e) {
+//     e.preventDefault();
+//     alert('Payment feature coming soon!');
+// }
 
-function showCallNotification(call) {
-    // Create notification
-    const notification = document.createElement('div');
-    notification.className = 'call-notification';
-    notification.innerHTML = `
-        <p>New call from ${call.customerEmail}</p>
-        <button onclick="answerCall('${call.id}')">Answer</button>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Remove after 30 seconds
-    setTimeout(() => {
-        notification.remove();
-    }, 30000);
-}
-
-// Make functions available globally
-window.startCall = startCall;
-window.answerCall = async function(callId) {
-    // Redirect to chat room
-    window.location.href = `chatroom.html?call=${callId}`;
-};
-
-// Initialize when DOM is fully loaded
+// Initialize when DOM is loaded
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
-    // DOM already loaded
     setTimeout(initApp, 0);
 }
+
+// Export functions that need to be globally available
+window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.handleLogout = handleLogout;
+window.showLoginForm = showLoginForm;
+window.showSignupForm = showSignupForm;
+window.hideAuthForm = hideAuthForm;

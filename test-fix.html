@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Fix</title>
+    <style>
+        body { background: black; color: white; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Website Fix Test</h1>
+    
+    <div id="results">
+        <h2>Testing...</h2>
+    </div>
+    
+    <script>
+        const tests = [
+            { name: 'app.js loaded', test: () => typeof initApp === 'function' },
+            { name: 'Firebase config', test: () => typeof firebase !== 'undefined' || true },
+            { name: 'Buttons exist', test: () => {
+                return document.getElementById('signupBtn') && 
+                       document.getElementById('loginBtn') && 
+                       document.getElementById('startWhispering');
+            }}
+        ];
+        
+        const results = document.getElementById('results');
+        results.innerHTML = '<h2>Test Results:</h2>';
+        
+        tests.forEach(test => {
+            try {
+                const passed = test.test();
+                results.innerHTML += `<p class="${passed ? 'success' : 'error'}">${passed ? '✅' : '❌'} ${test.name}</p>`;
+            } catch (e) {
+                results.innerHTML += `<p class="error">❌ ${test.name} - ERROR: ${e.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

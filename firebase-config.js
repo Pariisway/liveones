@@ -63,7 +63,7 @@ const stripe = Stripe('pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0
 // Agora Configuration
 const agoraConfig = {
     appId: '966c8e41da614722a88d4372c3d95dba',
-    token: null // You'll need to generate tokens from your server
+    token: null
 };
 
 export { 

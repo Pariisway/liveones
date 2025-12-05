@@ -12,35 +12,22 @@ let currentUser = null;
 let currentCall = null;
 let agoraClient = null;
 let agoraLocalTracks = null;
-let appInitialized = false;
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', initApp);
-
-async function initApp() {
-    if (appInitialized) {
-        console.log('App already initialized');
-        return;
-    }
-    appInitialized = true;
-    
+// Initialize app only once
+function initApp() {
     console.log('App initializing...');
     
     // Check authentication state
     onAuthStateChanged(auth, async (user) => {
         console.log('Auth state changed:', user ? 'User logged in' : 'User logged out');
-        try {
-            if (user) {
-                currentUser = user;
-                updateUIForLoggedInUser();
-                await loadUserProfile(user.uid);
-                setupRealtimeListeners(user.uid);
-            } else {
-                currentUser = null;
-                updateUIForLoggedOutUser();
-            }
-        } catch (error) {
-            console.error('Error in auth state change:', error);
+        if (user) {
+            currentUser = user;
+            updateUIForLoggedInUser();
+            await loadUserProfile(user.uid);
+            setupRealtimeListeners(user.uid);
+        } else {
+            currentUser = null;
+            updateUIForLoggedOutUser();
         }
     });
 
@@ -70,7 +57,8 @@ function setupEventListeners() {
 
     if (signupBtn) {
         console.log('Signup button found');
-        signupBtn.addEventListener('click', () => {
+        signupBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             console.log('Signup button clicked');
             openAuthModal('signup');
         });
@@ -78,7 +66,8 @@ function setupEventListeners() {
     
     if (loginBtn) {
         console.log('Login button found');
-        loginBtn.addEventListener('click', () => {
+        loginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             console.log('Login button clicked');
             openAuthModal('login');
         });
@@ -114,7 +103,8 @@ function setupEventListeners() {
     
     if (startWhisperingBtn) {
         console.log('Start Whispering button found');
-        startWhisperingBtn.addEventListener('click', () => {
+        startWhisperingBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             console.log('Start Whispering button clicked');
             openAuthModal('signup');
         });
@@ -205,10 +195,20 @@ async function handleSignup(e) {
         closeAuthModal();
         alert('Account created successfully! You can now log in.');
     } catch (error) {
-        console.error('Signup error object:', error);
-        console.error('Signup error code:', error.code);
-        console.error('Signup error message:', error.message);
-        alert(`Signup Error: ${error.message || 'Unknown error'}`);
+        console.error('Signup error:', error);
+        
+        let errorMessage = 'Error creating account. ';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage += 'This email is already registered. Please use a different email or log in.';
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage += 'Password is too weak. Please use at least 6 characters.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage += 'Email address is invalid.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
     }
 }
 
@@ -224,9 +224,21 @@ async function handleLogin(e) {
         closeAuthModal();
     } catch (error) {
         console.error('Login error:', error);
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
-        alert(`Login Error: ${error.message}`);
+        
+        let errorMessage = 'Login failed. ';
+        if (error.code === 'auth/invalid-credential') {
+            errorMessage += 'Invalid email or password. Please try again.';
+        } else if (error.code === 'auth/user-not-found') {
+            errorMessage += 'No account found with this email. Please sign up first.';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage += 'Incorrect password. Please try again.';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage += 'Too many failed attempts. Please try again later.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
     }
 }
 
@@ -479,9 +491,10 @@ window.answerCall = async function(callId) {
     window.location.href = `chatroom.html?call=${callId}`;
 };
 
-// Initialize when DOM is loaded
+// Initialize when DOM is fully loaded
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
-    initApp();
+    // DOM already loaded
+    setTimeout(initApp, 0);
 }

@@ -1,348 +1,159 @@
 import { 
     auth, db, storage, realtimeDb,
-    onAuthStateChanged, signOut,
-    doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy,
+    signOut, onAuthStateChanged, deleteUser,
+    collection, doc, getDoc, updateDoc, query, where, orderBy, getDocs,
     ref, uploadBytes, getDownloadURL,
-    dbRef, set, update, onValue
+    dbRef, set, onValue, update
 } from './firebase-config.js';
 
+// Global variables
 let currentUser = null;
 let userProfile = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    initDashboard();
-});
-
-async function initDashboard() {
-    // Check authentication
+// Initialize dashboard
+function initDashboard() {
+    console.log('Initializing dashboard...');
+    
+    // Check authentication state
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
-            await loadDashboardData(user.uid);
-            setupDashboardListeners(user.uid);
+            await loadUserProfile(user.uid);
+            setupDashboardEventListeners();
+            showSection('overview');
+            updateUIForLoggedInUser();
+            setupRealtimeStatusListener();
         } else {
             // Redirect to home if not logged in
             window.location.href = 'index.html';
         }
     });
-
-    // Setup event listeners
-    setupEventListeners();
 }
 
-async function loadDashboardData(userId) {
+async function loadUserProfile(userId) {
     try {
-        // Load user profile
         const userDoc = await getDoc(doc(db, 'users', userId));
         if (userDoc.exists()) {
             userProfile = userDoc.data();
-            updateProfileDisplay();
-            updateStatsDisplay();
+            updateProfileUI();
         }
-
-        // Load call history
-        await loadCallHistory(userId);
-        
-        // Load payment history
-        await loadPaymentHistory(userId);
-        
-        // Load bank info
-        await loadBankInfo(userId);
-        
     } catch (error) {
-        console.error('Error loading dashboard data:', error);
+        console.error('Error loading user profile:', error);
     }
 }
 
-function updateProfileDisplay() {
+function updateProfileUI() {
     if (!userProfile) return;
     
-    document.getElementById('profileName').textContent = userProfile.name;
-    document.getElementById('profileEmail').textContent = userProfile.email;
-    document.getElementById('editName').value = userProfile.name;
-    document.getElementById('editBio').value = userProfile.bio || '';
-    document.getElementById('bioCount').textContent = (userProfile.bio || '').length;
+    // Update profile section
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileBio = document.getElementById('profileBio');
+    const profileBalance = document.getElementById('profileBalance');
+    const totalEarnings = document.getElementById('totalEarnings');
+    const totalCalls = document.getElementById('totalCalls');
     
-    if (userProfile.photoURL) {
-        document.getElementById('profileAvatar').src = userProfile.photoURL;
-    }
+    if (profileName) profileName.textContent = userProfile.name || 'No name';
+    if (profileEmail) profileEmail.textContent = userProfile.email || 'No email';
+    if (profileBio) profileBio.textContent = userProfile.bio || 'No bio provided';
+    if (profileBalance) profileBalance.textContent = `$${userProfile.balance || 0}`;
+    if (totalEarnings) totalEarnings.textContent = `$${userProfile.totalEarnings || 0}`;
+    if (totalCalls) totalCalls.textContent = userProfile.totalCalls || 0;
     
-    // Set availability toggle
+    // Update availability toggle
     const availabilityToggle = document.getElementById('availabilityToggle');
     if (availabilityToggle) {
         availabilityToggle.checked = userProfile.available || false;
     }
 }
 
-function updateStatsDisplay() {
-    if (!userProfile) return;
+function setupDashboardEventListeners() {
+    console.log('Setting up dashboard event listeners...');
     
-    document.getElementById('totalEarnings').textContent = `$${userProfile.totalEarnings || 0}`;
-    document.getElementById('totalCalls').textContent = userProfile.totalCalls || 0;
-    document.getElementById('balanceAmount').textContent = `$${userProfile.balance || 0}`;
-    
-    // Calculate next payout date (every 3 days)
-    const nextPayout = new Date();
-    nextPayout.setDate(nextPayout.getDate() + 3);
-    document.getElementById('nextPayout').textContent = nextPayout.toLocaleDateString();
-    document.getElementById('payoutDate').textContent = nextPayout.toLocaleDateString();
-    document.getElementById('availableBalance').textContent = `$${userProfile.balance || 0}`;
-}
-
-async function loadCallHistory(userId) {
-    try {
-        const callsQuery = query(
-            collection(db, 'calls'),
-            where('whisperId', '==', userId),
-            orderBy('createdAt', 'desc')
-        );
-        
-        const querySnapshot = await getDocs(callsQuery);
-        const callsBody = document.getElementById('callHistoryBody');
-        const recentCallsBody = document.getElementById('recentCallsBody');
-        
-        if (callsBody) callsBody.innerHTML = '';
-        if (recentCallsBody) recentCallsBody.innerHTML = '';
-        
-        let todayCalls = 0;
-        const today = new Date().toDateString();
-        
-        querySnapshot.forEach((doc, index) => {
-            const call = doc.data();
-            const callDate = call.createdAt?.toDate() || new Date();
-            
-            // Count today's calls
-            if (callDate.toDateString() === today) {
-                todayCalls++;
-            }
-            
-            const row = `
-                <tr>
-                    <td>${callDate.toLocaleString()}</td>
-                    <td>${call.customerEmail || 'N/A'}</td>
-                    <td>${call.duration || '5:00'}</td>
-                    <td>$${call.whisperEarnings || '12.00'}</td>
-                    <td>${call.status || 'Completed'}</td>
-                </tr>
-            `;
-            
-            if (callsBody) callsBody.innerHTML += row;
-            
-            // Add to recent calls (first 5)
-            if (index < 5 && recentCallsBody) {
-                recentCallsBody.innerHTML += row;
-            }
-        });
-        
-        document.getElementById('todayCalls').textContent = todayCalls;
-        
-    } catch (error) {
-        console.error('Error loading call history:', error);
-    }
-}
-
-async function loadPaymentHistory(userId) {
-    try {
-        const paymentsQuery = query(
-            collection(db, 'payments'),
-            where('whisperId', '==', userId),
-            orderBy('paidAt', 'desc')
-        );
-        
-        const querySnapshot = await getDocs(paymentsQuery);
-        const paymentHistoryBody = document.getElementById('paymentHistoryBody');
-        
-        if (paymentHistoryBody) paymentHistoryBody.innerHTML = '';
-        
-        querySnapshot.forEach((doc) => {
-            const payment = doc.data();
-            const paymentDate = payment.paidAt?.toDate() || new Date();
-            
-            const row = `
-                <tr>
-                    <td>${paymentDate.toLocaleDateString()}</td>
-                    <td>$${payment.amount || '0.00'}</td>
-                    <td>${payment.status || 'Completed'}</td>
-                    <td>${payment.callCount || '0'} calls</td>
-                </tr>
-            `;
-            
-            if (paymentHistoryBody) paymentHistoryBody.innerHTML += row;
-        });
-        
-    } catch (error) {
-        console.error('Error loading payment history:', error);
-    }
-}
-
-async function loadBankInfo(userId) {
-    try {
-        const bankDoc = await getDoc(doc(db, 'bankInfo', userId));
-        if (bankDoc.exists()) {
-            const bankInfo = bankDoc.data();
-            document.getElementById('bankName').value = bankInfo.bankName || '';
-            document.getElementById('accountName').value = bankInfo.accountName || '';
-            document.getElementById('accountNumber').value = bankInfo.accountNumber || '';
-            document.getElementById('routingNumber').value = bankInfo.routingNumber || '';
-            document.getElementById('accountType').value = bankInfo.accountType || 'checking';
-        }
-    } catch (error) {
-        console.error('Error loading bank info:', error);
-    }
-}
-
-function setupEventListeners() {
-    // Section navigation
-    const navLinks = document.querySelectorAll('.sidebar-menu a');
-    navLinks.forEach(link => {
+    // Navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const sectionId = link.getAttribute('onclick').match(/'(.*?)'/)[1];
-            showSection(sectionId);
-            
-            // Update active class
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
+            const section = link.getAttribute('data-section');
+            showSection(section);
         });
     });
     
-    // Profile form submission
-    const profileForm = document.getElementById('profileForm');
-    if (profileForm) {
-        profileForm.addEventListener('submit', handleProfileUpdate);
-    }
+    // Logout
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     
-    // Bio character counter
-    const editBio = document.getElementById('editBio');
-    if (editBio) {
-        editBio.addEventListener('input', (e) => {
-            document.getElementById('bioCount').textContent = e.target.value.length;
-        });
-    }
+    // Delete Account
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    if (deleteAccountBtn) deleteAccountBtn.addEventListener('click', handleDeleteAccount);
     
-    // Avatar upload
-    const avatarInput = document.getElementById('avatarInput');
-    const avatarUpload = document.querySelector('.avatar-upload');
-    if (avatarInput && avatarUpload) {
-        avatarUpload.addEventListener('click', () => avatarInput.click());
-        avatarInput.addEventListener('change', handleAvatarUpload);
-    }
-    
-    // Availability toggle
+    // Availability Toggle
     const availabilityToggle = document.getElementById('availabilityToggle');
     if (availabilityToggle) {
         availabilityToggle.addEventListener('change', handleAvailabilityToggle);
     }
     
-    // Bank form submission
-    const bankForm = document.getElementById('bankForm');
-    if (bankForm) {
-        bankForm.addEventListener('submit', handleBankInfoUpdate);
-    }
+    // Edit Profile
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    if (editProfileBtn) editProfileBtn.addEventListener('click', showEditProfileForm);
     
-    // Settings checkboxes
-    const settingsCheckboxes = document.querySelectorAll('.setting-item input[type="checkbox"]');
-    settingsCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', handleSettingChange);
-    });
+    // Save Profile
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    if (saveProfileBtn) saveProfileBtn.addEventListener('click', saveProfile);
     
-    // Delete account button
-    const deleteBtn = document.getElementById('deleteDashboardAccount');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', handleDeleteAccount);
-    }
+    // Cancel Edit
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', cancelEditProfile);
     
-    // Logout button
-    const logoutBtn = document.getElementById('dashboardLogout');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
+    // Withdraw Button
+    const withdrawBtn = document.getElementById('withdrawBtn');
+    if (withdrawBtn) withdrawBtn.addEventListener('click', handleWithdraw);
 }
 
-function showSection(sectionId) {
+// Make showSection available globally
+window.showSection = function(sectionId) {
+    console.log('Showing section:', sectionId);
+    
     // Hide all sections
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(section => {
-        section.classList.remove('active');
+    document.querySelectorAll('.dashboard-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Remove active class from all nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
     });
     
     // Show selected section
-    const selectedSection = document.getElementById(sectionId);
-    if (selectedSection) {
-        selectedSection.classList.add('active');
-    }
-}
-
-async function handleProfileUpdate(e) {
-    e.preventDefault();
-    
-    if (!currentUser) return;
-    
-    const name = document.getElementById('editName').value;
-    const bio = document.getElementById('editBio').value;
-    
-    try {
-        await updateDoc(doc(db, 'users', currentUser.uid), {
-            name: name,
-            bio: bio,
-            updatedAt: new Date()
-        });
-        
-        userProfile.name = name;
-        userProfile.bio = bio;
-        updateProfileDisplay();
-        
-        alert('Profile updated successfully!');
-    } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('Error updating profile. Please try again.');
-    }
-}
-
-async function handleAvatarUpload(e) {
-    const file = e.target.files[0];
-    if (!file || !currentUser) return;
-    
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
-        return;
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.style.display = 'block';
     }
     
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-        alert('Please upload an image file');
-        return;
+    // Add active class to clicked nav link
+    const activeLink = document.querySelector(`[data-section="${sectionId}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
     }
     
-    try {
-        // Upload to Firebase Storage
-        const storageRef = ref(storage, `profile-pictures/${currentUser.uid}`);
-        await uploadBytes(storageRef, file);
-        
-        // Get download URL
-        const downloadURL = await getDownloadURL(storageRef);
-        
-        // Update user profile with new photo URL
-        await updateDoc(doc(db, 'users', currentUser.uid), {
-            photoURL: downloadURL
-        });
-        
-        // Update displayed image
-        document.getElementById('profileAvatar').src = downloadURL;
-        userProfile.photoURL = downloadURL;
-        
-        alert('Profile picture updated successfully!');
-    } catch (error) {
-        console.error('Error uploading avatar:', error);
-        alert('Error uploading profile picture. Please try again.');
+    // Load section-specific data
+    switch(sectionId) {
+        case 'history':
+            loadCallHistory();
+            break;
+        case 'earnings':
+            loadEarnings();
+            break;
+        case 'settings':
+            // Already loaded
+            break;
     }
-}
+};
 
 async function handleAvailabilityToggle(e) {
-    if (!currentUser) return;
-    
     const isAvailable = e.target.checked;
+    
+    if (!currentUser) return;
     
     try {
         // Update Firestore
@@ -356,86 +167,130 @@ async function handleAvailabilityToggle(e) {
             lastSeen: Date.now()
         });
         
-        userProfile.available = isAvailable;
-        
-        // Show status message
-        showStatusMessage(`You are now ${isAvailable ? 'available' : 'unavailable'} for calls`);
-        
+        console.log('Availability updated to:', isAvailable);
     } catch (error) {
         console.error('Error updating availability:', error);
-        alert('Error updating availability. Please try again.');
+        // Revert toggle on error
+        e.target.checked = !isAvailable;
+        alert('Failed to update availability. Please try again.');
     }
 }
 
-async function handleBankInfoUpdate(e) {
-    e.preventDefault();
-    
+function setupRealtimeStatusListener() {
     if (!currentUser) return;
     
-    const bankInfo = {
-        bankName: document.getElementById('bankName').value,
-        accountName: document.getElementById('accountName').value,
-        accountNumber: document.getElementById('accountNumber').value,
-        routingNumber: document.getElementById('routingNumber').value,
-        accountType: document.getElementById('accountType').value,
-        updatedAt: new Date()
-    };
+    const statusRef = dbRef(realtimeDb, `status/${currentUser.uid}`);
+    onValue(statusRef, (snapshot) => {
+        const status = snapshot.val();
+        if (status) {
+            const availabilityToggle = document.getElementById('availabilityToggle');
+            if (availabilityToggle) {
+                availabilityToggle.checked = status.available || false;
+            }
+        }
+    });
+}
+
+async function loadCallHistory() {
+    const historyList = document.getElementById('historyList');
+    if (!historyList) return;
+    
+    historyList.innerHTML = '<div class="loading">Loading call history...</div>';
     
     try {
-        await setDoc(doc(db, 'bankInfo', currentUser.uid), bankInfo, { merge: true });
-        alert('Bank information updated successfully!');
+        // This is a placeholder - you'll need to create a calls collection
+        // For now, show a message
+        historyList.innerHTML = '<div class="no-history">No call history yet. Start taking calls to see your history here.</div>';
     } catch (error) {
-        console.error('Error updating bank info:', error);
-        alert('Error updating bank information. Please try again.');
+        console.error('Error loading call history:', error);
+        historyList.innerHTML = '<div class="error">Error loading call history.</div>';
     }
 }
 
-function handleSettingChange(e) {
-    const settingId = e.target.id;
-    const value = e.target.checked;
+async function loadEarnings() {
+    const earningsList = document.getElementById('earningsList');
+    if (!earningsList) return;
     
-    // Save setting to localStorage or Firestore
-    localStorage.setItem(`setting_${settingId}`, value);
+    earningsList.innerHTML = '<div class="loading">Loading earnings...</div>';
     
-    // Show confirmation
-    showStatusMessage(`Setting updated: ${settingId.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+    try {
+        // This is a placeholder - you'll need to create a transactions collection
+        earningsList.innerHTML = `
+            <div class="earnings-summary">
+                <div class="earnings-item">
+                    <span class="earnings-label">Total Balance:</span>
+                    <span class="earnings-amount">$${userProfile?.balance || 0}</span>
+                </div>
+                <div class="earnings-item">
+                    <span class="earnings-label">Total Earnings:</span>
+                    <span class="earnings-amount">$${userProfile?.totalEarnings || 0}</span>
+                </div>
+                <div class="earnings-item">
+                    <span class="earnings-label">Total Calls:</span>
+                    <span class="earnings-amount">${userProfile?.totalCalls || 0}</span>
+                </div>
+            </div>
+            <div class="no-earnings">Detailed earnings history coming soon!</div>
+        `;
+    } catch (error) {
+        console.error('Error loading earnings:', error);
+        earningsList.innerHTML = '<div class="error">Error loading earnings.</div>';
+    }
 }
 
-async function handleDeleteAccount() {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+function showEditProfileForm() {
+    document.getElementById('profileView').style.display = 'none';
+    document.getElementById('profileEdit').style.display = 'block';
+    
+    // Populate form fields
+    document.getElementById('editName').value = userProfile?.name || '';
+    document.getElementById('editBio').value = userProfile?.bio || '';
+    document.getElementById('editEmail').value = userProfile?.email || '';
+}
+
+function cancelEditProfile() {
+    document.getElementById('profileEdit').style.display = 'none';
+    document.getElementById('profileView').style.display = 'block';
+}
+
+async function saveProfile() {
+    const name = document.getElementById('editName').value;
+    const bio = document.getElementById('editBio').value;
+    
+    if (!name.trim()) {
+        alert('Name is required');
         return;
     }
     
     try {
-        const user = auth.currentUser;
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+            name: name,
+            bio: bio
+        });
         
-        // Delete user data from Firestore
-        await Promise.all([
-            deleteDoc(doc(db, 'users', user.uid)),
-            deleteDoc(doc(db, 'bankInfo', user.uid))
-        ]);
+        // Reload profile
+        await loadUserProfile(currentUser.uid);
         
-        // Delete from Realtime Database
-        await remove(dbRef(realtimeDb, `status/${user.uid}`));
-        
-        // Delete storage files
-        try {
-            const storageRef = ref(storage, `profile-pictures/${user.uid}`);
-            await deleteObject(storageRef);
-        } catch (storageError) {
-            console.log('No profile picture to delete');
-        }
-        
-        // Delete authentication
-        await user.delete();
-        
-        alert('Account deleted successfully');
-        window.location.href = 'index.html';
-        
+        cancelEditProfile();
+        alert('Profile updated successfully!');
     } catch (error) {
-        console.error('Delete account error:', error);
-        alert(`Error: ${error.message}`);
+        console.error('Error updating profile:', error);
+        alert('Failed to update profile. Please try again.');
     }
+}
+
+async function handleWithdraw() {
+    if (!userProfile || userProfile.balance < 50) {
+        alert('Minimum withdrawal amount is $50. Your current balance is too low.');
+        return;
+    }
+    
+    if (!confirm(`Request withdrawal of $${userProfile.balance}? This will be processed within 3-5 business days.`)) {
+        return;
+    }
+    
+    // This is a placeholder - you'll need to integrate with Stripe Connect or another payment processor
+    alert('Withdrawal feature coming soon! For now, please contact support to withdraw your earnings.');
 }
 
 async function handleLogout() {
@@ -452,77 +307,51 @@ async function handleLogout() {
         window.location.href = 'index.html';
     } catch (error) {
         console.error('Logout error:', error);
+        alert(`Logout Error: ${error.message}`);
     }
 }
 
-function setupDashboardListeners(userId) {
-    // Listen for incoming calls
-    const callsRef = dbRef(realtimeDb, `calls/${userId}/waiting`);
-    onValue(callsRef, (snapshot) => {
-        const calls = snapshot.val();
-        if (calls) {
-            showWaitingCalls(calls);
-        }
-    });
-}
-
-function showWaitingCalls(calls) {
-    const waitingCalls = document.getElementById('waitingCalls');
-    const waitingCallsList = document.getElementById('waitingCallsList');
+async function handleDeleteAccount() {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently deleted.')) {
+        return;
+    }
     
-    if (!waitingCalls || !waitingCallsList) return;
-    
-    waitingCallsList.innerHTML = '';
-    const callIds = Object.keys(calls);
-    
-    if (callIds.length > 0) {
-        waitingCalls.style.display = 'block';
+    try {
+        const user = auth.currentUser;
         
-        callIds.forEach(callId => {
-            const call = calls[callId];
-            const callItem = document.createElement('div');
-            callItem.className = 'waiting-call-item';
-            callItem.innerHTML = `
-                <p><strong>New Call</strong></p>
-                <p>From: ${call.customerEmail}</p>
-                <button onclick="answerDashboardCall('${callId}')" class="btn-primary">
-                    Answer Call
-                </button>
-            `;
-            waitingCallsList.appendChild(callItem);
-        });
-    } else {
-        waitingCalls.style.display = 'none';
+        // Delete user data from Firestore
+        await deleteDoc(doc(db, 'users', user.uid));
+        
+        // Delete from Realtime Database
+        await remove(dbRef(realtimeDb, `status/${user.uid}`));
+        
+        // Delete storage files (profile picture)
+        try {
+            const storageRef = ref(storage, `profile-pictures/${user.uid}`);
+            await deleteObject(storageRef);
+        } catch (storageError) {
+            console.log('No profile picture to delete');
+        }
+        
+        // Delete authentication
+        await deleteUser(user);
+        
+        alert('Account deleted successfully');
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Delete account error:', error);
+        alert(`Error: ${error.message}`);
     }
 }
 
-function showStatusMessage(message) {
-    // Create and show temporary status message
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'status-message';
-    statusDiv.textContent = message;
-    statusDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: var(--primary-red);
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 8px;
-        box-shadow: var(--glow);
-        z-index: 1000;
-    `;
-    
-    document.body.appendChild(statusDiv);
-    
-    setTimeout(() => {
-        statusDiv.remove();
-    }, 3000);
+function updateUIForLoggedInUser() {
+    // Nothing needed here for dashboard
+    console.log('User logged in, dashboard ready');
 }
 
-// Make functions available globally
-window.showSection = showSection;
-window.answerDashboardCall = async function(callId) {
-    // Redirect to chat room
-    window.location.href = `chatroom.html?call=${callId}&role=whisper`;
-};
+// Initialize when DOM is loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    setTimeout(initDashboard, 0);
+}

@@ -20,7 +20,8 @@ import {
     where,
     onSnapshot,
     serverTimestamp,
-    addDoc
+    addDoc,
+    orderBy
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { 
     getStorage, 
@@ -57,9 +58,6 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const realtimeDb = getDatabase(app);
 
-// Initialize Stripe
-const stripe = Stripe('pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I');
-
 // Agora Configuration
 const agoraConfig = {
     appId: '966c8e41da614722a88d4372c3d95dba',
@@ -67,9 +65,9 @@ const agoraConfig = {
 };
 
 export { 
-    auth, db, storage, realtimeDb, stripe, agoraConfig,
+    auth, db, storage, realtimeDb, agoraConfig,
     createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser,
-    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, query, where, onSnapshot, serverTimestamp, addDoc,
+    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, query, where, orderBy, onSnapshot, serverTimestamp, addDoc,
     ref, uploadBytes, getDownloadURL, deleteObject,
     dbRef, set, onValue, push, remove, update
 };

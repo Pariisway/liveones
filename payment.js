@@ -1,176 +1,104 @@
-import { 
-    db, realtimeDb, stripe,
-    doc, getDoc, addDoc, serverTimestamp,
-    dbRef, set
-} from './firebase-config.js';
+// Stripe Payment Integration
+const stripePublicKey = 'pk_test_51Q8tL2P7Vbu8koyhTajjEOSbbZPvfxvZQYl3LlPhN21RqL5duU9gN8q4G3gHfjDpU1Bqg72h4MZqFmH2X4CBRqhA00Rnm0orZx'; // Replace with your actual publishable key
 
-let selectedWhisper = null;
-let stripeElements = null;
-let cardElement = null;
+let stripe;
+let elements;
+let paymentElement;
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await initPaymentPage();
-    setupStripe();
-});
-
-async function initPaymentPage() {
-    // Get whisper ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const whisperId = urlParams.get('whisper');
-    
-    if (!whisperId) {
-        window.location.href = 'search.html';
-        return;
-    }
-    
+async function initializeStripe() {
     try {
-        // Load whisper info
-        const whisperDoc = await getDoc(doc(db, 'users', whisperId));
-        if (!whisperDoc.exists()) {
-            throw new Error('Whisper not found');
+        // Load Stripe.js
+        if (!window.Stripe) {
+            const script = document.createElement('script');
+            script.src = 'https://js.stripe.com/v3/';
+            document.head.appendChild(script);
+            
+            // Wait for Stripe to load
+            await new Promise(resolve => {
+                script.onload = resolve;
+            });
         }
         
-        selectedWhisper = { id: whisperId, ...whisperDoc.data() };
-        displayWhisperInfo();
+        // Initialize Stripe
+        stripe = Stripe(stripePublicKey);
         
-        // Check if whisper is available
-        // Note: In production, you should check real-time status
-        
-    } catch (error) {
-        console.error('Error loading whisper:', error);
-        alert('Whisper not found. Redirecting...');
-        window.location.href = 'search.html';
-    }
-}
-
-function displayWhisperInfo() {
-    if (!selectedWhisper) return;
-    
-    const whisperInfo = document.getElementById('whisperInfo');
-    if (whisperInfo) {
-        whisperInfo.innerHTML = `
-            <div class="whisper-card-small">
-                <img src="${selectedWhisper.photoURL || 'https://via.placeholder.com/50'}" 
-                     alt="${selectedWhisper.name}" 
-                     class="whisper-avatar-small">
-                <div>
-                    <h4>${selectedWhisper.name}</h4>
-                    <p>${selectedWhisper.bio || 'No bio'}</p>
-                </div>
-            </div>
-        `;
-    }
-}
-
-function setupStripe() {
-    // Create Stripe Elements
-    stripeElements = stripe.elements();
-    const style = {
-        base: {
-            color: '#f0f0f0',
-            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-            fontSmoothing: 'antialiased',
-            fontSize: '16px',
-            '::placeholder': {
-                color: '#666'
-            }
-        },
-        invalid: {
-            color: '#ff4444',
-            iconColor: '#ff4444'
-        }
-    };
-    
-    cardElement = stripeElements.create('card', { style: style });
-    cardElement.mount('#card-element');
-    
-    // Handle real-time validation errors
-    cardElement.on('change', (event) => {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
-    
-    // Handle form submission
-    const paymentForm = document.getElementById('paymentForm');
-    if (paymentForm) {
-        paymentForm.addEventListener('submit', handlePaymentSubmit);
-    }
-}
-
-async function handlePaymentSubmit(e) {
-    e.preventDefault();
-    
-    if (!selectedWhisper) {
-        alert('Whisper information is missing. Please try again.');
-        return;
-    }
-    
-    // Get form data
-    const email = document.getElementById('buyerEmail').value;
-    const name = document.getElementById('buyerName').value || 'Anonymous';
-    
-    // Disable submit button
-    const submitBtn = document.getElementById('submitPayment');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
-    try {
-        // Step 1: Create a call record in Firestore
-        const callData = {
-            whisperId: selectedWhisper.id,
-            whisperName: selectedWhisper.name,
-            customerEmail: email,
-            customerName: name,
-            amount: 1500, // $15.00 in cents
-            whisperEarnings: 1200, // $12.00 in cents
-            platformFee: 300, // $3.00 in cents
-            status: 'pending_payment',
-            createdAt: serverTimestamp()
-        };
-        
-        const callRef = await addDoc(collection(db, 'calls'), callData);
-        const callId = callRef.id;
-        
-        // Step 2: Create Stripe Payment Intent
-        // Note: In production, you should create Payment Intent on your server
-        // For now, we'll simulate with test data
-        
-        // Step 3: Create waiting call in Realtime Database
-        await set(dbRef(realtimeDb, `calls/${selectedWhisper.id}/waiting/${callId}`), {
-            id: callId,
-            customerEmail: email,
-            customerName: name,
-            createdAt: Date.now(),
-            status: 'waiting'
+        // Create payment elements
+        const response = await fetch('/create-payment-intent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                amount: 1500, // $15.00 in cents
+                currency: 'usd',
+                listenerId: selectedListenerId,
+                callerEmail: document.getElementById('callerEmail').value
+            })
         });
         
-        // Step 4: Show success and redirect
-        alert('Payment successful! Redirecting to chat room...');
+        const { clientSecret } = await response.json();
         
-        // In production, you would:
-        // 1. Create a Payment Intent on your server
-        // 2. Confirm the payment with Stripe
-        // 3. Update the call status
-        // 4. Redirect to chat room
+        elements = stripe.elements({ clientSecret });
+        paymentElement = elements.create('payment');
+        paymentElement.mount('#payment-element');
         
-        // For demo, we'll redirect directly
-        window.location.href = `chatroom.html?call=${callId}`;
+    } catch (error) {
+        console.error('Error initializing Stripe:', error);
+        alert('Payment system error. Please try again.');
+    }
+}
+
+async function handlePaymentSubmit() {
+    const email = document.getElementById('callerEmail').value;
+    
+    if (!email) {
+        alert('Please enter your email address');
+        return;
+    }
+    
+    // Show loading state
+    document.getElementById('stripeCheckoutBtn').disabled = true;
+    document.getElementById('stripeCheckoutBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    try {
+        // Confirm the payment
+        const { error, paymentIntent } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                return_url: `${window.location.origin}/payment-success.html`,
+                receipt_email: email,
+            },
+            redirect: 'if_required'
+        });
+        
+        if (error) {
+            throw error;
+        }
+        
+        if (paymentIntent.status === 'succeeded') {
+            // Payment successful
+            const listener = listeners.find(l => l.id === selectedListenerId);
+            
+            // Store call information
+            localStorage.setItem('currentCall', JSON.stringify({
+                listenerId: selectedListenerId,
+                listenerName: listener.name,
+                callerEmail: email,
+                paymentIntentId: paymentIntent.id,
+                amount: paymentIntent.amount / 100,
+                timestamp: new Date().toISOString()
+            }));
+            
+            // Redirect to waiting room
+            window.location.href = 'chat-waiting.html';
+        }
         
     } catch (error) {
         console.error('Payment error:', error);
-        alert(`Payment failed: ${error.message}`);
+        alert(error.message || 'Payment failed. Please try again.');
         
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-lock"></i> Pay $15.00';
+        // Reset button
+        document.getElementById('stripeCheckoutBtn').disabled = false;
+        document.getElementById('stripeCheckoutBtn').innerHTML = '<i class="fas fa-lock"></i> Pay Securely with Stripe';
     }
 }
-
-// Note: For production, you need a server to:
-// 1. Create Stripe Payment Intents
-// 2. Handle webhooks for payment confirmation
-// 3. Generate Agora tokens

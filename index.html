@@ -20,9 +20,6 @@
                 <a href="index.html" class="nav-link active">
                     <i class="fas fa-home"></i> Home
                 </a>
-                <a href="#" class="nav-link" onclick="showContactForm()">
-                    <i class="fas fa-envelope"></i> Contact Us
-                </a>
                 <div class="auth-buttons" id="authButtons">
                     <!-- Will be populated by JavaScript -->
                 </div>
@@ -77,25 +74,46 @@
         </div>
     </section>
 
-    <!-- Contact Form Modal -->
-    <div class="auth-modal" id="contactModal" style="display: none;">
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal" style="display: none;">
         <div class="auth-modal-content">
-            <h2>Contact Us</h2>
-            <form id="contactForm" class="auth-form">
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            
+            <form id="loginForm" class="auth-form" style="display: block;">
                 <div class="form-group">
-                    <label for="contactName">Your Name</label>
-                    <input type="text" id="contactName" class="form-input" required>
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="contactEmail">Your Email</label>
-                    <input type="email" id="contactEmail" class="form-input" required>
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="hideAuthModal()">Cancel</button>
+            </form>
+            
+            <form id="signupForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="contactMessage">Message</label>
-                    <textarea id="contactMessage" class="form-input" rows="5" required></textarea>
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" class="form-input" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Send Message</button>
-                <button type="button" class="btn btn-secondary btn-block" onclick="hideContactForm()">Cancel</button>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="hideAuthModal()">Cancel</button>
             </form>
         </div>
     </div>
@@ -244,6 +262,38 @@
             }
         }
 
+        // Show auth modal
+        function showAuthModal(tab) {
+            switchAuthTab(tab);
+            document.getElementById('authModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide auth modal
+        function hideAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Switch auth tab
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const tabs = document.querySelectorAll('.auth-tab');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                tabs[0].classList.add('active');
+            } else {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                tabs[1].classList.add('active');
+            }
+        }
+
         // Render listeners grid
         function renderListeners() {
             const listenersGrid = document.getElementById('listenersGrid');
@@ -285,40 +335,90 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Show contact form
-        function showContactForm() {
-            document.getElementById('contactModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Hide contact form
-        function hideContactForm() {
-            document.getElementById('contactModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
         // Setup event listeners
         function setupEventListeners() {
-            // Contact form submission
-            document.getElementById('contactForm').addEventListener('submit', function(e) {
+            // Login form submission
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                const name = document.getElementById('contactName').value;
-                const email = document.getElementById('contactEmail').value;
-                const message = document.getElementById('contactMessage').value;
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
                 
-                // Simulate sending email
-                alert(`Thank you ${name}! Your message has been sent to our support team. We'll respond to ${email} within 24 hours.`);
+                // Simple validation
+                if (!email || !password) {
+                    alert('Please enter both email and password');
+                    return;
+                }
                 
-                // Reset form
-                this.reset();
-                hideContactForm();
+                // Check if user exists in localStorage
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const user = users.find(u => u.email === email && u.password === password);
                 
-                // In production, this would send to your server
-                console.log('Contact form submission:', { name, email, message });
-                console.log('Email would be sent to: ifanifwasafifth@gmail.com');
+                if (user) {
+                    // Login successful
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    alert('Login successful!');
+                    hideAuthModal();
+                    updateAuthButtons();
+                } else {
+                    alert('Invalid email or password');
+                }
             });
-
+            
+            // Signup form submission
+            document.getElementById('signupForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('signupConfirmPassword').value;
+                
+                // Validation
+                if (!name || !email || !password || !confirmPassword) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    alert('Password must be at least 6 characters');
+                    return;
+                }
+                
+                // Check if user already exists
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const existingUser = users.find(u => u.email === email);
+                
+                if (existingUser) {
+                    alert('User with this email already exists');
+                    return;
+                }
+                
+                // Create new user
+                const newUser = {
+                    id: Date.now(),
+                    name,
+                    email,
+                    password,
+                    balance: 0,
+                    isListener: true,
+                    createdAt: new Date().toISOString()
+                };
+                
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                
+                alert('Account created successfully! Welcome to House of Whispers.');
+                hideAuthModal();
+                updateAuthButtons();
+            });
+            
             // Stripe checkout
             document.getElementById('stripeCheckoutBtn').addEventListener('click', function() {
                 const email = document.getElementById('callerEmail').value;
@@ -363,13 +463,38 @@
             window.location.reload();
         }
 
+        // Show contact form (in footer)
+        function showContactForm() {
+            const name = prompt('Your Name:');
+            if (!name) return;
+            
+            const email = prompt('Your Email:');
+            if (!email) return;
+            
+            const message = prompt('Your Message:');
+            if (!message) return;
+            
+            // Store contact message
+            const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+            messages.push({
+                name,
+                email,
+                message,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('contactMessages', JSON.stringify(messages));
+            
+            alert('Thank you for your message! We will respond within 24 hours.');
+            console.log('Contact message sent to admin: ifanifwasafifth@gmail.com');
+        }
+
         // Close modals when clicking outside
         window.onclick = function(event) {
-            const contactModal = document.getElementById('contactModal');
+            const authModal = document.getElementById('authModal');
             const paymentModal = document.getElementById('paymentModal');
             
-            if (event.target === contactModal) {
-                hideContactForm();
+            if (event.target === authModal) {
+                hideAuthModal();
             }
             if (event.target === paymentModal) {
                 hidePaymentForm();

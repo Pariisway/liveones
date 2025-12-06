@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Flow - House of Whispers</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0f0c29; color: white; }
+        .step { margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .success { border-left: 5px solid #4CAF50; }
+        .pending { border-left: 5px solid #f39c12; }
+        button { padding: 10px 20px; margin: 5px; background: #6c63ff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .device { display: inline-block; padding: 10px; margin: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>House of Whispers - Complete Test Flow</h1>
+    
+    <div class="step pending" id="step1">
+        <h3>Step 1: Create Listener Account</h3>
+        <p>Register as a listener on Device 1</p>
+        <button onclick="window.open('index.html', '_blank')">Open Homepage</button>
+        <div id="step1Status"></div>
+    </div>
+    
+    <div class="step pending" id="step2">
+        <h3>Step 2: Setup Profile</h3>
+        <p>On Device 1 Dashboard:</p>
+        <ol>
+            <li>Upload profile picture</li>
+            <li>Update bio and specialties</li>
+            <li>Toggle availability to ON (green)</li>
+        </ol>
+        <button onclick="window.open('dashboard.html', '_blank')">Open Dashboard</button>
+        <div id="step2Status"></div>
+    </div>
+    
+    <div class="step pending" id="step3">
+        <h3>Step 3: Verify Homepage Appearance</h3>
+        <p>Check that your profile appears on homepage</p>
+        <button onclick="checkHomepage()">Check Homepage</button>
+        <div id="step3Status"></div>
+    </div>
+    
+    <div class="step pending" id="step4">
+        <h3>Step 4: Device 2 - Make a Call</h3>
+        <p>On Device 2 (different browser/device):</p>
+        <ol>
+            <li>Visit homepage</li>
+            <li>Find your profile card</li>
+            <li>Click "Call Now - $15"</li>
+            <li>Enter email and pay (test mode)</li>
+        </ol>
+        <div class="device">Device 2: <button onclick="window.open('index.html', '_blank')">Open as Caller</button></div>
+        <div id="step4Status"></div>
+    </div>
+    
+    <div class="step pending" id="step5">
+        <h3>Step 5: Device 1 - Accept Call</h3>
+        <p>On Device 1 Dashboard, accept the incoming call</p>
+        <button onclick="window.open('dashboard.html', '_blank')">Check Dashboard for Calls</button>
+        <div id="step5Status"></div>
+    </div>
+    
+    <div class="step pending" id="step6">
+        <h3>Step 6: Test 5-Minute Chat</h3>
+        <p>Both devices enter chat room with 5-minute timer</p>
+        <div id="step6Status"></div>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <button onclick="runAllTests()">Run Complete Test</button>
+        <button onclick="resetTest()" style="background: #e74c3c;">Reset Test</button>
+    </div>
+    
+    <script>
+        function checkHomepage() {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
+            if (users.length === 0) {
+                document.getElementById('step3Status').innerHTML = '<p style="color: #e74c3c;">No users found. Please complete Step 1.</p>';
+                return;
+            }
+            
+            if (!currentUser) {
+                document.getElementById('step3Status').innerHTML = '<p style="color: #e74c3c;">Not logged in. Please login first.</p>';
+                return;
+            }
+            
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            const myData = userData[currentUser.id];
+            
+            if (myData && myData.availability) {
+                document.getElementById('step3').classList.remove('pending');
+                document.getElementById('step3').classList.add('success');
+                document.getElementById('step3Status').innerHTML = '<p style="color: #4CAF50;">✅ Your profile should appear on homepage! Check now.</p>';
+            } else {
+                document.getElementById('step3Status').innerHTML = '<p style="color: #f39c12;">⚠️ Make sure availability is ON in dashboard.</p>';
+            }
+        }
+        
+        function runAllTests() {
+            alert('Opening all test pages in new tabs...');
+            window.open('index.html', '_blank'); // Homepage
+            window.open('dashboard.html', '_blank'); // Dashboard
+            window.open('test-auth.html', '_blank'); // Auth test
+            alert('Complete test started. Follow the steps in each tab.');
+        }
+        
+        function resetTest() {
+            if (confirm('Clear all test data?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+        
+        // Auto-check steps
+        setInterval(() => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            // Step 1 check
+            if (users.length > 0) {
+                document.getElementById('step1').classList.remove('pending');
+                document.getElementById('step1').classList.add('success');
+                document.getElementById('step1Status').innerHTML = '<p style="color: #4CAF50;">✅ Account created!</p>';
+            }
+            
+            // Step 2 check
+            if (currentUser) {
+                const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                const myData = userData[currentUser.id];
+                if (myData && myData.profilePicture) {
+                    document.getElementById('step2').classList.remove('pending');
+                    document.getElementById('step2').classList.add('success');
+                    document.getElementById('step2Status').innerHTML = '<p style="color: #4CAF50;">✅ Profile setup complete!</p>';
+                }
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

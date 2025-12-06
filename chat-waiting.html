@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiting for Listener - House of Whispers</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-ear-listen"></i>
+                House of Whispers
+            </a>
+        </div>
+    </nav>
+
+    <div class="chat-room">
+        <h1>Waiting for Your Listener</h1>
+        <div class="chat-container">
+            <div class="chat-messages">
+                <div class="message system">
+                    <p>Welcome to House of Whispers</p>
+                </div>
+                <div class="message system">
+                    <p>You are now in the waiting room. Your listener will join shortly.</p>
+                </div>
+                <div class="message system">
+                    <p><strong>Payment confirmed:</strong> $15.00</p>
+                </div>
+                <div class="message system">
+                    <p>Please wait while we connect you with your listener...</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px;">
+                <div class="timer" id="waitingTimer">00:00</div>
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+                    <i class="fas fa-info-circle"></i> Your 5-minute session will begin when the listener joins
+                </p>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3><i class="fas fa-user"></i> Your Listener</h3>
+                    <p id="listenerName" style="font-size: 1.2em; margin: 10px 0;">Loading...</p>
+                    <p style="color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-clock"></i> Estimated wait time: 1-2 minutes
+                    </p>
+                </div>
+                
+                <button class="btn btn-danger" onclick="cancelCall()">
+                    <i class="fas fa-times"></i> Cancel Call (No Refund)
+                </button>
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.9em; margin-top: 10px;">
+                    <i class="fas fa-exclamation-triangle"></i> No refunds for cancelled calls
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let waitingSeconds = 0;
+        let timerInterval;
+        let currentCall = JSON.parse(localStorage.getItem('currentCall'));
+        
+        if (!currentCall) {
+            window.location.href = 'index.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('listenerName').textContent = currentCall.listenerName;
+            startWaitingTimer();
+            
+            // Check if listener has accepted the call
+            setInterval(checkForListener, 2000);
+        });
+        
+        function startWaitingTimer() {
+            timerInterval = setInterval(() => {
+                waitingSeconds++;
+                const minutes = Math.floor(waitingSeconds / 60);
+                const seconds = waitingSeconds % 60;
+                document.getElementById('waitingTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Auto-check every 30 seconds
+                if (waitingSeconds % 30 === 0) {
+                    checkForListener();
+                }
+            }, 1000);
+        }
+        
+        function checkForListener() {
+            // Check if listener has accepted the call
+            const activeCall = JSON.parse(localStorage.getItem('activeCall'));
+            
+            if (activeCall && activeCall.callerEmail === currentCall.callerEmail) {
+                // Listener has accepted, redirect to active chat
+                clearInterval(timerInterval);
+                window.location.href = 'chat-active.html';
+            }
+        }
+        
+        function cancelCall() {
+            if (confirm('Are you sure you want to cancel? No refund will be issued.')) {
+                clearInterval(timerInterval);
+                localStorage.removeItem('currentCall');
+                alert('Call cancelled. You may close this window.');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        }
+        
+        // Check for listener acceptance every 5 seconds
+        setInterval(checkForListener, 5000);
+    </script>
+</body>
+</html>

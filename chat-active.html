@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Call - House of Whispers</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-ear-listen"></i>
+                House of Whispers
+            </a>
+            <div style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-phone"></i> Live Call
+            </div>
+        </div>
+    </nav>
+
+    <div class="chat-room">
+        <h1>Your Whisper Session</h1>
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message system">
+                    <p>Your 5-minute session has started</p>
+                </div>
+                <div class="message system">
+                    <p>Please be respectful and kind. This is a safe space.</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px;">
+                <div class="timer" id="sessionTimer">05:00</div>
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+                    <i class="fas fa-clock"></i> Session time remaining
+                </p>
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-success" id="endCallBtn" onclick="endCall()">
+                        <i class="fas fa-phone-slash"></i> End Call
+                    </button>
+                </div>
+                
+                <div style="margin-top: 30px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                    <h4><i class="fas fa-info-circle"></i> Session Guidelines</h4>
+                    <p style="font-size: 0.9em; color: rgba(255,255,255,0.7); margin: 10px 0;">
+                        1. This is a confidential, anonymous session<br>
+                        2. Speak freely about what's on your mind<br>
+                        3. The listener is here to support you<br>
+                        4. No recording or screenshots allowed
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionSeconds = 300; // 5 minutes
+        let timerInterval;
+        let activeCall = JSON.parse(localStorage.getItem('activeCall'));
+        let isListener = false;
+        
+        // Check user role
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            isListener = true;
+        }
+        
+        if (!activeCall) {
+            window.location.href = 'index.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            startSessionTimer();
+            
+            // Add welcome message
+            const chatMessages = document.getElementById('chatMessages');
+            const welcomeMessage = document.createElement('div');
+            welcomeMessage.className = 'message system';
+            welcomeMessage.innerHTML = `<p>Connected with: <strong>${isListener ? 'Caller' : activeCall.listenerName}</strong></p>`;
+            chatMessages.appendChild(welcomeMessage);
+            
+            // Auto-end if listener leaves
+            if (!isListener) {
+                setInterval(checkListenerActive, 10000);
+            }
+        });
+        
+        function startSessionTimer() {
+            timerInterval = setInterval(() => {
+                sessionSeconds--;
+                const minutes = Math.floor(sessionSeconds / 60);
+                const seconds = sessionSeconds % 60;
+                document.getElementById('sessionTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Color changes for last minute
+                if (sessionSeconds <= 60) {
+                    document.getElementById('sessionTimer').style.color = '#ff4444';
+                }
+                
+                // End session when time is up
+                if (sessionSeconds <= 0) {
+                    endSession();
+                }
+            }, 1000);
+        }
+        
+        function checkListenerActive() {
+            // In a real app, this would check WebSocket connection
+            // For now, just check if listener is still in localStorage
+            const currentActiveCall = JSON.parse(localStorage.getItem('activeCall'));
+            if (!currentActiveCall) {
+                endSession();
+            }
+        }
+        
+        function endCall() {
+            if (confirm('Are you sure you want to end the call?')) {
+                endSession();
+            }
+        }
+        
+        function endSession() {
+            clearInterval(timerInterval);
+            
+            // Record the call if user is listener
+            if (isListener) {
+                recordCallCompletion();
+            }
+            
+            // Clear call data
+            localStorage.removeItem('activeCall');
+            if (isListener) {
+                localStorage.removeItem('currentCall');
+            }
+            
+            // Show completion message
+            const chatMessages = document.getElementById('chatMessages');
+            const endMessage = document.createElement('div');
+            endMessage.className = 'message system';
+            endMessage.innerHTML = `<p><strong>Session ended.</strong> Thank you for using House of Whispers.</p>`;
+            chatMessages.appendChild(endMessage);
+            
+            document.getElementById('endCallBtn').disabled = true;
+            document.getElementById('endCallBtn').innerHTML = '<i class="fas fa-check"></i> Session Complete';
+            document.getElementById('endCallBtn').className = 'btn btn-secondary';
+            
+            // Redirect after 5 seconds
+            setTimeout(() => {
+                if (isListener) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 5000);
+        }
+        
+        function recordCallCompletion() {
+            // Update listener's earnings and call history
+            let userData = JSON.parse(localStorage.getItem('userData')) || {
+                calls: 0,
+                hours: 0,
+                earnings: 0,
+                callHistory: []
+            };
+            
+            userData.calls += 1;
+            userData.hours += 5/60; // 5 minutes in hours
+            userData.earnings += 12; // Listener gets $12, $3 goes to platform
+            
+            userData.callHistory.push({
+                callerEmail: activeCall.callerEmail || 'Anonymous',
+                timestamp: new Date().toISOString(),
+                duration: 5,
+                amount: 12
+            });
+            
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+        
+        // Auto-end after 5 minutes 10 seconds (allowing for slight delay)
+        setTimeout(() => {
+            if (sessionSeconds > 0) {
+                endSession();
+            }
+        }, 310000);
+    </script>
+</body>
+</html>

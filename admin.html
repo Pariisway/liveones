@@ -4,200 +4,177 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - House of Whispers</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="background-animation"></div>
-    
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo">
-                <h1><i class="fas fa-crown"></i> Admin Dashboard</h1>
-            </div>
-            <div class="nav-menu">
-                <a href="#" onclick="showAdminSection('overview')" class="nav-link active"><i class="fas fa-chart-bar"></i> Overview</a>
-                <a href="#" onclick="showAdminSection('users')" class="nav-link"><i class="fas fa-users"></i> Users</a>
-                <a href="#" onclick="showAdminSection('calls')" class="nav-link"><i class="fas fa-phone"></i> Calls</a>
-                <a href="#" onclick="showAdminSection('payments')" class="nav-link"><i class="fas fa-money-bill-wave"></i> Payments</a>
-                <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Back to Site</a>
-            </div>
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-ear-listen"></i>
+                House of Whispers - Admin
+            </a>
+            <button class="btn btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
     </nav>
 
-    <div class="container">
-        <div id="adminOverview" class="admin-section active">
-            <h2>System Overview</h2>
-            <div class="admin-stats-grid">
-                <div class="admin-stat-card">
-                    <h3>Total Users</h3>
-                    <p id="totalUsers">0</p>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Admin Dashboard</h1>
+            <p>Admin: ifanifwasafifth@gmail.com</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
                 </div>
-                <div class="admin-stat-card">
-                    <h3>Total Whispers</h3>
-                    <p id="totalWhispers">0</p>
+                <div class="stat-info">
+                    <h3>Total Listeners</h3>
+                    <div class="stat-amount" id="totalListeners">0</div>
+                    <small>Registered listeners</small>
                 </div>
-                <div class="admin-stat-card">
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="stat-info">
                     <h3>Total Calls</h3>
-                    <p id="totalCallsAdmin">0</p>
+                    <div class="stat-amount" id="totalCalls">0</div>
+                    <small>All time calls</small>
                 </div>
-                <div class="admin-stat-card">
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-info">
                     <h3>Platform Revenue</h3>
-                    <p id="platformRevenue">$0.00</p>
-                </div>
-                <div class="admin-stat-card">
-                    <h3>Today's Calls</h3>
-                    <p id="todaysCalls">0</p>
-                </div>
-                <div class="admin-stat-card">
-                    <h3>Active Calls</h3>
-                    <p id="activeCalls">0</p>
+                    <div class="stat-amount" id="platformRevenue">$0</div>
+                    <small>Total earnings</small>
                 </div>
             </div>
-            
-            <h3>Recent Activity</h3>
-            <div id="recentActivity" class="activity-log">
-                <!-- Activity log will be loaded here -->
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Unread Messages</h3>
+                    <div class="stat-amount" id="unreadMessages">0</div>
+                    <small>Contact form</small>
+                </div>
             </div>
         </div>
 
-        <div id="adminUsers" class="admin-section">
-            <h2>User Management</h2>
-            <div class="search-controls">
-                <input type="text" id="userSearch" placeholder="Search users by name or email...">
-                <select id="userFilter">
-                    <option value="all">All Users</option>
-                    <option value="whispers">Whispers Only</option>
-                    <option value="customers">Customers Only</option>
-                </select>
-            </div>
-            
-            <div class="users-table-container">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Joined</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Users will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="adminCalls" class="admin-section">
-            <h2>Call Management</h2>
-            <div class="search-controls">
-                <input type="text" id="callSearch" placeholder="Search calls...">
-                <select id="callFilter">
-                    <option value="all">All Calls</option>
-                    <option value="active">Active</option>
-                    <option value="completed">Completed</option>
-                    <option value="pending">Pending</option>
-                </select>
-            </div>
-            
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Call ID</th>
-                        <th>Whisper</th>
-                        <th>Customer</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Time</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="callsTableBody">
-                    <!-- Calls will be loaded here -->
-                </tbody>
-            </table>
-        </div>
-
-        <div id="adminPayments" class="admin-section">
-            <h2>Payment Management</h2>
-            <div class="payment-controls">
-                <button class="btn-primary" onclick="processPayouts()">
-                    <i class="fas fa-money-check"></i> Process Due Payouts
+        <div class="quick-actions">
+            <h2>Admin Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="showSection('messages')">
+                    <i class="fas fa-envelope"></i>
+                    <span>View Messages</span>
                 </button>
-                <input type="date" id="paymentDateFilter">
+                <button class="action-btn" onclick="showSection('listeners')">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Listeners</span>
+                </button>
+                <button class="action-btn" onclick="showSection('calls')">
+                    <i class="fas fa-phone"></i>
+                    <span>Call Logs</span>
+                </button>
+                <button class="action-btn" onclick="showSection('payments')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Payment Records</span>
+                </button>
             </div>
-            
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Payout ID</th>
-                        <th>Whisper</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Processed</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="paymentsTableBody">
-                    <!-- Payments will be loaded here -->
-                </tbody>
-            </table>
-            
-            <div class="payment-summary-admin">
-                <h3>Revenue Summary</h3>
-                <div class="summary-item">
-                    <span>Total Platform Fees:</span>
-                    <span id="totalFees">$0.00</span>
-                </div>
-                <div class="summary-item">
-                    <span>Total Payouts:</span>
-                    <span id="totalPayouts">$0.00</span>
-                </div>
-                <div class="summary-item total">
-                    <span>Net Revenue:</span>
-                    <span id="netRevenue">$0.00</span>
+        </div>
+
+        <div id="messagesSection" class="dashboard-section">
+            <h2>Contact Messages</h2>
+            <div class="history-container">
+                <div id="messagesList">
+                    <p style="text-align: center; color: #888; padding: 20px;">No messages yet</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- User Edit Modal -->
-    <div id="editUserModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeEditModal()">&times;</span>
-            <h3>Edit User</h3>
-            <form id="editUserForm">
-                <input type="hidden" id="editUserId">
-                <div class="form-group">
-                    <label for="editUserName">Name</label>
-                    <input type="text" id="editUserName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editUserEmail">Email</label>
-                    <input type="email" id="editUserEmail" required>
-                </div>
-                <div class="form-group">
-                    <label for="editUserType">User Type</label>
-                    <select id="editUserType">
-                        <option value="whisper">Whisper</option>
-                        <option value="customer">Customer</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="editUserBalance">Balance</label>
-                    <input type="number" id="editUserBalance" step="0.01">
-                </div>
-                <button type="submit" class="btn-primary">Save Changes</button>
-                <button type="button" class="btn-danger" onclick="deleteUser()">Delete User</button>
-            </form>
-        </div>
-    </div>
-
-    <script type="module" src="firebase-config.js"></script>
-    <script type="module" src="admin.js"></script>
+    <script>
+        // Simple admin authentication
+        const adminEmail = "ifanifwasafifth@gmail.com";
+        const adminPassword = "040687Pw!";
+        
+        // Check if admin is logged in
+        if (!localStorage.getItem('adminLoggedIn')) {
+            const email = prompt("Admin Email:");
+            const password = prompt("Admin Password:");
+            
+            if (email === adminEmail && password === adminPassword) {
+                localStorage.setItem('adminLoggedIn', 'true');
+            } else {
+                alert("Invalid credentials");
+                window.location.href = 'index.html';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdminData();
+        });
+        
+        function loadAdminData() {
+            // Load messages from localStorage
+            const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+            const messagesList = document.getElementById('messagesList');
+            
+            if (messages.length === 0) {
+                messagesList.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No messages yet</p>';
+            } else {
+                messagesList.innerHTML = messages.map((msg, index) => `
+                    <div style="border-bottom: 1px solid #333; padding: 15px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <strong>${msg.name}</strong>
+                                <p style="margin: 5px 0; color: #aaa;">${msg.email}</p>
+                                <p style="margin: 10px 0;">${msg.message}</p>
+                                <p style="color: #888; font-size: 0.9em;">
+                                    ${new Date(msg.timestamp).toLocaleString()}
+                                </p>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteMessage(${index})" style="margin-left: 10px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('unreadMessages').textContent = messages.length;
+            }
+            
+            // Calculate platform revenue (simplified)
+            const allCalls = JSON.parse(localStorage.getItem('allCalls')) || [];
+            const revenue = allCalls.length * 3; // $3 per call for platform
+            document.getElementById('platformRevenue').textContent = `$${revenue}`;
+            document.getElementById('totalCalls').textContent = allCalls.length;
+        }
+        
+        function showSection(section) {
+            // Hide all sections except messages for now
+            alert(`Section: ${section} - This would show ${section} management in a full implementation.`);
+        }
+        
+        function deleteMessage(index) {
+            const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
+            messages.splice(index, 1);
+            localStorage.setItem('contactMessages', JSON.stringify(messages));
+            loadAdminData();
+        }
+        
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>

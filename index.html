@@ -3,48 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whisper Chat Live - Find a Listener</title>
+    <title>House of Whispers - Anonymous Emotional Support</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/96/000000/earbud-headphones.png">
 </head>
 <body>
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="#" class="nav-logo" onclick="window.goToHome()">
-                <i class="fas fa-comment-dots"></i>
-                <span>WhisperChat</span>
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-ear-listen"></i>
+                House of Whispers
             </a>
-            
             <div class="nav-links">
-                <a href="#" class="nav-link" onclick="window.goToHome()">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-home"></i> Home
                 </a>
-                <a href="#" class="nav-link" onclick="window.goToFindWhisper()">
-                    <i class="fas fa-search"></i>
-                    <span>Find a Whisper</span>
+                <a href="#" class="nav-link" onclick="showContactForm()">
+                    <i class="fas fa-envelope"></i> Contact Us
                 </a>
-                <a href="#" class="nav-link" onclick="window.goToBecomeListener()">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Become a Listener</span>
-                </a>
-                <a href="#" class="nav-link" onclick="window.goToDashboard()">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Dashboard</span>
-                </a>
-                <div id="authButtons" class="auth-buttons">
-                    <button id="loginBtn" class="btn btn-outline">Login</button>
-                    <button id="signupBtn" class="btn btn-primary">Sign Up</button>
-                </div>
-                <div id="userInfo" class="user-info" style="display: none;">
-                    <span id="userName">User</span>
-                    <span class="balance">$<span id="userBalance">0</span></span>
-                    <button id="dashboardBtn" class="btn btn-outline" style="display: none;">
-                        <i class="fas fa-tachometer-alt"></i>
-                    </button>
-                    <button id="logoutBtn" class="btn btn-logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
+                <div class="auth-buttons" id="authButtons">
+                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -53,111 +33,98 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Need Someone to Talk To?</h1>
-            <p>Connect instantly with compassionate listeners who are ready to lend an ear, 24/7.</p>
-            <div class="hero-buttons">
-                <button class="btn btn-primary btn-lg" onclick="window.goToFindWhisper()">
-                    <i class="fas fa-headphones"></i> Find a Listener Now
-                </button>
-                <button class="btn btn-secondary btn-lg" onclick="window.goToBecomeListener()">
-                    <i class="fas fa-user-plus"></i> Become a Listener
-                </button>
-            </div>
-        </div>
-        <div class="hero-image">
-            <i class="fas fa-comments"></i>
+            <h1>House of Whispers</h1>
+            <p>Anonymous emotional support from verified listeners. Speak your heart, find peace.</p>
         </div>
     </section>
 
-    <!-- How It Works -->
+    <!-- Available Listeners Section -->
+    <section class="listeners-section" id="listenersSection">
+        <h2>Available Listeners Right Now</h2>
+        <p>Choose a listener who resonates with you</p>
+        <div class="listeners-list">
+            <div class="listeners-grid" id="listenersGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
     <section class="how-it-works">
-        <h2>How WhisperChat Works</h2>
+        <h2>How House of Whispers Works</h2>
         <div class="steps">
             <div class="step">
                 <div class="step-icon">
                     <i class="fas fa-search"></i>
                 </div>
-                <h3>1. Find a Listener</h3>
-                <p>Browse available listeners and choose who you feel comfortable with.</p>
+                <h3>Choose a Listener</h3>
+                <p>Browse our verified listeners and choose one that resonates with you.</p>
             </div>
             <div class="step">
                 <div class="step-icon">
-                    <i class="fas fa-phone"></i>
+                    <i class="fas fa-credit-card"></i>
                 </div>
-                <h3>2. Connect Instantly</h3>
-                <p>Start a secure, private audio call with one click. No downloads needed.</p>
+                <h3>Pay Securely</h3>
+                <p>Enter your email and pay $15 securely via Stripe. No account needed.</p>
             </div>
             <div class="step">
                 <div class="step-icon">
-                    <i class="fas fa-heart"></i>
+                    <i class="fas fa-headset"></i>
                 </div>
-                <h3>3. Feel Heard</h3>
-                <p>Talk about what's on your mind with a compassionate, trained listener.</p>
+                <h3>Get Support</h3>
+                <p>Connect instantly with your listener for a 5-minute confidential session.</p>
             </div>
         </div>
     </section>
 
-    <!-- Available Listeners -->
-    <section class="listeners-section" id="listenersSection">
-        <h2>Available Listeners Right Now</h2>
-        <p>Choose a listener who resonates with you. All calls are confidential and secure.</p>
-        <div id="listenersList" class="listeners-list">
-            <!-- Listeners will be loaded here -->
-        </div>
-    </section>
-
-    <!-- Become a Listener CTA -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Want to Help Others?</h2>
-            <p>Join our community of listeners and earn money by providing emotional support.</p>
-            <button class="btn btn-primary btn-lg" onclick="window.goToBecomeListener()">
-                <i class="fas fa-user-plus"></i> Become a Listener
-            </button>
-        </div>
-    </section>
-
-    <!-- Auth Modal -->
-    <div id="authModal" class="auth-modal" style="display: none;">
+    <!-- Contact Form Modal -->
+    <div class="auth-modal" id="contactModal" style="display: none;">
         <div class="auth-modal-content">
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="showLoginForm()">Login</button>
-                <button class="auth-tab" onclick="showSignupForm()">Sign Up</button>
+            <h2>Contact Us</h2>
+            <form id="contactForm" class="auth-form">
+                <div class="form-group">
+                    <label for="contactName">Your Name</label>
+                    <input type="text" id="contactName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactEmail">Your Email</label>
+                    <input type="email" id="contactEmail" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactMessage">Message</label>
+                    <textarea id="contactMessage" class="form-input" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="hideContactForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="auth-modal" id="paymentModal" style="display: none;">
+        <div class="auth-modal-content">
+            <h2>Connect with a Listener</h2>
+            <div class="payment-form">
+                <div class="form-group">
+                    <label for="callerEmail">Your Email Address</label>
+                    <input type="email" id="callerEmail" class="form-input" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Session Details</label>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <p><strong>Listener:</strong> <span id="selectedListenerName"></span></p>
+                        <p><strong>Duration:</strong> 5 minutes</p>
+                        <p><strong>Cost:</strong> $15.00</p>
+                    </div>
+                </div>
+                <button id="stripeCheckoutBtn" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-lock"></i> Pay Securely with Stripe
+                </button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="hidePaymentForm()">Cancel</button>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: rgba(255,255,255,0.6);">
+                    <i class="fas fa-shield-alt"></i> Secure payment · No account required
+                </p>
             </div>
-            
-            <form id="loginForm" class="auth-form">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
-            </form>
-            
-            <form id="signupForm" class="auth-form" style="display: none;">
-                <div class="form-group">
-                    <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" class="form-input" placeholder="Enter your full name" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" class="form-input" placeholder="Create a password (min. 6 chars)" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupConfirmPassword">Confirm Password</label>
-                    <input type="password" id="signupConfirmPassword" class="form-input" placeholder="Confirm your password" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
-            </form>
-            
-            <button id="authCancelBtn" class="btn btn-secondary btn-block">Cancel</button>
         </div>
     </div>
 
@@ -165,28 +132,249 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>WhisperChat</h3>
-                <p>Providing compassionate listening when you need it most.</p>
+                <h3>House of Whispers</h3>
+                <p>Providing anonymous emotional support since 2024.</p>
             </div>
             <div class="footer-section">
                 <h3>Quick Links</h3>
-                <a href="#" onclick="window.goToHome()">Home</a>
-                <a href="#" onclick="window.goToFindWhisper()">Find a Listener</a>
-                <a href="#" onclick="window.goToBecomeListener()">Become a Listener</a>
-                <a href="#" onclick="window.goToDashboard()">Dashboard</a>
+                <a href="index.html">Home</a>
+                <a href="#" onclick="showContactForm()">Contact Us</a>
             </div>
             <div class="footer-section">
                 <h3>Contact</h3>
-                <p>support@whisperchat.com</p>
-                <p>24/7 Support Available</p>
+                <p>Email: support@houseofwhispers.com</p>
+                <p>Available 24/7</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 WhisperChat. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            <p>&copy; 2024 House of Whispers. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Include Firebase and app scripts -->
-    <script type="module" src="app.js"></script>
+    <script>
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        // Sample listeners data
+        const listeners = [
+            {
+                id: 1,
+                name: "Sarah M.",
+                bio: "Certified counselor with 8+ years experience. Specializes in anxiety and relationship issues.",
+                rating: 4.9,
+                calls: 1247,
+                available: true
+            },
+            {
+                id: 2,
+                name: "James L.",
+                bio: "Life coach focusing on personal growth and career transitions. Empathetic and solution-oriented.",
+                rating: 4.8,
+                calls: 892,
+                available: true
+            },
+            {
+                id: 3,
+                name: "Priya K.",
+                bio: "Trauma-informed therapist with background in mindfulness and meditation techniques.",
+                rating: 4.9,
+                calls: 1563,
+                available: true
+            },
+            {
+                id: 4,
+                name: "Michael T.",
+                bio: "Former crisis helpline volunteer. Specializes in men's mental health and stress management.",
+                rating: 4.7,
+                calls: 735,
+                available: true
+            },
+            {
+                id: 5,
+                name: "Elena R.",
+                bio: "Art therapist with holistic approach. Helps with creativity blocks and emotional expression.",
+                rating: 4.8,
+                calls: 1042,
+                available: false
+            },
+            {
+                id: 6,
+                name: "David W.",
+                bio: "Retired psychologist with 30+ years experience. Wise, patient, and deeply compassionate.",
+                rating: 4.9,
+                calls: 1987,
+                available: true
+            }
+        ];
+
+        let selectedListenerId = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAuthButtons();
+            renderListeners();
+            setupEventListeners();
+        });
+
+        // Update authentication buttons
+        function updateAuthButtons() {
+            const authButtons = document.getElementById('authButtons');
+            
+            if (currentUser) {
+                authButtons.innerHTML = `
+                    <div class="user-info">
+                        <span class="balance">$${currentUser.balance || 0}</span>
+                        <a href="dashboard.html" class="btn btn-secondary">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <button class="btn btn-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                `;
+            } else {
+                authButtons.innerHTML = `
+                    <button class="btn btn-outline" onclick="showAuthModal('login')">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <button class="btn btn-primary" onclick="showAuthModal('signup')">
+                        <i class="fas fa-user-plus"></i> Become a Listener
+                    </button>
+                `;
+            }
+        }
+
+        // Render listeners grid
+        function renderListeners() {
+            const listenersGrid = document.getElementById('listenersGrid');
+            listenersGrid.innerHTML = listeners.map(listener => `
+                <div class="listener-card">
+                    <div class="listener-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="listener-info">
+                        <h4>${listener.name} ${listener.available ? '<span style="color: #4CAF50; font-size: 0.8em;">● Available</span>' : '<span style="color: #e74c3c; font-size: 0.8em;">● Busy</span>'}</h4>
+                        <p class="listener-bio">${listener.bio}</p>
+                        <div class="listener-stats">
+                            <span><i class="fas fa-star"></i> ${listener.rating}</span>
+                            <span><i class="fas fa-phone"></i> ${listener.calls.toLocaleString()} calls</span>
+                        </div>
+                        <button class="btn btn-primary call-btn" onclick="showPaymentForm(${listener.id})" ${!listener.available ? 'disabled' : ''}>
+                            <i class="fas fa-phone"></i> ${listener.available ? 'Call Now - $15' : 'Currently Unavailable'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show payment form
+        function showPaymentForm(listenerId) {
+            selectedListenerId = listenerId;
+            const listener = listeners.find(l => l.id === listenerId);
+            
+            if (listener) {
+                document.getElementById('selectedListenerName').textContent = listener.name;
+                document.getElementById('paymentModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // Hide payment form
+        function hidePaymentForm() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Show contact form
+        function showContactForm() {
+            document.getElementById('contactModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide contact form
+        function hideContactForm() {
+            document.getElementById('contactModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Contact form submission
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('contactName').value;
+                const email = document.getElementById('contactEmail').value;
+                const message = document.getElementById('contactMessage').value;
+                
+                // Simulate sending email
+                alert(`Thank you ${name}! Your message has been sent to our support team. We'll respond to ${email} within 24 hours.`);
+                
+                // Reset form
+                this.reset();
+                hideContactForm();
+                
+                // In production, this would send to your server
+                console.log('Contact form submission:', { name, email, message });
+                console.log('Email would be sent to: ifanifwasafifth@gmail.com');
+            });
+
+            // Stripe checkout
+            document.getElementById('stripeCheckoutBtn').addEventListener('click', function() {
+                const email = document.getElementById('callerEmail').value;
+                
+                if (!email) {
+                    alert('Please enter your email address');
+                    return;
+                }
+                
+                // Validate email
+                if (!email.includes('@') || !email.includes('.')) {
+                    alert('Please enter a valid email address');
+                    return;
+                }
+                
+                // Simulate Stripe payment process
+                const listener = listeners.find(l => l.id === selectedListenerId);
+                
+                alert(`Redirecting to secure Stripe checkout for ${listener.name}...\n\nEmail: ${email}\nAmount: $15.00`);
+                
+                // Simulate successful payment
+                setTimeout(() => {
+                    hidePaymentForm();
+                    
+                    // Store caller info for chat room
+                    localStorage.setItem('currentCall', JSON.stringify({
+                        listenerId: selectedListenerId,
+                        listenerName: listener.name,
+                        callerEmail: email,
+                        timestamp: new Date().toISOString()
+                    }));
+                    
+                    // Redirect to waiting room
+                    window.location.href = 'chat-waiting.html';
+                }, 1000);
+            });
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.reload();
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const contactModal = document.getElementById('contactModal');
+            const paymentModal = document.getElementById('paymentModal');
+            
+            if (event.target === contactModal) {
+                hideContactForm();
+            }
+            if (event.target === paymentModal) {
+                hidePaymentForm();
+            }
+        }
+    </script>
 </body>
 </html>

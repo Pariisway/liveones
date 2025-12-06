@@ -3,225 +3,505 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Whisper Chat Live</title>
+    <title>Dashboard - House of Whispers</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/96/000000/earbud-headphones.png">
 </head>
 <body>
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="nav-logo">
-                <i class="fas fa-comment-dots"></i>
-                <span>WhisperChat</span>
+                <i class="fas fa-ear-listen"></i>
+                House of Whispers
             </a>
-            
             <div class="nav-links">
                 <a href="index.html" class="nav-link">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
+                    <i class="fas fa-home"></i> Home
                 </a>
-                <a href="#" class="nav-link" onclick="window.showSection('overview')">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Overview</span>
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
-                <a href="#" class="nav-link" onclick="window.showSection('history')">
-                    <i class="fas fa-history"></i>
-                    <span>History</span>
-                </a>
-                <a href="#" class="nav-link" onclick="window.showSection('earnings')">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>Earnings</span>
-                </a>
-                <a href="#" class="nav-link" onclick="window.showSection('settings')">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-                <button id="logoutBtn" class="btn btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </button>
+                <div class="user-info">
+                    <span class="balance" id="userBalance">$0</span>
+                    <button class="btn btn-logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="dashboard-container">
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
         <div class="dashboard-header">
-            <h1>Whisper Dashboard</h1>
-            <div class="availability-toggle">
+            <div>
+                <h1>Listener Dashboard</h1>
+                <p>Welcome back, <span id="userName">Listener</span>!</p>
+            </div>
+            <div class="availability-toggle" id="availabilityToggle">
                 <span>Available for Calls:</span>
                 <label class="switch">
-                    <input type="checkbox" id="availabilityToggle">
+                    <input type="checkbox" id="availabilitySwitch">
                     <span class="slider"></span>
                 </label>
+                <span id="availabilityStatus" style="color: #e74c3c;">Unavailable</span>
             </div>
         </div>
 
-        <div class="dashboard-content">
-            <!-- Overview Section -->
-            <section id="overview" class="dashboard-section">
+        <!-- Quick Actions Tabs -->
+        <div class="quick-actions" id="quickActions">
+            <h2>Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn" onclick="showSection('overview')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Overview</span>
+                </button>
+                <button class="action-btn" onclick="showSection('history')">
+                    <i class="fas fa-history"></i>
+                    <span>Call History</span>
+                </button>
+                <button class="action-btn" onclick="showSection('earnings')">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span>Earnings</span>
+                </button>
+                <button class="action-btn" onclick="showSection('profile')">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Edit Profile</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overviewSection" class="dashboard-section" style="display: block;">
+            <h2>Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Calls</h3>
+                        <div class="stat-amount" id="totalCalls">0</div>
+                        <small>All time</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Hours Listened</h3>
+                        <div class="stat-amount" id="totalHours">0</div>
+                        <small>All time</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Earnings</h3>
+                        <div class="stat-amount" id="totalEarnings">$0</div>
+                        <small>All time</small>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Rating</h3>
+                        <div class="stat-amount" id="userRating">0.0</div>
+                        <small>Average rating</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Call Alert -->
+            <div id="currentCallAlert" style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; border-radius: 10px; padding: 20px; margin-bottom: 30px; display: none;">
+                <h3 style="color: #4CAF50; margin-bottom: 10px;"><i class="fas fa-phone"></i> Incoming Call!</h3>
+                <p style="margin-bottom: 15px;">A caller is waiting to connect with you. The 5-minute timer will start when you accept.</p>
+                <button class="btn btn-success" onclick="acceptCall()">
+                    <i class="fas fa-phone"></i> Accept Call
+                </button>
+                <button class="btn btn-danger" onclick="declineCall()" style="margin-left: 10px;">
+                    <i class="fas fa-times"></i> Decline
+                </button>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="history-container">
+                <h3>Recent Activity</h3>
+                <div id="recentActivity">
+                    <p style="text-align: center; color: #888; padding: 20px;">No recent activity</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="historySection" class="dashboard-section" style="display: none;">
+            <h2>Call History</h2>
+            <div class="history-container">
+                <div id="callHistory">
+                    <p style="text-align: center; color: #888; padding: 20px;">No call history yet</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Section -->
+        <div id="earningsSection" class="dashboard-section" style="display: none;">
+            <h2>Earnings</h2>
+            <div class="earnings-container">
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
-                            <i class="fas fa-wallet"></i>
+                            <i class="fas fa-calendar"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Current Balance</h3>
-                            <p class="stat-amount" id="profileBalance">$0</p>
-                            <small>Available for withdrawal</small>
+                            <h3>This Month</h3>
+                            <div class="stat-amount" id="monthEarnings">$0</div>
+                            <small>December 2024</small>
                         </div>
                     </div>
-                    
                     <div class="stat-card">
                         <div class="stat-icon">
-                            <i class="fas fa-money-bill"></i>
+                            <i class="fas fa-calendar-alt"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>Total Earnings</h3>
-                            <p class="stat-amount" id="totalEarnings">$0</p>
-                            <small>All time earnings</small>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Total Calls</h3>
-                            <p class="stat-amount" id="totalCalls">0</p>
-                            <small>Calls completed</small>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Rating</h3>
-                            <p class="stat-amount">4.8</p>
-                            <small>Average rating</small>
+                            <h3>Last Month</h3>
+                            <div class="stat-amount" id="lastMonthEarnings">$0</div>
+                            <small>November 2024</small>
                         </div>
                     </div>
                 </div>
                 
-                <div class="quick-actions">
-                    <h2>Quick Actions</h2>
-                    <div class="actions-grid">
-                        <button class="action-btn" onclick="window.location.href='index.html'">
-                            <i class="fas fa-search"></i>
-                            <span>Browse Whispers</span>
-                        </button>
-                        <button class="action-btn" id="withdrawBtn">
-                            <i class="fas fa-dollar-sign"></i>
-                            <span>Withdraw Funds</span>
-                        </button>
-                        <button class="action-btn" onclick="window.showSection('settings')">
-                            <i class="fas fa-user-edit"></i>
-                            <span>Edit Profile</span>
-                        </button>
-                        <button class="action-btn" id="deleteAccountBtn">
-                            <i class="fas fa-trash"></i>
-                            <span>Delete Account</span>
-                        </button>
+                <div style="margin-top: 30px;">
+                    <h3>Withdrawal History</h3>
+                    <div id="withdrawalHistory" style="margin-top: 15px;">
+                        <p style="text-align: center; color: #888; padding: 20px;">No withdrawals yet</p>
                     </div>
                 </div>
-            </section>
-
-            <!-- History Section -->
-            <section id="history" class="dashboard-section" style="display: none;">
-                <h2>Call History</h2>
-                <div class="history-container">
-                    <div id="historyList">
-                        <!-- Call history will be loaded here -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- Earnings Section -->
-            <section id="earnings" class="dashboard-section" style="display: none;">
-                <h2>Earnings</h2>
-                <div class="earnings-container">
-                    <div id="earningsList">
-                        <!-- Earnings will be loaded here -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- Settings Section -->
-            <section id="settings" class="dashboard-section" style="display: none;">
-                <h2>Account Settings</h2>
-                
-                <div class="settings-container">
-                    <!-- Profile View -->
-                    <div id="profileView">
-                        <div class="profile-card">
-                            <div class="profile-header">
-                                <img src="https://via.placeholder.com/100" alt="Profile" class="profile-avatar">
-                                <div class="profile-info">
-                                    <h3 id="profileName">Loading...</h3>
-                                    <p id="profileEmail">Loading...</p>
-                                </div>
-                            </div>
-                            <div class="profile-details">
-                                <div class="detail-item">
-                                    <strong>Bio:</strong>
-                                    <p id="profileBio">Loading...</p>
-                                </div>
-                                <div class="detail-item">
-                                    <strong>Member Since:</strong>
-                                    <p>Just now</p>
-                                </div>
-                            </div>
-                            <button id="editProfileBtn" class="btn btn-primary">
-                                <i class="fas fa-edit"></i> Edit Profile
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Profile Edit Form -->
-                    <div id="profileEdit" style="display: none;">
-                        <div class="profile-form">
-                            <h3>Edit Profile</h3>
-                            <div class="form-group">
-                                <label for="editName">Name</label>
-                                <input type="text" id="editName" class="form-input" placeholder="Your name">
-                            </div>
-                            <div class="form-group">
-                                <label for="editEmail">Email</label>
-                                <input type="email" id="editEmail" class="form-input" placeholder="Your email" disabled>
-                                <small>Email cannot be changed</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="editBio">Bio</label>
-                                <textarea id="editBio" class="form-input" rows="4" placeholder="Tell people about yourself"></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button id="saveProfileBtn" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                                <button id="cancelEditBtn" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Danger Zone -->
-                    <div class="danger-zone">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
-                        <p>These actions are irreversible. Please proceed with caution.</p>
-                        <button id="deleteAccountBtn" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Delete My Account
-                        </button>
-                        <small>This will permanently delete all your data, calls, and earnings.</small>
-                    </div>
-                </div>
-            </section>
+            </div>
         </div>
-    </main>
 
-    <!-- Include Firebase and app scripts -->
-    <script type="module" src="dashboard.js"></script>
+        <!-- Profile Section -->
+        <div id="profileSection" class="dashboard-section" style="display: none;">
+            <h2>Edit Profile</h2>
+            <div class="profile-form">
+                <div class="upload-group">
+                    <label>Profile Picture</label>
+                    <img id="profilePreview" class="upload-preview" src="https://via.placeholder.com/150" alt="Profile Preview">
+                    <input type="file" id="profilePicture" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <label for="profilePicture" class="upload-btn">
+                        <i class="fas fa-upload"></i> Upload New Photo
+                    </label>
+                </div>
+                
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="profileName">Display Name</label>
+                        <input type="text" id="profileName" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileEmail">Email Address</label>
+                        <input type="email" id="profileEmail" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileBio">Bio/Description</label>
+                        <textarea id="profileBio" class="form-input" rows="4" placeholder="Tell callers about yourself and your experience..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profileSpecialties">Specialties</label>
+                        <input type="text" id="profileSpecialties" class="form-input" placeholder="e.g., Anxiety, Relationships, Career">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="showSection('overview')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Load user data from localStorage or create default
+        let userData = JSON.parse(localStorage.getItem('userData')) || {
+            name: currentUser?.name || 'Listener',
+            email: currentUser?.email || '',
+            bio: '',
+            specialties: '',
+            profilePicture: '',
+            calls: 0,
+            hours: 0,
+            earnings: 0,
+            rating: 0.0,
+            availability: false,
+            callHistory: [],
+            earningsHistory: []
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            setupEventListeners();
+            
+            // Check for incoming calls
+            checkForIncomingCalls();
+            
+            // Simulate incoming call check every 30 seconds
+            setInterval(checkForIncomingCalls, 30000);
+        });
+
+        // Load user data
+        function loadUserData() {
+            // Update UI with user data
+            document.getElementById('userName').textContent = userData.name;
+            document.getElementById('userBalance').textContent = `$${userData.earnings}`;
+            
+            // Overview stats
+            document.getElementById('totalCalls').textContent = userData.calls;
+            document.getElementById('totalHours').textContent = userData.hours.toFixed(1);
+            document.getElementById('totalEarnings').textContent = `$${userData.earnings}`;
+            document.getElementById('userRating').textContent = userData.rating.toFixed(1);
+            
+            // Earnings
+            document.getElementById('monthEarnings').textContent = `$${userData.earnings}`;
+            document.getElementById('lastMonthEarnings').textContent = '$0';
+            
+            // Availability toggle
+            const availabilitySwitch = document.getElementById('availabilitySwitch');
+            const availabilityToggle = document.getElementById('availabilityToggle');
+            const availabilityStatus = document.getElementById('availabilityStatus');
+            
+            availabilitySwitch.checked = userData.availability;
+            
+            if (userData.availability) {
+                availabilityToggle.classList.add('available');
+                availabilityToggle.classList.remove('unavailable');
+                availabilityStatus.textContent = 'Available';
+                availabilityStatus.style.color = '#4CAF50';
+            } else {
+                availabilityToggle.classList.add('unavailable');
+                availabilityToggle.classList.remove('available');
+                availabilityStatus.textContent = 'Unavailable';
+                availabilityStatus.style.color = '#e74c3c';
+            }
+            
+            // Profile form
+            document.getElementById('profileName').value = userData.name;
+            document.getElementById('profileEmail').value = userData.email;
+            document.getElementById('profileBio').value = userData.bio;
+            document.getElementById('profileSpecialties').value = userData.specialties;
+            
+            if (userData.profilePicture) {
+                document.getElementById('profilePreview').src = userData.profilePicture;
+            }
+            
+            // Load call history
+            renderCallHistory();
+            
+            // Load recent activity
+            renderRecentActivity();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Availability toggle
+            document.getElementById('availabilitySwitch').addEventListener('change', function() {
+                userData.availability = this.checked;
+                saveUserData();
+                loadUserData();
+                
+                if (this.checked) {
+                    alert('You are now available for calls! Callers will see you as online.');
+                } else {
+                    alert('You are now unavailable. Callers will not see you in the list.');
+                }
+            });
+            
+            // Profile form submission
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                userData.name = document.getElementById('profileName').value;
+                userData.email = document.getElementById('profileEmail').value;
+                userData.bio = document.getElementById('profileBio').value;
+                userData.specialties = document.getElementById('profileSpecialties').value;
+                
+                saveUserData();
+                loadUserData();
+                
+                alert('Profile updated successfully!');
+                showSection('overview');
+            });
+            
+            // Profile picture upload
+            document.getElementById('profilePreview').addEventListener('click', function() {
+                document.getElementById('profilePicture').click();
+            });
+        }
+
+        // Show section
+        function showSection(section) {
+            // Hide all sections
+            document.getElementById('overviewSection').style.display = 'none';
+            document.getElementById('historySection').style.display = 'none';
+            document.getElementById('earningsSection').style.display = 'none';
+            document.getElementById('profileSection').style.display = 'none';
+            
+            // Show selected section
+            document.getElementById(section + 'Section').style.display = 'block';
+            
+            // Update active button (optional visual feedback)
+            const actionBtns = document.querySelectorAll('.action-btn');
+            actionBtns.forEach(btn => btn.style.opacity = '0.7');
+            
+            // Find and highlight active button
+            const activeBtn = Array.from(actionBtns).find(btn => 
+                btn.querySelector('span').textContent.toLowerCase().includes(section)
+            );
+            if (activeBtn) {
+                activeBtn.style.opacity = '1';
+                activeBtn.style.borderColor = 'var(--primary-color)';
+            }
+        }
+
+        // Save user data
+        function saveUserData() {
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+
+        // Render call history
+        function renderCallHistory() {
+            const callHistoryDiv = document.getElementById('callHistory');
+            
+            if (userData.callHistory.length === 0) {
+                callHistoryDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No call history yet</p>';
+                return;
+            }
+            
+            callHistoryDiv.innerHTML = userData.callHistory.map(call => `
+                <div style="border-bottom: 1px solid #333; padding: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${call.callerEmail}</strong>
+                            <p style="margin: 5px 0; color: #aaa;">${new Date(call.timestamp).toLocaleString()}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #4CAF50; font-weight: bold;">$${call.amount}</div>
+                            <div style="color: #888; font-size: 0.9em;">${call.duration} min</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render recent activity
+        function renderRecentActivity() {
+            const recentActivityDiv = document.getElementById('recentActivity');
+            
+            if (userData.callHistory.length === 0) {
+                recentActivityDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No recent activity</p>';
+                return;
+            }
+            
+            // Show last 3 calls
+            const recentCalls = userData.callHistory.slice(-3).reverse();
+            recentActivityDiv.innerHTML = recentCalls.map(call => `
+                <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
+                    <div style="background: rgba(108, 99, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-phone" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>Call with ${call.callerEmail.split('@')[0]}</strong>
+                            <span style="color: #4CAF50; font-weight: bold;">+$${call.amount}</span>
+                        </div>
+                        <p style="margin: 5px 0 0 0; color: #aaa; font-size: 0.9em;">
+                            ${new Date(call.timestamp).toLocaleDateString()} • ${call.duration} minutes
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Check for incoming calls
+        function checkForIncomingCalls() {
+            // Check if there's a waiting call in localStorage
+            const currentCall = JSON.parse(localStorage.getItem('currentCall'));
+            
+            if (currentCall && currentCall.listenerId === currentUser?.id && userData.availability) {
+                document.getElementById('currentCallAlert').style.display = 'block';
+            } else {
+                document.getElementById('currentCallAlert').style.display = 'none';
+            }
+        }
+
+        // Accept incoming call
+        function acceptCall() {
+            const currentCall = JSON.parse(localStorage.getItem('currentCall'));
+            
+            if (currentCall) {
+                // Start the call - redirect to chat room
+                localStorage.setItem('activeCall', JSON.stringify({
+                    ...currentCall,
+                    startTime: new Date().toISOString(),
+                    listenerId: currentUser.id,
+                    listenerName: userData.name
+                }));
+                
+                // Remove the waiting call
+                localStorage.removeItem('currentCall');
+                
+                // Redirect to chat room
+                window.location.href = 'chat-active.html';
+            }
+        }
+
+        // Decline incoming call
+        function declineCall() {
+            localStorage.removeItem('currentCall');
+            document.getElementById('currentCallAlert').style.display = 'none';
+            alert('Call declined. The caller has been notified.');
+        }
+
+        // Preview uploaded image
+        function previewImage(event) {
+            const input = event.target;
+            const preview = document.getElementById('profilePreview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    userData.profilePicture = e.target.result;
+                    saveUserData();
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>

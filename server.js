@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Stripe configuration
-const stripe = Stripe('sk_test_51Q8tL2P7Vbu8koyh9F8ZB0w1q2R4Y7v6H1T2z3D4E5F6G7H8I9J0K1L2M3N4'); // Replace with your secret key
+const stripe = Stripe('sk_test_51SPYHwRvETRK3Zx7lkX8AQDofsjmMVJGoz6KJfRFQDfMoUOIZ4ehFHHjxPIbFXrHgum6avy8dyvh9UnvHy65ksDW00PIUHc1Pu'); // Replace with your secret key
 
 // Create payment intent
 app.post('/create-payment-intent', async (req, res) => {

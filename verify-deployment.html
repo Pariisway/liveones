@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>House of Whispers - Deployment Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0f0c29; color: white; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .check { margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; }
+        .success { border-left: 5px solid #4CAF50; }
+        .error { border-left: 5px solid #e74c3c; }
+        .warning { border-left: 5px solid #f39c12; }
+        a { color: #6c63ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>House of Whispers - Deployment Verification</h1>
+        <p>Testing date: <span id="date"></span></p>
+        
+        <div class="check success">
+            <h3>✅ Main Site</h3>
+            <p><a href="index.html" target="_blank">Homepage</a> - Should load with proper styling</p>
+        </div>
+        
+        <div class="check success">
+            <h3>✅ Authentication</h3>
+            <p><a href="test-auth.html" target="_blank">Test Authentication</a> - Verify login system works</p>
+        </div>
+        
+        <div class="check warning">
+            <h3>⚠️ Voice Chat Setup Needed</h3>
+            <p><a href="test-agora.html" target="_blank">Test Agora</a> - Requires Agora App ID</p>
+            <p>Get your App ID from: <a href="https://www.agora.io/" target="_blank">agora.io</a></p>
+        </div>
+        
+        <div class="check warning">
+            <h3>⚠️ Payment Setup Needed</h3>
+            <p>Payment system requires Stripe API keys</p>
+            <p>Get your keys from: <a href="https://stripe.com/" target="_blank">stripe.com</a></p>
+        </div>
+        
+        <div class="check success">
+            <h3>✅ Dashboard</h3>
+            <p><a href="dashboard.html" target="_blank">Listener Dashboard</a> - Requires login</p>
+        </div>
+        
+        <div class="check success">
+            <h3>✅ Admin Panel</h3>
+            <p><a href="admin.html" target="_blank">Admin Dashboard</a> - Email: ifanifwasafifth@gmail.com</p>
+        </div>
+        
+        <div class="check success">
+            <h3>✅ Setup Instructions</h3>
+            <p><a href="SETUP_INSTRUCTIONS.md" target="_blank">Setup Guide</a> - Complete integration instructions</p>
+        </div>
+        
+        <h2>Quick Test Instructions:</h2>
+        <ol>
+            <li>Click "Become a Listener" on homepage to register</li>
+            <li>Login with your new account</li>
+            <li>Access the Dashboard</li>
+            <li>Toggle availability to "Available" (green)</li>
+            <li>Open homepage in another browser/device</li>
+            <li>Choose a listener and click "Call Now"</li>
+            <li>Test the payment flow (simulated for now)</li>
+        </ol>
+        
+        <h2>Next Steps for Full Functionality:</h2>
+        <ol>
+            <li>Sign up at <a href="https://www.agora.io/" target="_blank">Agora.io</a> for voice chat</li>
+            <li>Sign up at <a href="https://stripe.com/" target="_blank">Stripe.com</a> for payments</li>
+            <li>Update API keys in the code</li>
+            <li>Test with two devices</li>
+        </ol>
+    </div>
+    
+    <script>
+        document.getElementById('date').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>

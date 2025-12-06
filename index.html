@@ -40,14 +40,14 @@
     <section class="hero">
         <div class="hero-content">
             <h1>House of Whispers</h1>
-            <p>Anonymous emotional support from verified listeners. Speak your heart, find peace.</p>
+            <p>Anonymous emotional support from verified whispers. Speak your heart, find peace.</p>
         </div>
     </section>
 
-    <!-- Available Listeners Section -->
+    <!-- Available Whispers Section -->
     <section class="listeners-section" id="listenersSection">
-        <h2>Available Listeners Right Now</h2>
-        <p>Choose a listener who resonates with you</p>
+        <h2>Available Whispers Right Now</h2>
+        <p>Choose a whisper who resonates with you</p>
         <div class="listeners-list">
             <div class="listeners-grid" id="listenersGrid">
                 <!-- Will be populated by JavaScript -->
@@ -63,8 +63,8 @@
                 <div class="step-icon">
                     <i class="fas fa-search"></i>
                 </div>
-                <h3>Choose a Listener</h3>
-                <p>Browse our verified listeners and choose one that resonates with you.</p>
+                <h3>Choose a Whisper</h3>
+                <p>Browse our verified whispers and choose one that resonates with you.</p>
             </div>
             <div class="step">
                 <div class="step-icon">
@@ -78,7 +78,7 @@
                     <i class="fas fa-headset"></i>
                 </div>
                 <h3>Get Support</h3>
-                <p>Connect instantly with your listener for a 5-minute confidential session.</p>
+                <p>Connect instantly with your whisper for a 5-minute confidential session.</p>
             </div>
         </div>
     </section>
@@ -130,7 +130,7 @@
     <!-- Payment Modal -->
     <div class="auth-modal" id="paymentModal" style="display: none;">
         <div class="auth-modal-content">
-            <h2>Connect with a Listener</h2>
+            <h2>Connect with a Whisper</h2>
             <div class="payment-form">
                 <div class="form-group">
                     <label for="callerEmail">Your Email Address</label>
@@ -139,7 +139,7 @@
                 <div class="form-group">
                     <label>Session Details</label>
                     <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                        <p><strong>Listener:</strong> <span id="selectedListenerName"></span></p>
+                        <p><strong>Whisper:</strong> <span id="selectedListenerName"></span></p>
                         <p><strong>Duration:</strong> 5 minutes</p>
                         <p><strong>Cost:</strong> $15.00</p>
                     </div>
@@ -193,7 +193,7 @@
         
         // Global variables
         let selectedListenerId = null;
-        let availableListeners = [];
+        let availableWhispers = [];
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', async function() {
@@ -206,14 +206,14 @@
             // Update auth buttons based on current state
             updateAuthButtons();
             
-            // Load listeners from Firebase
-            await loadAvailableListeners();
+            // Load whispers from Firebase
+            await loadAvailableWhispers();
             
             // Setup event listeners
             setupEventListeners();
             
-            // Refresh listeners every 30 seconds
-            setInterval(loadAvailableListeners, 30000);
+            // Refresh whispers every 30 seconds
+            setInterval(loadAvailableWhispers, 30000);
         });
 
         // Update authentication buttons
@@ -239,7 +239,7 @@
                         <i class="fas fa-sign-in-alt"></i> Login
                     </button>
                     <button class="btn btn-primary" onclick="showAuthModal('signup')">
-                        <i class="fas fa-user-plus"></i> Become a Listener
+                        <i class="fas fa-user-plus"></i> Become a Whisper
                     </button>
                 `;
             }
@@ -260,10 +260,10 @@
                     window.currentUser = {
                         uid: uid,
                         email: firebaseAuth.currentUser.email,
-                        name: firebaseAuth.currentUser.displayName || 'Listener',
+                        name: firebaseAuth.currentUser.displayName || 'Whisper',
                         balance: 0,
                         isListener: true,
-                        availability: false,
+                        availability: false, // Start as unavailable
                         calls: 0,
                         hours: 0,
                         earnings: 0,
@@ -278,27 +278,35 @@
             }
         }
 
-        // Load available listeners from Firebase
-        async function loadAvailableListeners() {
+        // Load available whispers from Firebase
+        async function loadAvailableWhispers() {
             try {
-                const listenersRef = firebaseDatabase.ref('users');
-                const snapshot = await listenersRef.once('value');
+                const whispersRef = firebaseDatabase.ref('users');
+                const snapshot = await whispersRef.once('value');
                 
-                availableListeners = [];
+                availableWhispers = [];
+                const now = Date.now();
                 
                 snapshot.forEach((childSnapshot) => {
                     const user = childSnapshot.val();
+                    // Check if user is a whisper, available, and active within last 5 minutes
                     if (user.isListener && user.availability === true) {
-                        availableListeners.push({
-                            id: childSnapshot.key,
-                            ...user
-                        });
+                        const lastActive = user.lastActive || 0;
+                        const fiveMinutesAgo = now - (5 * 60 * 1000);
+                        
+                        // Only show whispers active in last 5 minutes
+                        if (lastActive > fiveMinutesAgo) {
+                            availableWhispers.push({
+                                id: childSnapshot.key,
+                                ...user
+                            });
+                        }
                     }
                 });
                 
-                renderListeners();
+                renderWhispers();
             } catch (error) {
-                console.error('Error loading listeners:', error);
+                console.error('Error loading whispers:', error);
             }
         }
 
@@ -334,38 +342,41 @@
             }
         }
 
-        // Render listeners grid
-        function renderListeners() {
-            const listenersGrid = document.getElementById('listenersGrid');
+        // Render whispers grid
+        function renderWhispers() {
+            const whispersGrid = document.getElementById('listenersGrid');
             
-            if (availableListeners.length === 0) {
-                listenersGrid.innerHTML = `
+            if (availableWhispers.length === 0) {
+                whispersGrid.innerHTML = `
                     <div style="text-align: center; padding: 40px; width: 100%;">
                         <i class="fas fa-users" style="font-size: 3rem; color: rgba(255,255,255,0.3); margin-bottom: 20px;"></i>
-                        <h3>No Listeners Available</h3>
+                        <h3>No Whispers Available</h3>
                         <p>All our whispers are currently supporting others. Check back soon!</p>
+                        <button class="btn btn-primary" onclick="showAuthModal('signup')" style="margin-top: 20px;">
+                            <i class="fas fa-user-plus"></i> Become a Whisper
+                        </button>
                     </div>
                 `;
                 return;
             }
             
-            listenersGrid.innerHTML = availableListeners.map(listener => `
-                <div class="listener-card" data-listener-id="${listener.id}">
-                    <div class="listener-avatar" style="background: ${listener.profilePicture ? 'transparent' : 'rgba(108, 99, 255, 0.2)'};">
-                        ${listener.profilePicture ? 
-                            `<img src="${listener.profilePicture}" alt="${listener.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+            whispersGrid.innerHTML = availableWhispers.map(whisper => `
+                <div class="listener-card" data-listener-id="${whisper.id}">
+                    <div class="listener-avatar" style="background: ${whisper.profilePicture ? 'transparent' : 'rgba(108, 99, 255, 0.2)'};">
+                        ${whisper.profilePicture ? 
+                            `<img src="${whisper.profilePicture}" alt="${whisper.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
                             `<i class="fas fa-user"></i>`
                         }
                     </div>
                     <div class="listener-info">
-                        <h4>${listener.name || 'Listener'} <span style="color: #4CAF50; font-size: 0.8em;">● Available Now</span></h4>
-                        <p class="listener-bio">${listener.bio || 'Certified whisper providing emotional support.'}</p>
-                        ${listener.specialties ? `<p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-bottom: 10px;"><i class="fas fa-star"></i> Specializes in: ${listener.specialties}</p>` : ''}
+                        <h4>${whisper.name || 'Whisper'} <span style="color: #4CAF50; font-size: 0.8em;">● Available Now</span></h4>
+                        <p class="listener-bio">${whisper.bio || 'Certified whisper providing emotional support.'}</p>
+                        ${whisper.specialties ? `<p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-bottom: 10px;"><i class="fas fa-star"></i> Specializes in: ${whisper.specialties}</p>` : ''}
                         <div class="listener-stats">
-                            <span><i class="fas fa-star"></i> ${listener.rating ? listener.rating.toFixed(1) : 'New'}</span>
-                            <span><i class="fas fa-phone"></i> ${listener.calls || 0} calls</span>
+                            <span><i class="fas fa-star"></i> ${whisper.rating ? whisper.rating.toFixed(1) : 'New'}</span>
+                            <span><i class="fas fa-phone"></i> ${whisper.calls || 0} calls</span>
                         </div>
-                        <button class="btn btn-primary call-btn" onclick="showPaymentForm('${listener.id}')">
+                        <button class="btn btn-primary call-btn" onclick="showPaymentForm('${whisper.id}')">
                             <i class="fas fa-phone"></i> Call Now - $15
                         </button>
                     </div>
@@ -374,12 +385,12 @@
         }
 
         // Show payment form
-        function showPaymentForm(listenerId) {
-            selectedListenerId = listenerId;
-            const listener = availableListeners.find(l => l.id === listenerId);
+        function showPaymentForm(whisperId) {
+            selectedListenerId = whisperId;
+            const whisper = availableWhispers.find(l => l.id === whisperId);
             
-            if (listener) {
-                document.getElementById('selectedListenerName').textContent = listener.name || 'Listener';
+            if (whisper) {
+                document.getElementById('selectedListenerName').textContent = whisper.name || 'Whisper';
                 document.getElementById('paymentModal').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }
@@ -476,7 +487,8 @@
                         rating: 0,
                         bio: 'Certified whisper providing emotional support.',
                         specialties: '',
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        lastActive: firebase.database.ServerValue.TIMESTAMP
                     };
                     
                     await firebaseDatabase.ref(`users/${user.uid}`).set(userData);
@@ -513,15 +525,15 @@
                     return;
                 }
                 
-                // Get listener info
-                const listener = availableListeners.find(l => l.id === selectedListenerId);
+                // Get whisper info
+                const whisper = availableWhispers.find(l => l.id === selectedListenerId);
                 
                 // Create call in Firebase
                 const callId = Date.now().toString();
                 const callData = {
                     id: callId,
                     listenerId: selectedListenerId,
-                    listenerName: listener.name || 'Listener',
+                    listenerName: whisper.name || 'Whisper',
                     callerEmail: email,
                     amount: 15.00,
                     status: 'waiting',
@@ -533,11 +545,11 @@
                     // Save call to Firebase
                     await firebaseDatabase.ref(`calls/${callId}`).set(callData);
                     
-                    // Add to listener's waiting calls
+                    // Add to whisper's waiting calls
                     await firebaseDatabase.ref(`users/${selectedListenerId}/waitingCalls/${callId}`).set(true);
                     
                     // Simulate Stripe payment process
-                    alert(`Redirecting to secure Stripe checkout for ${listener.name}...\n\nEmail: ${email}\nAmount: $15.00`);
+                    alert(`Redirecting to secure Stripe checkout for ${whisper.name}...\n\nEmail: ${email}\nAmount: $15.00`);
                     
                     // For now, simulate successful payment
                     await firebaseDatabase.ref(`calls/${callId}/paymentStatus`).set('paid');
@@ -593,18 +605,6 @@
                 hidePaymentForm();
             }
         }
-        
-        // Handle page unload (closing browser/tab)
-        window.addEventListener('beforeunload', async function() {
-            const user = firebaseAuth.currentUser;
-            if (user) {
-                try {
-                    await firebaseDatabase.ref(`users/${user.uid}/availability`).set(false);
-                } catch (error) {
-                    console.error('Error setting offline status:', error);
-                }
-            }
-        });
     </script>
 </body>
 </html>

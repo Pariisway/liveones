@@ -214,6 +214,7 @@
         let userData = null;
         let waitingCalls = [];
         let activeCallId = null;
+        let availabilityListener = null;
         
         // Check if user is logged in
         firebaseAuth.onAuthStateChanged(async (user) => {
@@ -244,6 +245,9 @@
             // Auto-check every 10 seconds
             setInterval(checkActiveCall, 10000);
             setInterval(loadWaitingCalls, 10000);
+            
+            // Keep user active
+            startActivityPing();
         }
         
         // Load user data
@@ -275,20 +279,26 @@
             document.getElementById('totalEarnings').textContent = `$${userData.earnings?.toFixed(2) || '0.00'}`;
             document.getElementById('userRating').textContent = userData.rating?.toFixed(1) || '0.0';
             
-            // Availability toggle
+            // Availability toggle - FIXED VERSION
             const availabilitySwitch = document.getElementById('availabilitySwitch');
             const availabilityToggle = document.getElementById('availabilityToggle');
             
-            availabilitySwitch.checked = userData.availability || false;
+            // Disable the switch while we update
+            availabilitySwitch.disabled = false;
             
-            if (userData.availability) {
+            // Set the checkbox state from Firebase data
+            availabilitySwitch.checked = userData.availability === true;
+            
+            if (userData.availability === true) {
                 availabilityToggle.classList.add('available');
                 availabilityToggle.classList.remove('unavailable');
                 document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-circle" style="color: #4CAF50;"></i> Available';
+                document.getElementById('availabilityStatus').style.color = '#4CAF50';
             } else {
                 availabilityToggle.classList.add('unavailable');
                 availabilityToggle.classList.remove('available');
                 document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-circle" style="color: #e74c3c;"></i> Offline';
+                document.getElementById('availabilityStatus').style.color = '#e74c3c';
             }
             
             // Profile form
@@ -303,21 +313,55 @@
         
         // Setup event listeners
         function setupEventListeners() {
-            // Availability toggle
+            // Availability toggle - FIXED
             document.getElementById('availabilitySwitch').addEventListener('change', async function() {
+                const isAvailable = this.checked;
+                
+                // Show loading state
+                const originalText = document.getElementById('availabilityStatus').innerHTML;
+                document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+                this.disabled = true;
+                
                 try {
-                    await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(this.checked);
+                    // Update availability in Firebase
+                    await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(isAvailable);
                     
-                    if (this.checked) {
-                        alert('You are now available for calls! Your profile will appear on the homepage.');
+                    // Also update lastActive timestamp
+                    await firebaseDatabase.ref(`users/${currentUser.uid}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
+                    
+                    // Update local data
+                    userData.availability = isAvailable;
+                    
+                    // Update UI immediately
+                    const availabilityToggle = document.getElementById('availabilityToggle');
+                    const availabilityStatus = document.getElementById('availabilityStatus');
+                    
+                    if (isAvailable) {
+                        availabilityToggle.classList.add('available');
+                        availabilityToggle.classList.remove('unavailable');
+                        availabilityStatus.innerHTML = '<i class="fas fa-circle" style="color: #4CAF50;"></i> Available';
+                        availabilityStatus.style.color = '#4CAF50';
+                        
+                        // Show success message
+                        showToast('You are now available for calls!', 'success');
                     } else {
-                        alert('You are now offline. Callers will not see you in the list.');
+                        availabilityToggle.classList.add('unavailable');
+                        availabilityToggle.classList.remove('available');
+                        availabilityStatus.innerHTML = '<i class="fas fa-circle" style="color: #e74c3c;"></i> Offline';
+                        availabilityStatus.style.color = '#e74c3c';
+                        
+                        // Show success message
+                        showToast('You are now offline', 'info');
                     }
                     
-                    loadUserData();
                 } catch (error) {
                     console.error('Error updating availability:', error);
-                    alert('Error updating availability');
+                    showToast('Error updating availability', 'error');
+                    // Revert toggle
+                    this.checked = !isAvailable;
+                    updateUI();
+                } finally {
+                    this.disabled = false;
                 }
             });
             
@@ -334,12 +378,12 @@
                     
                     await firebaseDatabase.ref(`users/${currentUser.uid}`).update(updates);
                     
-                    alert('Profile updated successfully!');
+                    showToast('Profile updated successfully!', 'success');
                     showSection('overview');
                     loadUserData();
                 } catch (error) {
                     console.error('Error updating profile:', error);
-                    alert('Error updating profile');
+                    showToast('Error updating profile', 'error');
                 }
             });
         }
@@ -367,11 +411,11 @@
                 // Update preview
                 document.getElementById('profilePreview').src = downloadURL;
                 
-                alert('Profile picture updated successfully!');
+                showToast('Profile picture updated successfully!', 'success');
                 loadUserData();
             } catch (error) {
                 console.error('Error uploading profile picture:', error);
-                alert('Error uploading profile picture');
+                showToast('Error uploading profile picture', 'error');
                 document.getElementById('profilePreview').src = 'https://via.placeholder.com/150';
             }
         }
@@ -400,6 +444,9 @@
                                     id: callId,
                                     ...call
                                 });
+                            } else {
+                                // Remove calls that are no longer waiting
+                                await firebaseDatabase.ref(`users/${currentUser.uid}/waitingCalls/${callId}`).remove();
                             }
                         }
                     }
@@ -429,7 +476,7 @@
                         <div>
                             <strong>${call.callerEmail}</strong>
                             <p style="margin: 5px 0; color: #aaa;">Waiting since: ${new Date(call.createdAt).toLocaleTimeString()}</p>
-                            <p style="margin: 5px 0; color: #4CAF50; font-weight: bold;">$${call.amount.toFixed(2)}</p>
+                            <p style="margin: 5px 0; color: #4CAF50; font-weight: bold;">$${call.amount?.toFixed(2) || '15.00'}</p>
                         </div>
                         <div>
                             <button class="btn btn-success" onclick="acceptCall('${call.id}')">
@@ -480,7 +527,7 @@
                                 <p style="margin: 5px 0; color: #aaa;">
                                     ${new Date(call.completedAt || call.createdAt).toLocaleString()}
                                 </p>
-                                <p style="margin: 5px 0; color: #4CAF50; font-weight: bold;">+$${call.amount?.toFixed(2) || '0.00'}</p>
+                                <p style="margin: 5px 0; color: #4CAF50; font-weight: bold;">+$${call.amount?.toFixed(2) || '15.00'}</p>
                             </div>
                             <div style="text-align: right;">
                                 <div style="color: #888; font-size: 0.9em;">${call.duration || 5} minutes</div>
@@ -510,11 +557,20 @@
                 activeCallId = callId;
                 localStorage.setItem('activeCallId', callId);
                 
+                // Set user as unavailable during call
+                await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(false);
+                document.getElementById('availabilitySwitch').checked = false;
+                updateUI();
+                
                 // Redirect to chat room
-                window.location.href = 'chat-active.html';
+                showToast('Call accepted! Redirecting to chat...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'chat-active.html';
+                }, 1000);
+                
             } catch (error) {
                 console.error('Error accepting call:', error);
-                alert('Error accepting call');
+                showToast('Error accepting call', 'error');
             }
         }
         
@@ -532,11 +588,11 @@
                 // Remove from waiting calls
                 await firebaseDatabase.ref(`users/${currentUser.uid}/waitingCalls/${callId}`).remove();
                 
-                alert('Call declined. The caller will be notified and refunded.');
+                showToast('Call declined. The caller has been notified and refunded.', 'info');
                 loadWaitingCalls();
             } catch (error) {
                 console.error('Error declining call:', error);
-                alert('Error declining call');
+                showToast('Error declining call', 'error');
             }
         }
         
@@ -593,11 +649,11 @@
                     
                     localStorage.removeItem('activeCallId');
                     document.getElementById('activeCallSection').style.display = 'none';
-                    alert('Call ended.');
+                    showToast('Call ended.', 'info');
                 }
             } catch (error) {
                 console.error('Error ending call:', error);
-                alert('Error ending call');
+                showToast('Error ending call', 'error');
             }
         }
         
@@ -608,13 +664,27 @@
                 loadWaitingCalls();
             });
             
-            // Listen for user data updates
+            // Listen for user data updates (including availability)
             firebaseDatabase.ref(`users/${currentUser.uid}`).on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     userData = snapshot.val();
                     updateUI();
                 }
             });
+        }
+        
+        // Start activity ping to keep user active
+        function startActivityPing() {
+            // Update lastActive every 30 seconds
+            setInterval(async () => {
+                if (currentUser && userData?.availability === true) {
+                    try {
+                        await firebaseDatabase.ref(`users/${currentUser.uid}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
+                    } catch (error) {
+                        console.error('Error updating lastActive:', error);
+                    }
+                }
+            }, 30000);
         }
         
         // Show section
@@ -627,7 +697,70 @@
             
             // Show selected section
             document.getElementById(section + 'Section').style.display = 'block';
+            
+            // Load data for the section
+            if (section === 'waiting') {
+                loadWaitingCalls();
+            } else if (section === 'completed') {
+                loadCompletedCalls();
+            }
         }
+        
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#e74c3c' : '#2196F3'};
+                color: white;
+                border-radius: 5px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add CSS for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
         
         // Logout
         async function logout() {
@@ -641,21 +774,25 @@
                 // Clear local storage
                 localStorage.clear();
                 
-                alert('Logged out successfully!');
-                window.location.href = 'index.html';
+                showToast('Logged out successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
             } catch (error) {
                 console.error('Logout error:', error);
-                alert('Error logging out');
+                showToast('Error logging out', 'error');
             }
         }
         
-        // Handle page unload
-        window.addEventListener('beforeunload', async function() {
-            if (currentUser) {
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', async () => {
+            if (document.hidden && currentUser) {
+                // Page is hidden (tab switched, minimized, etc.)
+                // We don't set availability to false immediately, but we can update lastActive
                 try {
-                    await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(false);
+                    await firebaseDatabase.ref(`users/${currentUser.uid}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
                 } catch (error) {
-                    console.error('Error setting offline status:', error);
+                    console.error('Error updating lastActive on visibility change:', error);
                 }
             }
         });

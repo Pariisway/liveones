@@ -1,7 +1,7 @@
 // Agora Chat Integration for House of Whispers
 class AgoraChatManager {
     constructor() {
-        this.appId = 'YOUR_AGORA_APP_ID'; // Replace with your Agora App ID
+        this.appId = '966c8e41da614722a88d4372c3d95dba'; // Replace with your Agora App ID
         this.channel = null;
         this.client = null;
         this.localAudioTrack = null;

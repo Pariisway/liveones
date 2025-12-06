@@ -47,7 +47,7 @@
                     <input type="checkbox" id="availabilitySwitch">
                     <span class="slider"></span>
                 </label>
-                <span id="availabilityStatus" style="color: #e74c3c;">Unavailable</span>
+                <span id="availabilityStatus" style="color: #e74c3c;">Offline</span>
             </div>
         </div>
 
@@ -198,6 +198,9 @@
                     <label for="profilePicture" class="upload-btn">
                         <i class="fas fa-upload"></i> Upload New Photo
                     </label>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 10px;">
+                        Upload a clear photo of yourself. This helps callers connect with you.
+                    </p>
                 </div>
                 
                 <form id="profileForm">
@@ -209,16 +212,25 @@
                     <div class="form-group">
                         <label for="profileEmail">Email Address</label>
                         <input type="email" id="profileEmail" class="form-input" required>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 5px;">
+                            This email will be used for account notifications.
+                        </p>
                     </div>
                     
                     <div class="form-group">
                         <label for="profileBio">Bio/Description</label>
                         <textarea id="profileBio" class="form-input" rows="4" placeholder="Tell callers about yourself and your experience..."></textarea>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 5px;">
+                            This will be shown to potential callers on the homepage.
+                        </p>
                     </div>
                     
                     <div class="form-group">
                         <label for="profileSpecialties">Specialties</label>
-                        <input type="text" id="profileSpecialties" class="form-input" placeholder="e.g., Anxiety, Relationships, Career">
+                        <input type="text" id="profileSpecialties" class="form-input" placeholder="e.g., Anxiety, Relationships, Career, Stress">
+                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 5px;">
+                            Separate with commas. Helps callers find the right listener.
+                        </p>
                     </div>
                     
                     <div class="form-actions">
@@ -226,6 +238,17 @@
                         <button type="button" class="btn btn-secondary" onclick="showSection('overview')">Cancel</button>
                     </div>
                 </form>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <h3>Profile Visibility</h3>
+                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 15px;">
+                        Your profile will appear on the homepage when you're available for calls.
+                        Make sure your bio and specialties accurately reflect what you offer.
+                    </p>
+                    <button class="btn btn-outline" onclick="viewMyProfile()">
+                        <i class="fas fa-eye"></i> View My Profile on Homepage
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -238,21 +261,27 @@
             window.location.href = 'index.html';
         }
 
-        // Load user data from localStorage or create default
-        let userData = JSON.parse(localStorage.getItem('userData')) || {
-            name: currentUser?.name || 'Listener',
-            email: currentUser?.email || '',
-            bio: '',
-            specialties: '',
-            profilePicture: '',
-            calls: 0,
-            hours: 0,
-            earnings: 0,
-            rating: 0.0,
-            availability: false,
-            callHistory: [],
-            earningsHistory: []
-        };
+        // Load user data
+        let userData = JSON.parse(localStorage.getItem('userData')) || {};
+        if (!userData[currentUser.id]) {
+            userData[currentUser.id] = {
+                name: currentUser.name,
+                email: currentUser.email,
+                bio: 'Certified listener providing emotional support.',
+                specialties: '',
+                profilePicture: '',
+                calls: 0,
+                hours: 0,
+                earnings: 0,
+                rating: 0.0,
+                availability: false,
+                callHistory: [],
+                earningsHistory: []
+            };
+            localStorage.setItem('userData', JSON.stringify(userData));
+        }
+        
+        const myData = userData[currentUser.id];
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -268,47 +297,57 @@
 
         // Load user data
         function loadUserData() {
+            // Refresh data from localStorage
+            const freshData = JSON.parse(localStorage.getItem('userData')) || {};
+            if (freshData[currentUser.id]) {
+                Object.assign(myData, freshData[currentUser.id]);
+            }
+            
             // Update UI with user data
-            document.getElementById('userName').textContent = userData.name;
-            document.getElementById('userBalance').textContent = `$${userData.earnings}`;
+            document.getElementById('userName').textContent = myData.name || currentUser.name;
+            document.getElementById('userBalance').textContent = `$${myData.earnings.toFixed(2)}`;
             
             // Overview stats
-            document.getElementById('totalCalls').textContent = userData.calls;
-            document.getElementById('totalHours').textContent = userData.hours.toFixed(1);
-            document.getElementById('totalEarnings').textContent = `$${userData.earnings}`;
-            document.getElementById('userRating').textContent = userData.rating.toFixed(1);
+            document.getElementById('totalCalls').textContent = myData.calls;
+            document.getElementById('totalHours').textContent = myData.hours.toFixed(1);
+            document.getElementById('totalEarnings').textContent = `$${myData.earnings.toFixed(2)}`;
+            document.getElementById('userRating').textContent = myData.rating.toFixed(1);
             
             // Earnings
-            document.getElementById('monthEarnings').textContent = `$${userData.earnings}`;
-            document.getElementById('lastMonthEarnings').textContent = '$0';
+            document.getElementById('monthEarnings').textContent = `$${myData.earnings.toFixed(2)}`;
+            document.getElementById('lastMonthEarnings').textContent = '$0.00';
             
             // Availability toggle
             const availabilitySwitch = document.getElementById('availabilitySwitch');
             const availabilityToggle = document.getElementById('availabilityToggle');
             const availabilityStatus = document.getElementById('availabilityStatus');
             
-            availabilitySwitch.checked = userData.availability;
+            availabilitySwitch.checked = myData.availability;
             
-            if (userData.availability) {
+            if (myData.availability) {
                 availabilityToggle.classList.add('available');
                 availabilityToggle.classList.remove('unavailable');
                 availabilityStatus.textContent = 'Available';
                 availabilityStatus.style.color = '#4CAF50';
+                document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-circle" style="color: #4CAF50;"></i> Available';
             } else {
                 availabilityToggle.classList.add('unavailable');
                 availabilityToggle.classList.remove('available');
-                availabilityStatus.textContent = 'Unavailable';
+                availabilityStatus.textContent = 'Offline';
                 availabilityStatus.style.color = '#e74c3c';
+                document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-circle" style="color: #e74c3c;"></i> Offline';
             }
             
             // Profile form
-            document.getElementById('profileName').value = userData.name;
-            document.getElementById('profileEmail').value = userData.email;
-            document.getElementById('profileBio').value = userData.bio;
-            document.getElementById('profileSpecialties').value = userData.specialties;
+            document.getElementById('profileName').value = myData.name || currentUser.name;
+            document.getElementById('profileEmail').value = myData.email || currentUser.email;
+            document.getElementById('profileBio').value = myData.bio || '';
+            document.getElementById('profileSpecialties').value = myData.specialties || '';
             
-            if (userData.profilePicture) {
-                document.getElementById('profilePreview').src = userData.profilePicture;
+            if (myData.profilePicture) {
+                document.getElementById('profilePreview').src = myData.profilePicture;
+            } else {
+                document.getElementById('profilePreview').src = 'https://via.placeholder.com/150';
             }
             
             // Load call history
@@ -316,20 +355,36 @@
             
             // Load recent activity
             renderRecentActivity();
+            
+            // Update the users list for homepage
+            updateUsersList();
+        }
+
+        // Update the users list in localStorage (for homepage display)
+        function updateUsersList() {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            
+            if (userIndex !== -1) {
+                // Update user data
+                users[userIndex].name = myData.name || currentUser.name;
+                users[userIndex].email = myData.email || currentUser.email;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
         }
 
         // Setup event listeners
         function setupEventListeners() {
             // Availability toggle
             document.getElementById('availabilitySwitch').addEventListener('change', function() {
-                userData.availability = this.checked;
+                myData.availability = this.checked;
                 saveUserData();
                 loadUserData();
                 
                 if (this.checked) {
-                    alert('You are now available for calls! Callers will see you as online.');
+                    alert('You are now available for calls! Your profile will appear on the homepage.');
                 } else {
-                    alert('You are now unavailable. Callers will not see you in the list.');
+                    alert('You are now offline. Callers will not see you in the list.');
                 }
             });
             
@@ -337,15 +392,15 @@
             document.getElementById('profileForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                userData.name = document.getElementById('profileName').value;
-                userData.email = document.getElementById('profileEmail').value;
-                userData.bio = document.getElementById('profileBio').value;
-                userData.specialties = document.getElementById('profileSpecialties').value;
+                myData.name = document.getElementById('profileName').value;
+                myData.email = document.getElementById('profileEmail').value;
+                myData.bio = document.getElementById('profileBio').value;
+                myData.specialties = document.getElementById('profileSpecialties').value;
                 
                 saveUserData();
                 loadUserData();
                 
-                alert('Profile updated successfully!');
+                alert('Profile updated successfully! Your changes will appear on the homepage.');
                 showSection('overview');
             });
             
@@ -382,27 +437,31 @@
 
         // Save user data
         function saveUserData() {
+            userData[currentUser.id] = myData;
             localStorage.setItem('userData', JSON.stringify(userData));
+            
+            // Also update users list for homepage
+            updateUsersList();
         }
 
         // Render call history
         function renderCallHistory() {
             const callHistoryDiv = document.getElementById('callHistory');
             
-            if (userData.callHistory.length === 0) {
+            if (!myData.callHistory || myData.callHistory.length === 0) {
                 callHistoryDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No call history yet</p>';
                 return;
             }
             
-            callHistoryDiv.innerHTML = userData.callHistory.map(call => `
+            callHistoryDiv.innerHTML = myData.callHistory.map(call => `
                 <div style="border-bottom: 1px solid #333; padding: 15px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <strong>${call.callerEmail}</strong>
+                            <strong>${call.callerEmail || 'Anonymous'}</strong>
                             <p style="margin: 5px 0; color: #aaa;">${new Date(call.timestamp).toLocaleString()}</p>
                         </div>
                         <div style="text-align: right;">
-                            <div style="color: #4CAF50; font-weight: bold;">$${call.amount}</div>
+                            <div style="color: #4CAF50; font-weight: bold;">$${call.amount.toFixed(2)}</div>
                             <div style="color: #888; font-size: 0.9em;">${call.duration} min</div>
                         </div>
                     </div>
@@ -414,13 +473,13 @@
         function renderRecentActivity() {
             const recentActivityDiv = document.getElementById('recentActivity');
             
-            if (userData.callHistory.length === 0) {
+            if (!myData.callHistory || myData.callHistory.length === 0) {
                 recentActivityDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No recent activity</p>';
                 return;
             }
             
             // Show last 3 calls
-            const recentCalls = userData.callHistory.slice(-3).reverse();
+            const recentCalls = myData.callHistory.slice(-3).reverse();
             recentActivityDiv.innerHTML = recentCalls.map(call => `
                 <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
                     <div style="background: rgba(108, 99, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -428,8 +487,8 @@
                     </div>
                     <div style="flex: 1;">
                         <div style="display: flex; justify-content: space-between;">
-                            <strong>Call with ${call.callerEmail.split('@')[0]}</strong>
-                            <span style="color: #4CAF50; font-weight: bold;">+$${call.amount}</span>
+                            <strong>Call with ${(call.callerEmail || 'Anonymous').split('@')[0]}</strong>
+                            <span style="color: #4CAF50; font-weight: bold;">+$${call.amount.toFixed(2)}</span>
                         </div>
                         <p style="margin: 5px 0 0 0; color: #aaa; font-size: 0.9em;">
                             ${new Date(call.timestamp).toLocaleDateString()} • ${call.duration} minutes
@@ -444,7 +503,7 @@
             // Check if there's a waiting call in localStorage
             const currentCall = JSON.parse(localStorage.getItem('currentCall'));
             
-            if (currentCall && currentCall.listenerId === currentUser?.id && userData.availability) {
+            if (currentCall && currentCall.listenerId === currentUser.id && myData.availability) {
                 document.getElementById('currentCallAlert').style.display = 'block';
             } else {
                 document.getElementById('currentCallAlert').style.display = 'none';
@@ -461,7 +520,7 @@
                     ...currentCall,
                     startTime: new Date().toISOString(),
                     listenerId: currentUser.id,
-                    listenerName: userData.name
+                    listenerName: myData.name || currentUser.name
                 }));
                 
                 // Remove the waiting call
@@ -476,7 +535,7 @@
         function declineCall() {
             localStorage.removeItem('currentCall');
             document.getElementById('currentCallAlert').style.display = 'none';
-            alert('Call declined. The caller has been notified.');
+            alert('Call declined. The caller has been notified and refunded.');
         }
 
         // Preview uploaded image
@@ -489,17 +548,34 @@
                 
                 reader.onload = function(e) {
                     preview.src = e.target.result;
-                    userData.profilePicture = e.target.result;
+                    myData.profilePicture = e.target.result;
                     saveUserData();
+                    
+                    // Show success message
+                    alert('Profile picture updated! It will now appear on your profile card.');
                 };
                 
                 reader.readAsDataURL(input.files[0]);
             }
         }
+        
+        // View my profile on homepage
+        function viewMyProfile() {
+            // Save any pending changes
+            saveUserData();
+            
+            // Open homepage in new tab
+            window.open('index.html', '_blank');
+        }
 
         // Logout
         function logout() {
+            // Set offline before logging out
+            myData.availability = false;
+            saveUserData();
+            
             localStorage.removeItem('currentUser');
+            alert('Logged out successfully!');
             window.location.href = 'index.html';
         }
     </script>

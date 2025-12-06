@@ -156,7 +156,6 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <a href="index.html">Home</a>
-                <a href="#" onclick="showContactForm()">Contact Us</a>
             </div>
             <div class="footer-section">
                 <h3>Contact</h3>
@@ -170,61 +169,9 @@
     </footer>
 
     <script>
-        // Check if user is logged in
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        // Global user variable - will update immediately on login
+        let currentUser = JSON.parse(localStorage.getItem('currentUser'));
         
-        // Sample listeners data
-        const listeners = [
-            {
-                id: 1,
-                name: "Sarah M.",
-                bio: "Certified counselor with 8+ years experience. Specializes in anxiety and relationship issues.",
-                rating: 4.9,
-                calls: 1247,
-                available: true
-            },
-            {
-                id: 2,
-                name: "James L.",
-                bio: "Life coach focusing on personal growth and career transitions. Empathetic and solution-oriented.",
-                rating: 4.8,
-                calls: 892,
-                available: true
-            },
-            {
-                id: 3,
-                name: "Priya K.",
-                bio: "Trauma-informed therapist with background in mindfulness and meditation techniques.",
-                rating: 4.9,
-                calls: 1563,
-                available: true
-            },
-            {
-                id: 4,
-                name: "Michael T.",
-                bio: "Former crisis helpline volunteer. Specializes in men's mental health and stress management.",
-                rating: 4.7,
-                calls: 735,
-                available: true
-            },
-            {
-                id: 5,
-                name: "Elena R.",
-                bio: "Art therapist with holistic approach. Helps with creativity blocks and emotional expression.",
-                rating: 4.8,
-                calls: 1042,
-                available: false
-            },
-            {
-                id: 6,
-                name: "David W.",
-                bio: "Retired psychologist with 30+ years experience. Wise, patient, and deeply compassionate.",
-                rating: 4.9,
-                calls: 1987,
-                available: true
-            }
-        ];
-
         let selectedListenerId = null;
 
         // Initialize page
@@ -232,16 +179,31 @@
             updateAuthButtons();
             renderListeners();
             setupEventListeners();
+            
+            // Check if user just logged in (redirect case)
+            checkRedirect();
         });
+        
+        function checkRedirect() {
+            // If user is logged in and came from login, redirect to dashboard
+            if (currentUser && window.location.hash === '#loggedin') {
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 100);
+            }
+        }
 
         // Update authentication buttons
         function updateAuthButtons() {
             const authButtons = document.getElementById('authButtons');
             
+            // Always refresh currentUser from localStorage
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            
             if (currentUser) {
                 authButtons.innerHTML = `
                     <div class="user-info">
-                        <span class="balance">$${currentUser.balance || 0}</span>
+                        <span class="balance">$${(currentUser.balance || 0).toFixed(2)}</span>
                         <a href="dashboard.html" class="btn btn-secondary">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
@@ -294,23 +256,63 @@
             }
         }
 
-        // Render listeners grid
+        // Get real listeners from localStorage
+        function getRealListeners() {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            
+            return users.filter(user => user.isListener).map(user => {
+                const userInfo = userData[user.id] || {};
+                return {
+                    id: user.id,
+                    name: user.name || 'Listener',
+                    bio: userInfo.bio || 'Certified listener providing emotional support.',
+                    rating: userInfo.rating || 4.5,
+                    calls: userInfo.calls || 0,
+                    available: userInfo.availability || false,
+                    profilePicture: userInfo.profilePicture || null,
+                    specialties: userInfo.specialties || ''
+                };
+            });
+        }
+
+        // Render listeners grid - using REAL data only
         function renderListeners() {
             const listenersGrid = document.getElementById('listenersGrid');
+            const listeners = getRealListeners();
+            
+            if (listeners.length === 0) {
+                listenersGrid.innerHTML = `
+                    <div style="text-align: center; padding: 40px; width: 100%;">
+                        <i class="fas fa-users" style="font-size: 3rem; color: rgba(255,255,255,0.3); margin-bottom: 20px;"></i>
+                        <h3>No Listeners Available</h3>
+                        <p>Be the first to become a listener!</p>
+                        <button class="btn btn-primary" onclick="showAuthModal('signup')">
+                            <i class="fas fa-user-plus"></i> Become a Listener
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
             listenersGrid.innerHTML = listeners.map(listener => `
-                <div class="listener-card">
-                    <div class="listener-avatar">
-                        <i class="fas fa-user"></i>
+                <div class="listener-card" data-listener-id="${listener.id}">
+                    <div class="listener-avatar" style="background: ${listener.profilePicture ? 'transparent' : 'rgba(108, 99, 255, 0.2)'};">
+                        ${listener.profilePicture ? 
+                            `<img src="${listener.profilePicture}" alt="${listener.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+                            `<i class="fas fa-user"></i>`
+                        }
                     </div>
                     <div class="listener-info">
-                        <h4>${listener.name} ${listener.available ? '<span style="color: #4CAF50; font-size: 0.8em;">● Available</span>' : '<span style="color: #e74c3c; font-size: 0.8em;">● Busy</span>'}</h4>
+                        <h4>${listener.name} ${listener.available ? '<span style="color: #4CAF50; font-size: 0.8em;">● Available</span>' : '<span style="color: #e74c3c; font-size: 0.8em;">● Offline</span>'}</h4>
                         <p class="listener-bio">${listener.bio}</p>
+                        ${listener.specialties ? `<p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-bottom: 10px;"><i class="fas fa-star"></i> Specializes in: ${listener.specialties}</p>` : ''}
                         <div class="listener-stats">
-                            <span><i class="fas fa-star"></i> ${listener.rating}</span>
-                            <span><i class="fas fa-phone"></i> ${listener.calls.toLocaleString()} calls</span>
+                            <span><i class="fas fa-star"></i> ${listener.rating.toFixed(1)}</span>
+                            <span><i class="fas fa-phone"></i> ${listener.calls} calls</span>
                         </div>
                         <button class="btn btn-primary call-btn" onclick="showPaymentForm(${listener.id})" ${!listener.available ? 'disabled' : ''}>
-                            <i class="fas fa-phone"></i> ${listener.available ? 'Call Now - $15' : 'Currently Unavailable'}
+                            <i class="fas fa-phone"></i> ${listener.available ? 'Call Now - $15' : 'Currently Offline'}
                         </button>
                     </div>
                 </div>
@@ -320,6 +322,7 @@
         // Show payment form
         function showPaymentForm(listenerId) {
             selectedListenerId = listenerId;
+            const listeners = getRealListeners();
             const listener = listeners.find(l => l.id === listenerId);
             
             if (listener) {
@@ -356,10 +359,20 @@
                 
                 if (user) {
                     // Login successful
+                    currentUser = user;
                     localStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    // Update UI immediately
+                    updateAuthButtons();
+                    
+                    // Show success and redirect
                     alert('Login successful!');
                     hideAuthModal();
-                    updateAuthButtons();
+                    
+                    // Redirect to dashboard with a slight delay
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 300);
                 } else {
                     alert('Invalid email or password');
                 }
@@ -412,11 +425,34 @@
                 
                 users.push(newUser);
                 localStorage.setItem('users', JSON.stringify(users));
+                
+                // Also initialize user data
+                const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                userData[newUser.id] = {
+                    availability: false,
+                    calls: 0,
+                    hours: 0,
+                    earnings: 0,
+                    rating: 0,
+                    bio: 'Certified listener providing emotional support.',
+                    specialties: ''
+                };
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                // Login the new user
+                currentUser = newUser;
                 localStorage.setItem('currentUser', JSON.stringify(newUser));
+                
+                // Update UI
+                updateAuthButtons();
                 
                 alert('Account created successfully! Welcome to House of Whispers.');
                 hideAuthModal();
-                updateAuthButtons();
+                
+                // Redirect to dashboard to complete profile
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 500);
             });
             
             // Stripe checkout
@@ -434,9 +470,11 @@
                     return;
                 }
                 
-                // Simulate Stripe payment process
+                // Get listener info
+                const listeners = getRealListeners();
                 const listener = listeners.find(l => l.id === selectedListenerId);
                 
+                // Simulate Stripe payment process
                 alert(`Redirecting to secure Stripe checkout for ${listener.name}...\n\nEmail: ${email}\nAmount: $15.00`);
                 
                 // Simulate successful payment
@@ -448,7 +486,8 @@
                         listenerId: selectedListenerId,
                         listenerName: listener.name,
                         callerEmail: email,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        amount: 15.00
                     }));
                     
                     // Redirect to waiting room
@@ -459,33 +498,11 @@
 
         // Logout function
         function logout() {
+            currentUser = null;
             localStorage.removeItem('currentUser');
+            updateAuthButtons();
+            alert('Logged out successfully!');
             window.location.reload();
-        }
-
-        // Show contact form (in footer)
-        function showContactForm() {
-            const name = prompt('Your Name:');
-            if (!name) return;
-            
-            const email = prompt('Your Email:');
-            if (!email) return;
-            
-            const message = prompt('Your Message:');
-            if (!message) return;
-            
-            // Store contact message
-            const messages = JSON.parse(localStorage.getItem('contactMessages')) || [];
-            messages.push({
-                name,
-                email,
-                message,
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem('contactMessages', JSON.stringify(messages));
-            
-            alert('Thank you for your message! We will respond within 24 hours.');
-            console.log('Contact message sent to admin: ifanifwasafifth@gmail.com');
         }
 
         // Close modals when clicking outside
@@ -500,6 +517,9 @@
                 hidePaymentForm();
             }
         }
+        
+        // Refresh listeners every 30 seconds to check availability
+        setInterval(renderListeners, 30000);
     </script>
 </body>
 </html>

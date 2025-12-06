@@ -10,19 +10,30 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
+let firebaseApp, firebaseAuth, firebaseDatabase, firebaseStorage;
+
 try {
-  firebase.initializeApp(firebaseConfig);
+  firebaseApp = firebase.initializeApp(firebaseConfig);
+  firebaseAuth = firebase.auth();
+  firebaseDatabase = firebase.database();
+  firebaseStorage = firebase.storage(); // Fixed: using firebase.storage() instead of firebase.storage
+  
+  console.log("Firebase initialized successfully");
 } catch (error) {
-  console.log("Firebase already initialized or error:", error);
+  console.error("Firebase initialization error:", error);
+  
+  // If already initialized, get the existing app
+  if (error.code === 'app/duplicate-app') {
+    firebaseApp = firebase.app();
+    firebaseAuth = firebase.auth();
+    firebaseDatabase = firebase.database();
+    firebaseStorage = firebase.storage();
+  }
 }
 
-// Firebase services
-const auth = firebase.auth();
-const database = firebase.database();
-const storage = firebase.storage();
-
 // Export Firebase services
-window.firebaseAuth = auth;
-window.firebaseDatabase = database;
-window.firebaseStorage = storage;
+window.firebaseApp = firebaseApp;
+window.firebaseAuth = firebaseAuth;
+window.firebaseDatabase = firebaseDatabase;
+window.firebaseStorage = firebaseStorage;
 window.firebaseConfig = firebaseConfig;

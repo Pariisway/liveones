@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (Fixed order) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
     
-    <!-- Google AdSense (Replace with your actual AdSense code) -->
+    <!-- Google AdSense (Replace YOUR_AD_CLIENT_ID with your actual ID) -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_AD_CLIENT_ID" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -23,40 +24,54 @@
                 <i class="fas fa-ear-listen"></i>
                 House of Whispers
             </a>
+            <div style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-clock"></i> Waiting Room
+            </div>
         </div>
     </nav>
 
     <div class="chat-room">
         <h1>Waiting for Your Whisper</h1>
+        
+        <!-- AdSense Video Ad Section -->
+        <div style="margin: 20px 0; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 15px; color: #4CAF50;">
+                    <i class="fas fa-video"></i> Watch While You Wait
+                </h3>
+                
+                <!-- AdSense Video Ad Container -->
+                <div id="adsense-video-container">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-YOUR_AD_CLIENT_ID"
+                         data-ad-slot="1234567890"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.9em; margin-top: 15px;">
+                    <i class="fas fa-info-circle"></i> Ads help keep our service affordable for everyone
+                </p>
+            </div>
+        </div>
+
         <div class="chat-container">
             <div class="chat-messages">
                 <div class="message system">
-                    <p>Welcome to House of Whispers</p>
+                    <p><i class="fas fa-check-circle" style="color: #4CAF50;"></i> Welcome to House of Whispers</p>
                 </div>
                 <div class="message system">
                     <p>You are now in the waiting room. Your whisper will join shortly.</p>
                 </div>
                 <div class="message system">
-                    <p><strong>Payment confirmed:</strong> $15.00</p>
+                    <p><i class="fas fa-credit-card" style="color: #4CAF50;"></i> <strong>Payment confirmed:</strong> $15.00</p>
                 </div>
                 <div class="message system">
-                    <p>Please wait while we connect you with your whisper...</p>
-                </div>
-            </div>
-            
-            <!-- AdSense Video Ad Container -->
-            <div style="margin: 20px 0; text-align: center;">
-                <h3><i class="fas fa-ad"></i> While You Wait...</h3>
-                <div id="adsense-video-container" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin: 15px 0;">
-                    <!-- AdSense Video Ad will load here -->
-                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 10px;">Advertisement</p>
-                    <div id="video-ad" style="width: 100%; height: 250px; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                        <div style="text-align: center;">
-                            <i class="fas fa-play-circle" style="font-size: 48px; color: rgba(255,255,255,0.3); margin-bottom: 10px;"></i>
-                            <p style="color: rgba(255,255,255,0.5);">Video ad loading...</p>
-                            <p style="color: rgba(255,255,255,0.4); font-size: 0.9em;">Ads support our free emotional support service</p>
-                        </div>
-                    </div>
+                    <p><i class="fas fa-clock"></i> Please wait while we connect you with your whisper...</p>
                 </div>
             </div>
             
@@ -68,9 +83,12 @@
                 
                 <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; margin: 20px 0;">
                     <h3><i class="fas fa-user"></i> Your Whisper</h3>
-                    <p id="listenerName" style="font-size: 1.2em; margin: 10px 0;">Loading...</p>
+                    <p id="listenerName" style="font-size: 1.2em; margin: 10px 0; color: #6c63ff;">Loading...</p>
                     <p style="color: rgba(255,255,255,0.7);">
                         <i class="fas fa-clock"></i> Estimated wait time: 1-2 minutes
+                    </p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 10px;">
+                        <i class="fas fa-shield-alt"></i> Your call is private and confidential
                     </p>
                 </div>
                 
@@ -89,26 +107,32 @@
         let timerInterval;
         let callId = localStorage.getItem('currentCallId');
         let callData = null;
+        let callListener = null;
         
         if (!callId) {
             window.location.href = 'index.html';
         }
         
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log("Firebase available:", !!firebaseDatabase);
+            
             // Load call data from Firebase
             await loadCallData();
             
-            // Load AdSense video ad
-            loadVideoAd();
-            
+            // Start waiting timer
             startWaitingTimer();
             
-            // Check if whisper has accepted the call
-            setInterval(checkForWhisper, 2000);
+            // Start listening for call updates
+            setupCallListener();
         });
         
         async function loadCallData() {
             try {
+                if (!firebaseDatabase) {
+                    console.error("Firebase Database not available");
+                    return;
+                }
+                
                 const callRef = firebaseDatabase.ref(`calls/${callId}`);
                 const snapshot = await callRef.once('value');
                 
@@ -124,24 +148,48 @@
             }
         }
         
-        function loadVideoAd() {
-            // This is where AdSense video ads would load
-            // For now, we'll simulate with a placeholder
-            setTimeout(() => {
-                const videoAdDiv = document.getElementById('video-ad');
-                videoAdDiv.innerHTML = `
-                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                        <div style="background: #4CAF50; color: white; padding: 5px 10px; border-radius: 4px; margin-bottom: 10px; font-size: 0.8em;">
-                            ADVERTISEMENT
-                        </div>
-                        <i class="fas fa-video" style="font-size: 48px; color: rgba(255,255,255,0.3); margin-bottom: 10px;"></i>
-                        <p style="color: rgba(255,255,255,0.6);">Sample video ad playing</p>
-                        <p style="color: rgba(255,255,255,0.4); font-size: 0.9em; margin-top: 10px;">
-                            Thank you for supporting House of Whispers
-                        </p>
-                    </div>
-                `;
-            }, 2000);
+        function setupCallListener() {
+            if (!firebaseDatabase || !callId) return;
+            
+            // Listen for real-time updates to the call
+            const callRef = firebaseDatabase.ref(`calls/${callId}`);
+            callListener = callRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const call = snapshot.val();
+                    handleCallUpdate(call);
+                }
+            });
+        }
+        
+        function handleCallUpdate(call) {
+            if (call.status === 'accepted') {
+                // Whisper has accepted, redirect to active chat
+                clearInterval(timerInterval);
+                if (callListener) {
+                    firebaseDatabase.ref(`calls/${callId}`).off('value', callListener);
+                }
+                localStorage.setItem('activeCallId', callId);
+                window.location.href = 'chat-active.html';
+            } else if (call.status === 'declined' || call.status === 'cancelled') {
+                // Call was declined or cancelled
+                clearInterval(timerInterval);
+                if (callListener) {
+                    firebaseDatabase.ref(`calls/${callId}`).off('value', callListener);
+                }
+                alert(call.status === 'declined' 
+                    ? 'Whisper declined the call. You will be refunded.' 
+                    : 'Call was cancelled.');
+                localStorage.removeItem('currentCallId');
+                window.location.href = 'index.html';
+            } else if (call.status === 'active') {
+                // Call is active (should redirect to chat-active)
+                clearInterval(timerInterval);
+                if (callListener) {
+                    firebaseDatabase.ref(`calls/${callId}`).off('value', callListener);
+                }
+                localStorage.setItem('activeCallId', callId);
+                window.location.href = 'chat-active.html';
+            }
         }
         
         function startWaitingTimer() {
@@ -152,37 +200,11 @@
                 document.getElementById('waitingTimer').textContent = 
                     `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 
-                // Auto-check every 30 seconds
-                if (waitingSeconds % 30 === 0) {
-                    checkForWhisper();
+                // If waiting more than 10 minutes, show warning
+                if (waitingSeconds > 600) {
+                    document.getElementById('waitingTimer').style.color = '#e74c3c';
                 }
             }, 1000);
-        }
-        
-        async function checkForWhisper() {
-            try {
-                const callRef = firebaseDatabase.ref(`calls/${callId}`);
-                const snapshot = await callRef.once('value');
-                
-                if (snapshot.exists()) {
-                    const call = snapshot.val();
-                    
-                    if (call.status === 'accepted') {
-                        // Whisper has accepted, redirect to active chat
-                        clearInterval(timerInterval);
-                        localStorage.setItem('activeCallId', callId);
-                        window.location.href = 'chat-active.html';
-                    } else if (call.status === 'declined') {
-                        // Whisper declined the call
-                        clearInterval(timerInterval);
-                        alert('Whisper declined the call. You will be refunded.');
-                        localStorage.removeItem('currentCallId');
-                        window.location.href = 'index.html';
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking for whisper:', error);
-            }
         }
         
         async function cancelCall() {
@@ -190,19 +212,25 @@
                 try {
                     clearInterval(timerInterval);
                     
-                    // Update call status in Firebase
-                    await firebaseDatabase.ref(`calls/${callId}`).update({
-                        status: 'cancelled',
-                        cancelledAt: new Date().toISOString()
-                    });
+                    if (callListener) {
+                        firebaseDatabase.ref(`calls/${callId}`).off('value', callListener);
+                    }
                     
-                    // Remove from whisper's waiting calls
-                    if (callData && callData.listenerId) {
-                        await firebaseDatabase.ref(`users/${callData.listenerId}/waitingCalls/${callId}`).remove();
+                    // Update call status in Firebase
+                    if (firebaseDatabase) {
+                        await firebaseDatabase.ref(`calls/${callId}`).update({
+                            status: 'cancelled',
+                            cancelledAt: new Date().toISOString()
+                        });
+                        
+                        // Remove from whisper's waiting calls
+                        if (callData && callData.listenerId) {
+                            await firebaseDatabase.ref(`users/${callData.listenerId}/waitingCalls/${callId}`).remove();
+                        }
                     }
                     
                     localStorage.removeItem('currentCallId');
-                    alert('Call cancelled. You may close this window.');
+                    alert('Call cancelled. Redirecting to homepage...');
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 2000);
@@ -213,8 +241,12 @@
             }
         }
         
-        // Check for whisper acceptance every 5 seconds
-        setInterval(checkForWhisper, 5000);
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (callListener && firebaseDatabase) {
+                firebaseDatabase.ref(`calls/${callId}`).off('value', callListener);
+            }
+        });
     </script>
 </body>
 </html>

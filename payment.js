@@ -1,5 +1,5 @@
 // Stripe Payment Integration
-const stripePublicKey = 'pk_test_51Q8tL2P7Vbu8koyhTajjEOSbbZPvfxvZQYl3LlPhN21RqL5duU9gN8q4G3gHfjDpU1Bqg72h4MZqFmH2X4CBRqhA00Rnm0orZx'; // Replace with your actual publishable key
+const stripePublicKey = 'pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I'; // Replace with your actual publishable key
 
 let stripe;
 let elements;

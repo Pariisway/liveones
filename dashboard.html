@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/96/000000/earbud-headphones.png">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
     <!-- Navbar -->
@@ -38,8 +45,8 @@
         <!-- Dashboard Header -->
         <div class="dashboard-header">
             <div>
-                <h1>Listener Dashboard</h1>
-                <p>Welcome back, <span id="userName">Listener</span>!</p>
+                <h1>Whisper Dashboard</h1>
+                <p>Welcome back, <span id="userName">Whisper</span>!</p>
             </div>
             <div class="availability-toggle" id="availabilityToggle">
                 <span>Available for Calls:</span>
@@ -59,13 +66,14 @@
                     <i class="fas fa-chart-line"></i>
                     <span>Overview</span>
                 </button>
-                <button class="action-btn" onclick="showSection('history')">
-                    <i class="fas fa-history"></i>
-                    <span>Call History</span>
+                <button class="action-btn" onclick="showSection('waiting')">
+                    <i class="fas fa-clock"></i>
+                    <span>Calls Waiting</span>
+                    <span id="waitingCallsBadge" style="background: #e74c3c; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-top: 5px;">0</span>
                 </button>
-                <button class="action-btn" onclick="showSection('earnings')">
-                    <i class="fas fa-dollar-sign"></i>
-                    <span>Earnings</span>
+                <button class="action-btn" onclick="showSection('completed')">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed Calls</span>
                 </button>
                 <button class="action-btn" onclick="showSection('profile')">
                     <i class="fas fa-user-edit"></i>
@@ -120,69 +128,35 @@
                 </div>
             </div>
 
-            <!-- Current Call Alert -->
-            <div id="currentCallAlert" style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; border-radius: 10px; padding: 20px; margin-bottom: 30px; display: none;">
-                <h3 style="color: #4CAF50; margin-bottom: 10px;"><i class="fas fa-phone"></i> Incoming Call!</h3>
-                <p style="margin-bottom: 15px;">A caller is waiting to connect with you. The 5-minute timer will start when you accept.</p>
-                <button class="btn btn-success" onclick="acceptCall()">
-                    <i class="fas fa-phone"></i> Accept Call
+            <!-- Active Call Section -->
+            <div id="activeCallSection" style="background: rgba(76, 175, 80, 0.1); border: 1px solid #4CAF50; border-radius: 10px; padding: 20px; margin-bottom: 30px; display: none;">
+                <h3 style="color: #4CAF50; margin-bottom: 10px;"><i class="fas fa-phone"></i> Active Call</h3>
+                <div id="activeCallInfo"></div>
+                <button class="btn btn-success" onclick="goToActiveCall()">
+                    <i class="fas fa-phone"></i> Go to Call
                 </button>
-                <button class="btn btn-danger" onclick="declineCall()" style="margin-left: 10px;">
-                    <i class="fas fa-times"></i> Decline
+                <button class="btn btn-danger" onclick="endActiveCall()" style="margin-left: 10px;">
+                    <i class="fas fa-times"></i> End Call
                 </button>
             </div>
+        </div>
 
-            <!-- Recent Activity -->
+        <!-- Waiting Calls Section -->
+        <div id="waitingSection" class="dashboard-section" style="display: none;">
+            <h2>Calls Waiting</h2>
             <div class="history-container">
-                <h3>Recent Activity</h3>
-                <div id="recentActivity">
-                    <p style="text-align: center; color: #888; padding: 20px;">No recent activity</p>
+                <div id="waitingCallsList">
+                    <p style="text-align: center; color: #888; padding: 20px;">No calls waiting</p>
                 </div>
             </div>
         </div>
 
-        <!-- History Section -->
-        <div id="historySection" class="dashboard-section" style="display: none;">
-            <h2>Call History</h2>
+        <!-- Completed Calls Section -->
+        <div id="completedSection" class="dashboard-section" style="display: none;">
+            <h2>Completed Calls</h2>
             <div class="history-container">
-                <div id="callHistory">
-                    <p style="text-align: center; color: #888; padding: 20px;">No call history yet</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Earnings Section -->
-        <div id="earningsSection" class="dashboard-section" style="display: none;">
-            <h2>Earnings</h2>
-            <div class="earnings-container">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>This Month</h3>
-                            <div class="stat-amount" id="monthEarnings">$0</div>
-                            <small>December 2024</small>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>Last Month</h3>
-                            <div class="stat-amount" id="lastMonthEarnings">$0</div>
-                            <small>November 2024</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 30px;">
-                    <h3>Withdrawal History</h3>
-                    <div id="withdrawalHistory" style="margin-top: 15px;">
-                        <p style="text-align: center; color: #888; padding: 20px;">No withdrawals yet</p>
-                    </div>
+                <div id="completedCallsList">
+                    <p style="text-align: center; color: #888; padding: 20px;">No completed calls yet</p>
                 </div>
             </div>
         </div>
@@ -194,7 +168,7 @@
                 <div class="upload-group">
                     <label>Profile Picture</label>
                     <img id="profilePreview" class="upload-preview" src="https://via.placeholder.com/150" alt="Profile Preview">
-                    <input type="file" id="profilePicture" accept="image/*" style="display: none;" onchange="previewImage(event)">
+                    <input type="file" id="profilePicture" accept="image/*" style="display: none;" onchange="uploadProfilePicture(event)">
                     <label for="profilePicture" class="upload-btn">
                         <i class="fas fa-upload"></i> Upload New Photo
                     </label>
@@ -210,14 +184,6 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="profileEmail">Email Address</label>
-                        <input type="email" id="profileEmail" class="form-input" required>
-                        <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 5px;">
-                            This email will be used for account notifications.
-                        </p>
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="profileBio">Bio/Description</label>
                         <textarea id="profileBio" class="form-input" rows="4" placeholder="Tell callers about yourself and your experience..."></textarea>
                         <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 5px;">
@@ -229,7 +195,7 @@
                         <label for="profileSpecialties">Specialties</label>
                         <input type="text" id="profileSpecialties" class="form-input" placeholder="e.g., Anxiety, Relationships, Career, Stress">
                         <p style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 5px;">
-                            Separate with commas. Helps callers find the right listener.
+                            Separate with commas. Helps callers find the right whisper.
                         </p>
                     </div>
                     
@@ -238,346 +204,461 @@
                         <button type="button" class="btn btn-secondary" onclick="showSection('overview')">Cancel</button>
                     </div>
                 </form>
-                
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <h3>Profile Visibility</h3>
-                    <p style="color: rgba(255,255,255,0.7); margin-bottom: 15px;">
-                        Your profile will appear on the homepage when you're available for calls.
-                        Make sure your bio and specialties accurately reflect what you offer.
-                    </p>
-                    <button class="btn btn-outline" onclick="viewMyProfile()">
-                        <i class="fas fa-eye"></i> View My Profile on Homepage
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Firebase user
+        let currentUser = null;
+        let userData = null;
+        let waitingCalls = [];
+        let activeCallId = null;
+        
         // Check if user is logged in
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        firebaseAuth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+                initializeDashboard();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
         
-        if (!currentUser) {
-            window.location.href = 'index.html';
-        }
-
-        // Load user data
-        let userData = JSON.parse(localStorage.getItem('userData')) || {};
-        if (!userData[currentUser.id]) {
-            userData[currentUser.id] = {
-                name: currentUser.name,
-                email: currentUser.email,
-                bio: 'Certified listener providing emotional support.',
-                specialties: '',
-                profilePicture: '',
-                calls: 0,
-                hours: 0,
-                earnings: 0,
-                rating: 0.0,
-                availability: false,
-                callHistory: [],
-                earningsHistory: []
-            };
-            localStorage.setItem('userData', JSON.stringify(userData));
-        }
-        
-        const myData = userData[currentUser.id];
-
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        async function initializeDashboard() {
+            if (!currentUser) return;
+            
             loadUserData();
             setupEventListeners();
+            loadWaitingCalls();
+            loadCompletedCalls();
             
-            // Check for incoming calls
-            checkForIncomingCalls();
+            // Listen for real-time updates
+            setupRealtimeListeners();
             
-            // Simulate incoming call check every 30 seconds
-            setInterval(checkForIncomingCalls, 30000);
-        });
-
+            // Check for active call
+            checkActiveCall();
+            
+            // Auto-check every 10 seconds
+            setInterval(checkActiveCall, 10000);
+            setInterval(loadWaitingCalls, 10000);
+        }
+        
         // Load user data
-        function loadUserData() {
-            // Refresh data from localStorage
-            const freshData = JSON.parse(localStorage.getItem('userData')) || {};
-            if (freshData[currentUser.id]) {
-                Object.assign(myData, freshData[currentUser.id]);
+        async function loadUserData() {
+            try {
+                const userRef = firebaseDatabase.ref(`users/${currentUser.uid}`);
+                const snapshot = await userRef.once('value');
+                
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
             }
+        }
+        
+        // Update UI with user data
+        function updateUI() {
+            if (!userData) return;
             
-            // Update UI with user data
-            document.getElementById('userName').textContent = myData.name || currentUser.name;
-            document.getElementById('userBalance').textContent = `$${myData.earnings.toFixed(2)}`;
+            // User info
+            document.getElementById('userName').textContent = userData.name || 'Whisper';
+            document.getElementById('userBalance').textContent = `$${userData.earnings?.toFixed(2) || '0.00'}`;
             
             // Overview stats
-            document.getElementById('totalCalls').textContent = myData.calls;
-            document.getElementById('totalHours').textContent = myData.hours.toFixed(1);
-            document.getElementById('totalEarnings').textContent = `$${myData.earnings.toFixed(2)}`;
-            document.getElementById('userRating').textContent = myData.rating.toFixed(1);
-            
-            // Earnings
-            document.getElementById('monthEarnings').textContent = `$${myData.earnings.toFixed(2)}`;
-            document.getElementById('lastMonthEarnings').textContent = '$0.00';
+            document.getElementById('totalCalls').textContent = userData.calls || 0;
+            document.getElementById('totalHours').textContent = userData.hours?.toFixed(1) || '0.0';
+            document.getElementById('totalEarnings').textContent = `$${userData.earnings?.toFixed(2) || '0.00'}`;
+            document.getElementById('userRating').textContent = userData.rating?.toFixed(1) || '0.0';
             
             // Availability toggle
             const availabilitySwitch = document.getElementById('availabilitySwitch');
             const availabilityToggle = document.getElementById('availabilityToggle');
-            const availabilityStatus = document.getElementById('availabilityStatus');
             
-            availabilitySwitch.checked = myData.availability;
+            availabilitySwitch.checked = userData.availability || false;
             
-            if (myData.availability) {
+            if (userData.availability) {
                 availabilityToggle.classList.add('available');
                 availabilityToggle.classList.remove('unavailable');
-                availabilityStatus.textContent = 'Available';
-                availabilityStatus.style.color = '#4CAF50';
                 document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-circle" style="color: #4CAF50;"></i> Available';
             } else {
                 availabilityToggle.classList.add('unavailable');
                 availabilityToggle.classList.remove('available');
-                availabilityStatus.textContent = 'Offline';
-                availabilityStatus.style.color = '#e74c3c';
                 document.getElementById('availabilityStatus').innerHTML = '<i class="fas fa-circle" style="color: #e74c3c;"></i> Offline';
             }
             
             // Profile form
-            document.getElementById('profileName').value = myData.name || currentUser.name;
-            document.getElementById('profileEmail').value = myData.email || currentUser.email;
-            document.getElementById('profileBio').value = myData.bio || '';
-            document.getElementById('profileSpecialties').value = myData.specialties || '';
+            document.getElementById('profileName').value = userData.name || '';
+            document.getElementById('profileBio').value = userData.bio || '';
+            document.getElementById('profileSpecialties').value = userData.specialties || '';
             
-            if (myData.profilePicture) {
-                document.getElementById('profilePreview').src = myData.profilePicture;
-            } else {
-                document.getElementById('profilePreview').src = 'https://via.placeholder.com/150';
-            }
-            
-            // Load call history
-            renderCallHistory();
-            
-            // Load recent activity
-            renderRecentActivity();
-            
-            // Update the users list for homepage
-            updateUsersList();
-        }
-
-        // Update the users list in localStorage (for homepage display)
-        function updateUsersList() {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            
-            if (userIndex !== -1) {
-                // Update user data
-                users[userIndex].name = myData.name || currentUser.name;
-                users[userIndex].email = myData.email || currentUser.email;
-                localStorage.setItem('users', JSON.stringify(users));
+            if (userData.profilePicture) {
+                document.getElementById('profilePreview').src = userData.profilePicture;
             }
         }
-
+        
         // Setup event listeners
         function setupEventListeners() {
             // Availability toggle
-            document.getElementById('availabilitySwitch').addEventListener('change', function() {
-                myData.availability = this.checked;
-                saveUserData();
-                loadUserData();
-                
-                if (this.checked) {
-                    alert('You are now available for calls! Your profile will appear on the homepage.');
-                } else {
-                    alert('You are now offline. Callers will not see you in the list.');
+            document.getElementById('availabilitySwitch').addEventListener('change', async function() {
+                try {
+                    await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(this.checked);
+                    
+                    if (this.checked) {
+                        alert('You are now available for calls! Your profile will appear on the homepage.');
+                    } else {
+                        alert('You are now offline. Callers will not see you in the list.');
+                    }
+                    
+                    loadUserData();
+                } catch (error) {
+                    console.error('Error updating availability:', error);
+                    alert('Error updating availability');
                 }
             });
             
             // Profile form submission
-            document.getElementById('profileForm').addEventListener('submit', function(e) {
+            document.getElementById('profileForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                myData.name = document.getElementById('profileName').value;
-                myData.email = document.getElementById('profileEmail').value;
-                myData.bio = document.getElementById('profileBio').value;
-                myData.specialties = document.getElementById('profileSpecialties').value;
-                
-                saveUserData();
-                loadUserData();
-                
-                alert('Profile updated successfully! Your changes will appear on the homepage.');
-                showSection('overview');
-            });
-            
-            // Profile picture upload
-            document.getElementById('profilePreview').addEventListener('click', function() {
-                document.getElementById('profilePicture').click();
+                try {
+                    const updates = {
+                        name: document.getElementById('profileName').value,
+                        bio: document.getElementById('profileBio').value,
+                        specialties: document.getElementById('profileSpecialties').value
+                    };
+                    
+                    await firebaseDatabase.ref(`users/${currentUser.uid}`).update(updates);
+                    
+                    alert('Profile updated successfully!');
+                    showSection('overview');
+                    loadUserData();
+                } catch (error) {
+                    console.error('Error updating profile:', error);
+                    alert('Error updating profile');
+                }
             });
         }
-
+        
+        // Upload profile picture
+        async function uploadProfilePicture(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                // Show loading
+                document.getElementById('profilePreview').src = 'https://via.placeholder.com/150?text=Uploading...';
+                
+                // Upload to Firebase Storage
+                const storageRef = firebaseStorage.ref();
+                const fileRef = storageRef.child(`profile-pictures/${currentUser.uid}/${Date.now()}_${file.name}`);
+                await fileRef.put(file);
+                
+                // Get download URL
+                const downloadURL = await fileRef.getDownloadURL();
+                
+                // Update user profile with image URL
+                await firebaseDatabase.ref(`users/${currentUser.uid}/profilePicture`).set(downloadURL);
+                
+                // Update preview
+                document.getElementById('profilePreview').src = downloadURL;
+                
+                alert('Profile picture updated successfully!');
+                loadUserData();
+            } catch (error) {
+                console.error('Error uploading profile picture:', error);
+                alert('Error uploading profile picture');
+                document.getElementById('profilePreview').src = 'https://via.placeholder.com/150';
+            }
+        }
+        
+        // Load waiting calls
+        async function loadWaitingCalls() {
+            try {
+                // Get waiting calls from user's waitingCalls list
+                const waitingRef = firebaseDatabase.ref(`users/${currentUser.uid}/waitingCalls`);
+                const snapshot = await waitingRef.once('value');
+                
+                waitingCalls = [];
+                
+                if (snapshot.exists()) {
+                    const callIds = Object.keys(snapshot.val());
+                    
+                    // Load each call's details
+                    for (const callId of callIds) {
+                        const callRef = firebaseDatabase.ref(`calls/${callId}`);
+                        const callSnapshot = await callRef.once('value');
+                        
+                        if (callSnapshot.exists()) {
+                            const call = callSnapshot.val();
+                            if (call.status === 'waiting') {
+                                waitingCalls.push({
+                                    id: callId,
+                                    ...call
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                updateWaitingCallsUI();
+            } catch (error) {
+                console.error('Error loading waiting calls:', error);
+            }
+        }
+        
+        // Update waiting calls UI
+        function updateWaitingCallsUI() {
+            const waitingCallsList = document.getElementById('waitingCallsList');
+            const badge = document.getElementById('waitingCallsBadge');
+            
+            badge.textContent = waitingCalls.length;
+            
+            if (waitingCalls.length === 0) {
+                waitingCallsList.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No calls waiting</p>';
+                return;
+            }
+            
+            waitingCallsList.innerHTML = waitingCalls.map(call => `
+                <div style="border-bottom: 1px solid #333; padding: 15px 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${call.callerEmail}</strong>
+                            <p style="margin: 5px 0; color: #aaa;">Waiting since: ${new Date(call.createdAt).toLocaleTimeString()}</p>
+                            <p style="margin: 5px 0; color: #4CAF50; font-weight: bold;">$${call.amount.toFixed(2)}</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-success" onclick="acceptCall('${call.id}')">
+                                <i class="fas fa-phone"></i> Accept
+                            </button>
+                            <button class="btn btn-danger" onclick="declineCall('${call.id}')" style="margin-left: 10px;">
+                                <i class="fas fa-times"></i> Decline
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Load completed calls
+        async function loadCompletedCalls() {
+            try {
+                // Query calls where listenerId matches and status is completed
+                const callsRef = firebaseDatabase.ref('calls');
+                const snapshot = await callsRef.orderByChild('listenerId').equalTo(currentUser.uid).once('value');
+                
+                const completedCallsList = document.getElementById('completedCallsList');
+                const completedCalls = [];
+                
+                snapshot.forEach((childSnapshot) => {
+                    const call = childSnapshot.val();
+                    if (call.status === 'completed') {
+                        completedCalls.push({
+                            id: childSnapshot.key,
+                            ...call
+                        });
+                    }
+                });
+                
+                // Sort by completed date (newest first)
+                completedCalls.sort((a, b) => new Date(b.completedAt || b.createdAt) - new Date(a.completedAt || a.createdAt));
+                
+                if (completedCalls.length === 0) {
+                    completedCallsList.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No completed calls yet</p>';
+                    return;
+                }
+                
+                completedCallsList.innerHTML = completedCalls.map(call => `
+                    <div style="border-bottom: 1px solid #333; padding: 15px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${call.callerEmail || 'Anonymous'}</strong>
+                                <p style="margin: 5px 0; color: #aaa;">
+                                    ${new Date(call.completedAt || call.createdAt).toLocaleString()}
+                                </p>
+                                <p style="margin: 5px 0; color: #4CAF50; font-weight: bold;">+$${call.amount?.toFixed(2) || '0.00'}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: #888; font-size: 0.9em;">${call.duration || 5} minutes</div>
+                                ${call.rating ? `<div style="color: #f39c12; margin-top: 5px;"><i class="fas fa-star"></i> ${call.rating.toFixed(1)}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading completed calls:', error);
+            }
+        }
+        
+        // Accept a waiting call
+        async function acceptCall(callId) {
+            try {
+                // Update call status
+                await firebaseDatabase.ref(`calls/${callId}`).update({
+                    status: 'accepted',
+                    acceptedAt: new Date().toISOString()
+                });
+                
+                // Remove from waiting calls
+                await firebaseDatabase.ref(`users/${currentUser.uid}/waitingCalls/${callId}`).remove();
+                
+                // Set active call
+                activeCallId = callId;
+                localStorage.setItem('activeCallId', callId);
+                
+                // Redirect to chat room
+                window.location.href = 'chat-active.html';
+            } catch (error) {
+                console.error('Error accepting call:', error);
+                alert('Error accepting call');
+            }
+        }
+        
+        // Decline a waiting call
+        async function declineCall(callId) {
+            if (!confirm('Are you sure you want to decline this call?')) return;
+            
+            try {
+                // Update call status
+                await firebaseDatabase.ref(`calls/${callId}`).update({
+                    status: 'declined',
+                    declinedAt: new Date().toISOString()
+                });
+                
+                // Remove from waiting calls
+                await firebaseDatabase.ref(`users/${currentUser.uid}/waitingCalls/${callId}`).remove();
+                
+                alert('Call declined. The caller will be notified and refunded.');
+                loadWaitingCalls();
+            } catch (error) {
+                console.error('Error declining call:', error);
+                alert('Error declining call');
+            }
+        }
+        
+        // Check for active call
+        async function checkActiveCall() {
+            try {
+                const activeCallId = localStorage.getItem('activeCallId');
+                if (!activeCallId) {
+                    document.getElementById('activeCallSection').style.display = 'none';
+                    return;
+                }
+                
+                const callRef = firebaseDatabase.ref(`calls/${activeCallId}`);
+                const snapshot = await callRef.once('value');
+                
+                if (snapshot.exists()) {
+                    const call = snapshot.val();
+                    
+                    if (call.status === 'active') {
+                        document.getElementById('activeCallSection').style.display = 'block';
+                        document.getElementById('activeCallInfo').innerHTML = `
+                            <p><strong>Caller:</strong> ${call.callerEmail}</p>
+                            <p><strong>Started:</strong> ${new Date(call.startedAt).toLocaleTimeString()}</p>
+                        `;
+                    } else {
+                        document.getElementById('activeCallSection').style.display = 'none';
+                        localStorage.removeItem('activeCallId');
+                    }
+                } else {
+                    document.getElementById('activeCallSection').style.display = 'none';
+                    localStorage.removeItem('activeCallId');
+                }
+            } catch (error) {
+                console.error('Error checking active call:', error);
+            }
+        }
+        
+        // Go to active call
+        function goToActiveCall() {
+            window.location.href = 'chat-active.html';
+        }
+        
+        // End active call
+        async function endActiveCall() {
+            if (!confirm('End this call early?')) return;
+            
+            try {
+                const activeCallId = localStorage.getItem('activeCallId');
+                if (activeCallId) {
+                    await firebaseDatabase.ref(`calls/${activeCallId}`).update({
+                        status: 'ended_early',
+                        endedAt: new Date().toISOString()
+                    });
+                    
+                    localStorage.removeItem('activeCallId');
+                    document.getElementById('activeCallSection').style.display = 'none';
+                    alert('Call ended.');
+                }
+            } catch (error) {
+                console.error('Error ending call:', error);
+                alert('Error ending call');
+            }
+        }
+        
+        // Setup real-time listeners
+        function setupRealtimeListeners() {
+            // Listen for waiting calls updates
+            firebaseDatabase.ref(`users/${currentUser.uid}/waitingCalls`).on('value', (snapshot) => {
+                loadWaitingCalls();
+            });
+            
+            // Listen for user data updates
+            firebaseDatabase.ref(`users/${currentUser.uid}`).on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                    updateUI();
+                }
+            });
+        }
+        
         // Show section
         function showSection(section) {
             // Hide all sections
             document.getElementById('overviewSection').style.display = 'none';
-            document.getElementById('historySection').style.display = 'none';
-            document.getElementById('earningsSection').style.display = 'none';
+            document.getElementById('waitingSection').style.display = 'none';
+            document.getElementById('completedSection').style.display = 'none';
             document.getElementById('profileSection').style.display = 'none';
             
             // Show selected section
             document.getElementById(section + 'Section').style.display = 'block';
-            
-            // Update active button (optional visual feedback)
-            const actionBtns = document.querySelectorAll('.action-btn');
-            actionBtns.forEach(btn => btn.style.opacity = '0.7');
-            
-            // Find and highlight active button
-            const activeBtn = Array.from(actionBtns).find(btn => 
-                btn.querySelector('span').textContent.toLowerCase().includes(section)
-            );
-            if (activeBtn) {
-                activeBtn.style.opacity = '1';
-                activeBtn.style.borderColor = 'var(--primary-color)';
-            }
         }
-
-        // Save user data
-        function saveUserData() {
-            userData[currentUser.id] = myData;
-            localStorage.setItem('userData', JSON.stringify(userData));
-            
-            // Also update users list for homepage
-            updateUsersList();
-        }
-
-        // Render call history
-        function renderCallHistory() {
-            const callHistoryDiv = document.getElementById('callHistory');
-            
-            if (!myData.callHistory || myData.callHistory.length === 0) {
-                callHistoryDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No call history yet</p>';
-                return;
-            }
-            
-            callHistoryDiv.innerHTML = myData.callHistory.map(call => `
-                <div style="border-bottom: 1px solid #333; padding: 15px 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong>${call.callerEmail || 'Anonymous'}</strong>
-                            <p style="margin: 5px 0; color: #aaa;">${new Date(call.timestamp).toLocaleString()}</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="color: #4CAF50; font-weight: bold;">$${call.amount.toFixed(2)}</div>
-                            <div style="color: #888; font-size: 0.9em;">${call.duration} min</div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Render recent activity
-        function renderRecentActivity() {
-            const recentActivityDiv = document.getElementById('recentActivity');
-            
-            if (!myData.callHistory || myData.callHistory.length === 0) {
-                recentActivityDiv.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No recent activity</p>';
-                return;
-            }
-            
-            // Show last 3 calls
-            const recentCalls = myData.callHistory.slice(-3).reverse();
-            recentActivityDiv.innerHTML = recentCalls.map(call => `
-                <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
-                    <div style="background: rgba(108, 99, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-phone" style="color: var(--primary-color);"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <strong>Call with ${(call.callerEmail || 'Anonymous').split('@')[0]}</strong>
-                            <span style="color: #4CAF50; font-weight: bold;">+$${call.amount.toFixed(2)}</span>
-                        </div>
-                        <p style="margin: 5px 0 0 0; color: #aaa; font-size: 0.9em;">
-                            ${new Date(call.timestamp).toLocaleDateString()} • ${call.duration} minutes
-                        </p>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Check for incoming calls
-        function checkForIncomingCalls() {
-            // Check if there's a waiting call in localStorage
-            const currentCall = JSON.parse(localStorage.getItem('currentCall'));
-            
-            if (currentCall && currentCall.listenerId === currentUser.id && myData.availability) {
-                document.getElementById('currentCallAlert').style.display = 'block';
-            } else {
-                document.getElementById('currentCallAlert').style.display = 'none';
-            }
-        }
-
-        // Accept incoming call
-        function acceptCall() {
-            const currentCall = JSON.parse(localStorage.getItem('currentCall'));
-            
-            if (currentCall) {
-                // Start the call - redirect to chat room
-                localStorage.setItem('activeCall', JSON.stringify({
-                    ...currentCall,
-                    startTime: new Date().toISOString(),
-                    listenerId: currentUser.id,
-                    listenerName: myData.name || currentUser.name
-                }));
+        
+        // Logout
+        async function logout() {
+            try {
+                // Set user as unavailable
+                await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(false);
                 
-                // Remove the waiting call
-                localStorage.removeItem('currentCall');
+                // Sign out
+                await firebaseAuth.signOut();
                 
-                // Redirect to chat room
-                window.location.href = 'chat-active.html';
-            }
-        }
-
-        // Decline incoming call
-        function declineCall() {
-            localStorage.removeItem('currentCall');
-            document.getElementById('currentCallAlert').style.display = 'none';
-            alert('Call declined. The caller has been notified and refunded.');
-        }
-
-        // Preview uploaded image
-        function previewImage(event) {
-            const input = event.target;
-            const preview = document.getElementById('profilePreview');
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
+                // Clear local storage
+                localStorage.clear();
                 
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    myData.profilePicture = e.target.result;
-                    saveUserData();
-                    
-                    // Show success message
-                    alert('Profile picture updated! It will now appear on your profile card.');
-                };
-                
-                reader.readAsDataURL(input.files[0]);
+                alert('Logged out successfully!');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Error logging out');
             }
         }
         
-        // View my profile on homepage
-        function viewMyProfile() {
-            // Save any pending changes
-            saveUserData();
-            
-            // Open homepage in new tab
-            window.open('index.html', '_blank');
-        }
-
-        // Logout
-        function logout() {
-            // Set offline before logging out
-            myData.availability = false;
-            saveUserData();
-            
-            localStorage.removeItem('currentUser');
-            alert('Logged out successfully!');
-            window.location.href = 'index.html';
-        }
+        // Handle page unload
+        window.addEventListener('beforeunload', async function() {
+            if (currentUser) {
+                try {
+                    await firebaseDatabase.ref(`users/${currentUser.uid}/availability`).set(false);
+                } catch (error) {
+                    console.error('Error setting offline status:', error);
+                }
+            }
+        });
     </script>
 </body>
 </html>

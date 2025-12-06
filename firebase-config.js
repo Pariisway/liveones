@@ -1,73 +1,28 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    signOut,
-    onAuthStateChanged,
-    deleteUser
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { 
-    getFirestore, 
-    collection, 
-    doc, 
-    setDoc, 
-    getDoc, 
-    updateDoc, 
-    deleteDoc,
-    getDocs,
-    query,
-    where,
-    onSnapshot,
-    serverTimestamp,
-    addDoc,
-    orderBy
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-import { 
-    getStorage, 
-    ref, 
-    uploadBytes, 
-    getDownloadURL,
-    deleteObject
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
-import { 
-    getDatabase,
-    ref as dbRef,
-    set,
-    onValue,
-    push,
-    remove,
-    update
-} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-// Firebase configuration
+// Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyALbIJSI2C-p6IyMtj_F0ZqGyN1i79jOd4",
-    authDomain: "whisper-chat-live.firebaseapp.com",
-    databaseURL: "https://whisper-chat-live-default-rtdb.firebaseio.com",
-    projectId: "whisper-chat-live",
-    storageBucket: "whisper-chat-live.firebasestorage.app",
-    messagingSenderId: "302894848452",
-    appId: "1:302894848452:web:61a7ab21a269533c426c91"
+  apiKey: "AIzaSyALbIJSI2C-p6IyMtj_F0ZqGyN1i79jOd4",
+  authDomain: "whisper-chat-live.firebaseapp.com",
+  databaseURL: "https://whisper-chat-live-default-rtdb.firebaseio.com",
+  projectId: "whisper-chat-live",
+  storageBucket: "whisper-chat-live.firebasestorage.app",
+  messagingSenderId: "302894848452",
+  appId: "1:302894848452:web:61a7ab21a269533c426c91"
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-const realtimeDb = getDatabase(app);
+try {
+  firebase.initializeApp(firebaseConfig);
+} catch (error) {
+  console.log("Firebase already initialized or error:", error);
+}
 
-// Agora Configuration
-const agoraConfig = {
-    appId: '966c8e41da614722a88d4372c3d95dba',
-    token: null
-};
+// Firebase services
+const auth = firebase.auth();
+const database = firebase.database();
+const storage = firebase.storage();
 
-export { 
-    auth, db, storage, realtimeDb, agoraConfig,
-    createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, deleteUser,
-    collection, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, query, where, orderBy, onSnapshot, serverTimestamp, addDoc,
-    ref, uploadBytes, getDownloadURL, deleteObject,
-    dbRef, set, onValue, push, remove, update
-};
+// Export Firebase services
+window.firebaseAuth = auth;
+window.firebaseDatabase = database;
+window.firebaseStorage = storage;
+window.firebaseConfig = firebaseConfig;

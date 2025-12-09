@@ -610,31 +610,147 @@
     </div>
     
     <!-- Navigation -->
-    <nav class="navbar" style="display: none;" id="mainNav">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <i class="fas fa-comment-dots"></i>
-                <span>WhisperChat</span>
-            </div>
-            
-            <div class="nav-menu">
-                <a href="index.html" class="nav-link">Home</a>
-                <a href="index.html#whispers" class="nav-link">Whispers</a>
-                <a href="index.html#how-it-works" class="nav-link">How It Works</a>
-                <a href="index.html#pricing" class="nav-link">Buy Coins</a>
-            </div>
-            
-            <div class="nav-actions">
-                <button id="logoutBtn" class="btn-outline">Log Out</button>
-                <button id="buyCoinsBtn" class="btn-primary">Buy Coins</button>
-            </div>
-            
-            <button class="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
+<nav class="navbar" style="display: none;" id="mainNav">
+    <div class="nav-container">
+        <div class="nav-brand" style="font-size: 1.8rem;">
+            <a href="index.html" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-comment-dots" style="font-size: 2.5rem;"></i>
+                <span style="font-weight: 700; font-size: 1.8rem;">WhisperChat</span>
+            </a>
         </div>
-    </nav>
+        
+        <div class="nav-menu">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="index.html#whispers" class="nav-link">Whispers</a>
+            <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+            <a href="index.html#pricing" class="nav-link">Buy Coins</a>
+        </div>
+        
+        <div class="nav-actions">
+            <button id="logoutBtn" class="btn-outline">Log Out</button>
+            <button id="buyCoinsBtn" class="btn-primary">Buy Coins</button>
+        </div>
+        
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</nav>
+    <!-- Notification Bell for Incoming Calls -->
+<div class="notification-bell" id="notificationBell" style="display: none;">
+    <i class="fas fa-bell"></i>
+    <span class="notification-count" id="notificationCount">0</span>
+    <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+            <h4>Incoming Calls</h4>
+            <button class="btn-small" id="clearNotifications">Clear All</button>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <!-- Notifications will appear here -->
+        </div>
+    </div>
+</div>
 
+<style>
+    .notification-bell {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--gradient);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 999;
+        box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .notification-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ff4757;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .notification-dropdown {
+        position: absolute;
+        top: 70px;
+        right: 0;
+        background: rgba(15, 15, 26, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius);
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        display: none;
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+    }
+    
+    .notification-bell:hover .notification-dropdown {
+        display: block;
+    }
+    
+    .notification-header {
+        padding: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .notification-header h4 {
+        margin: 0;
+        color: white;
+    }
+    
+    .notification-list {
+        padding: 10px;
+    }
+    
+    .notification-item {
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        margin-bottom: 5px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .notification-item:hover {
+        background: rgba(108, 99, 255, 0.1);
+    }
+    
+    .notification-item.call {
+        border-left: 4px solid var(--primary);
+    }
+    
+    .notification-item.message {
+        border-left: 4px solid var(--success);
+    }
+</styles>
+    
     <!-- Dashboard -->
     <section class="dashboard" style="display: none;" id="dashboardMain">
         <div class="dashboard-container">

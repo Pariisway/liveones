@@ -100,185 +100,227 @@ function initSmoothScroll() {
     });
 }
 
-// Load available whispers
-async function loadWhispers() {
-    const whispersGrid = document.getElementById('whispersGrid');
-    if (!whispersGrid) return;
+/// ============================================
+// UPDATED LOAD WHISPERS FUNCTION (WITH FALLBACK)
+// ============================================
+
+function loadWhispers() {
+    console.log("loadWhispers called");
+    const whispersContainer = document.getElementById('whispersContainer');
+    const loadingIndicator = document.querySelector('.loading-indicator');
+    
+    if (!whispersContainer) {
+        console.error("Whispers container not found");
+        return;
+    }
+    
+    // Check if user is authenticated
+    if (!currentUser) {
+        console.log("User not authenticated, showing static whispers");
+        showStaticWhispers();
+        return;
+    }
+    
+    // Check if Firestore is available
+    if (!firebase.firestore) {
+        console.error("Firestore not available");
+        showStaticWhispers();
+        return;
+    }
     
     try {
-        // Check if firebaseDB is available
-        if (typeof firebaseDB === 'undefined') {
-            console.warn("Firebase not loaded yet, showing mock data");
-            showMockWhispers();
-            return;
+        const db = firebase.firestore();
+        
+        // Show loading state
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
         }
         
-        // Get whispers from Firestore
-        const snapshot = await firebaseDB.collection('users')
-            .where('role', '==', 'whisper')
-            .where('isAvailable', '==', true)
-            .limit(12)
-            .get();
-        
-        const whispers = [];
-        snapshot.forEach(doc => {
-            whispers.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // If no whispers found, show mock data
-        if (whispers.length === 0) {
-            showMockWhispers();
-            return;
-        }
-        
-        // Render whispers
-        renderWhispers(whispers);
-        
+        // Query for whispers: users with mode='whisper' and available=true
+        db.collection('users')
+            .where('mode', '==', 'whisper')
+            .where('available', '==', true)
+            .limit(12) // Limit to 12 for performance
+            .get()
+            .then((querySnapshot) => {
+                console.log(`Found ${querySnapshot.size} whispers`);
+                
+                if (querySnapshot.empty) {
+                    console.log("No whispers found in database, showing static whispers");
+                    showStaticWhispers();
+                    return;
+                }
+                
+                let whispersHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const user = doc.data();
+                    whispersHTML += createWhisperCard(user, doc.id);
+                });
+                
+                whispersContainer.innerHTML = whispersHTML;
+                setupWhisperCardEvents();
+                
+                // Hide loading indicator
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            })
+            .catch((error) => {
+                console.error("Error loading whispers from Firestore:", error);
+                showStaticWhispers();
+                
+                // Hide loading indicator
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            });
+            
     } catch (error) {
-        console.error("Error loading whispers:", error);
-        showMockWhispers();
+        console.error("Error in loadWhispers:", error);
+        showStaticWhispers();
     }
 }
 
-// Show mock whispers for demo
-function showMockWhispers() {
-    const mockWhispers = [
+function showStaticWhispers() {
+    console.log("Showing static whispers fallback");
+    const whispersContainer = document.getElementById('whispersContainer');
+    if (!whispersContainer) return;
+    
+    const staticWhispers = [
         {
-            id: '1',
-            displayName: 'Jessica Star',
-            photoURL: 'https://randomuser.me/api/portraits/women/1.jpg',
+            displayName: "Sarah",
+            category: "Lifestyle",
+            bio: "Let's have a meaningful conversation about life",
             rating: 4.9,
-            category: 'Lifestyle',
-            bio: 'Fashion influencer with 500k followers. Love connecting with fans!',
-            calls: 124,
-            earnings: 1488,
-            isAvailable: true
+            totalCalls: 124
         },
         {
-            id: '2',
-            displayName: 'Mike Fitness',
-            photoURL: 'https://randomuser.me/api/portraits/men/2.jpg',
+            displayName: "Alex",
+            category: "Gaming",
+            bio: "PC & Console gamer, let's talk games!",
             rating: 4.8,
-            category: 'Fitness',
-            bio: 'Personal trainer & fitness coach. Let\'s talk health goals!',
-            calls: 89,
-            earnings: 1068,
-            isAvailable: true
+            totalCalls: 89
         },
         {
-            id: '3',
-            displayName: 'Tech Guru',
-            photoURL: 'https://randomuser.me/api/portraits/men/3.jpg',
-            rating: 4.7,
-            category: 'Technology',
-            bio: 'Tech reviewer with 1M+ subscribers. Ask me anything about gadgets!',
-            calls: 156,
-            earnings: 1872,
-            isAvailable: true
-        },
-        {
-            id: '4',
-            displayName: 'Travel Explorer',
-            photoURL: 'https://randomuser.me/api/portraits/women/4.jpg',
+            displayName: "Maya",
+            category: "Music",
+            bio: "Singer and songwriter, love all genres",
             rating: 5.0,
-            category: 'Travel',
-            bio: 'Visited 50+ countries. Share travel stories and get tips!',
-            calls: 67,
-            earnings: 804,
-            isAvailable: true
+            totalCalls: 156
+        },
+        {
+            displayName: "Jordan",
+            category: "Fitness",
+            bio: "Personal trainer and nutrition enthusiast",
+            rating: 4.7,
+            totalCalls: 67
         }
     ];
     
-    renderWhispers(mockWhispers);
-}
-
-// Render whispers to the grid
-function renderWhispers(whispers) {
-    const whispersGrid = document.getElementById('whispersGrid');
-    if (!whispersGrid) return;
-    
-    whispersGrid.innerHTML = '';
-    
-    whispers.forEach(whisper => {
-        const whisperCard = document.createElement('div');
-        whisperCard.className = 'whisper-card fade-in';
-        
-        // Format earnings
-        const earningsFormatted = whisper.earnings ? `$${whisper.earnings}` : '$0';
-        
-        whisperCard.innerHTML = `
-            <div class="whisper-header">
-                <img src="${whisper.photoURL || 'https://via.placeholder.com/300x200?text=Whisper'}" 
-                     alt="${whisper.displayName}" class="whisper-avatar">
-                <div class="whisper-status">Available</div>
+    let whispersHTML = '';
+    staticWhispers.forEach((whisper, index) => {
+        whispersHTML += `
+        <div class="whisper-card" data-whisper-id="static-${index}">
+            <div class="whisper-avatar">
+                <i class="fas fa-user-circle"></i>
             </div>
-            <div class="whisper-body">
-                <div class="whisper-name">
-                    <span>${whisper.displayName}</span>
-                    <div class="whisper-rating">
-                        <i class="fas fa-star"></i> ${whisper.rating || 5.0}
-                    </div>
-                </div>
-                <div class="whisper-category">${whisper.category || 'Influencer'}</div>
-                <p class="whisper-bio">${whisper.bio || 'Available for 5-minute chats!'}</p>
-                <div class="whisper-stats">
-                    <div class="stat-item">
-                        <span class="stat-value">${whisper.calls || 0}</span>
-                        <span class="stat-label">Calls</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">${earningsFormatted}</span>
-                        <span class="stat-label">Earned</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">5min</span>
-                        <span class="stat-label">Duration</span>
-                    </div>
-                </div>
-                <div class="whisper-actions">
-                    <button class="btn-primary btn-block call-whisper-btn" data-whisper-id="${whisper.id}">
-                        <i class="fas fa-phone-alt"></i> Call Now (1 Coin)
-                    </button>
+            <div class="whisper-info">
+                <h3 class="whisper-name">${whisper.displayName}</h3>
+                <div class="whisper-category">${whisper.category}</div>
+                <div class="whisper-bio">
+                    <p>${whisper.bio}</p>
                 </div>
             </div>
+            <div class="whisper-stats">
+                <div class="stat">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>${whisper.totalCalls} calls</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-star"></i>
+                    <span>${whisper.rating}</span>
+                </div>
+            </div>
+            <div class="whisper-actions">
+                <button class="btn-primary btn-small start-call-btn" data-whisper-id="static-${index}">
+                    <i class="fas fa-phone-alt"></i> Call Now (1 coin)
+                </button>
+            </div>
+        </div>
         `;
-        
-        whispersGrid.appendChild(whisperCard);
     });
     
-    // Re-initialize call buttons
-    initCallButtons();
+    whispersContainer.innerHTML = whispersHTML;
+    setupWhisperCardEvents();
 }
 
-// Initialize call buttons
-function initCallButtons() {
-    document.querySelectorAll('.call-whisper-btn').forEach(button => {
-        button.addEventListener('click', function() {
+function setupWhisperCardEvents() {
+    // Add click event to whisper cards
+    document.querySelectorAll('.whisper-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.start-call-btn') && !e.target.closest('.whisper-actions')) {
+                const whisperId = this.getAttribute('data-whisper-id');
+                const whisperName = this.querySelector('.whisper-name').textContent;
+                viewWhisperProfile(whisperId, whisperName);
+            }
+        });
+    });
+    
+    // Add click event to call buttons
+    document.querySelectorAll('.start-call-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
             const whisperId = this.getAttribute('data-whisper-id');
-            startCall(whisperId);
+            const whisperName = this.closest('.whisper-card').querySelector('.whisper-name').textContent;
+            startCall(whisperId, whisperName);
         });
     });
 }
 
-// Start a call with a whisper
-function startCall(whisperId) {
-    // Check if user is logged in
-    if (!currentUser || !window.currentUser || (typeof window.currentUser === 'function' && !window.currentUser())) {
-        showToast('Please log in to start a call');
-        showAuthModal();
+function viewWhisperProfile(whisperId, whisperName) {
+    // Navigate to profile page
+    window.location.href = `profile.html?id=${whisperId}&name=${encodeURIComponent(whisperName)}`;
+}
+
+function startCall(whisperId, whisperName) {
+    if (!currentUser) {
+        alert("Please log in to start a call.");
+        window.location.href = 'index.html';
         return;
     }
     
     // Check if user has coins
-    if (userData && userData.coins < 1) {
-        showToast('You need at least 1 Whisper Coin to make a call');
-        showBuyCoinsModal();
+    if (currentUserData && currentUserData.coins < 1) {
+        alert("You need at least 1 coin to start a call. Please buy coins first.");
+        window.location.href = 'index.html#pricing';
         return;
     }
     
-    // Redirect to call page
-    window.location.href = `call.html?whisper=${whisperId}`;
+    console.log(`Starting call with ${whisperName} (${whisperId})`);
+    
+    // In a real implementation, this would:
+    // 1. Deduct 1 coin from caller
+    // 2. Create a call session in Firestore
+    // 3. Initialize Agora call
+    
+    // For now, simulate starting a call
+    alert(`Starting call with ${whisperName}...\n\nThis would initiate an Agora video call.`);
+    
+    // Redirect to call page or open call interface
+    // window.location.href = `call.html?whisperId=${whisperId}&whisperName=${encodeURIComponent(whisperName)}`;
 }
+
+// Call loadWhispers when auth is ready
+window.addEventListener('auth-ready', function() {
+    console.log("Auth ready, loading whispers...");
+    setTimeout(loadWhispers, 1000);
+});
+
+// Also load whispers on page load as fallback
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, attempting to load whispers...");
+    setTimeout(loadWhispers, 2000);
+});
 
 // Initialize pricing buttons
 function initPricingButtons() {

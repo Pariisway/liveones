@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora Test Call | WhisperChat</title>
+    
+    <!-- Agora RTC SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0f1a;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6c63ff 0%, #bb86fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .test-header p {
+            color: #aaa;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-card h2 {
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-card h2 i {
+            color: #6c63ff;
+        }
+        
+        .video-container {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #localVideo, #remoteVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+        }
+        
+        .video-placeholder i {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6c63ff 0%, #bb86fc 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #ff3742;
+        }
+        
+        .btn-success {
+            background: #2ed573;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #25c463;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .status.connected {
+            background: rgba(46, 213, 115, 0.1);
+            border-left: 4px solid #2ed573;
+        }
+        
+        .status.disconnected {
+            background: rgba(255, 71, 87, 0.1);
+            border-left: 4px solid #ff4757;
+        }
+        
+        .test-instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-instructions h2 {
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .test-instructions ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-instructions li {
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+        
+        .test-instructions strong {
+            color: white;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-video"></i> Agora Video Call Test</h1>
+            <p>Test the Agora video call functionality between two devices</p>
+        </div>
+        
+        <div class="test-grid">
+            <!-- Device 1 -->
+            <div class="test-card">
+                <h2><i class="fas fa-mobile-alt"></i> Device 1 (Caller)</h2>
+                <div class="video-container">
+                    <video id="localVideo" autoplay playsinline></video>
+                    <div id="localPlaceholder" class="video-placeholder">
+                        <i class="fas fa-user-circle"></i>
+                        <p>Your camera will appear here</p>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button id="startBtn1" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Call as Device 1
+                    </button>
+                    <button id="muteBtn1" class="btn btn-secondary" disabled>
+                        <i class="fas fa-microphone"></i> Mute
+                    </button>
+                    <button id="videoBtn1" class="btn btn-secondary" disabled>
+                        <i class="fas fa-video"></i> Video Off
+                    </button>
+                </div>
+                <div id="status1" class="status disconnected">
+                    <strong>Status:</strong> Disconnected
+                </div>
+            </div>
+            
+            <!-- Device 2 -->
+            <div class="test-card">
+                <h2><i class="fas fa-tablet-alt"></i> Device 2 (Receiver)</h2>
+                <div class="video-container">
+                    <video id="remoteVideo" autoplay playsinline></video>
+                    <div id="remotePlaceholder" class="video-placeholder">
+                        <i class="fas fa-user-friends"></i>
+                        <p>Other participant will appear here</p>
+                    </div>
+                </div>
+                <div class="controls">
+                    <button id="startBtn2" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Call as Device 2
+                    </button>
+                    <button id="muteBtn2" class="btn btn-secondary" disabled>
+                        <i class="fas fa-microphone"></i> Mute
+                    </button>
+                    <button id="videoBtn2" class="btn btn-secondary" disabled>
+                        <i class="fas fa-video"></i> Video Off
+                    </button>
+                </div>
+                <div id="status2" class="status disconnected">
+                    <strong>Status:</strong> Disconnected
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Together Button -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button id="testTogetherBtn" class="btn btn-success" style="padding: 15px 40px; font-size: 1.2rem;">
+                <i class="fas fa-users"></i> Simulate Two Devices Together
+            </button>
+            <p style="color: #aaa; margin-top: 10px;">Use this to test on a single device</p>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="test-instructions">
+            <h2><i class="fas fa-info-circle"></i> How to Test</h2>
+            <ol>
+                <li><strong>Two Device Test:</strong> Open this page on two different devices (phone + computer)</li>
+                <li><strong>Device 1:</strong> Click "Start Call as Device 1" on the first device</li>
+                <li><strong>Device 2:</strong> Click "Start Call as Device 2" on the second device</li>
+                <li><strong>Single Device Test:</strong> Click "Simulate Two Devices Together" to test on one device</li>
+                <li>Allow camera and microphone permissions when prompted</li>
+                <li>You should see your own video on the left and the other participant on the right</li>
+            </ol>
+            
+            <h3>Agora Configuration</h3>
+            <div class="code-block">
+                // Agora App ID (Test Mode)<br>
+                const appId = "a5c04f8ae5164d7fa4c8a6b48d5f2e6a";<br>
+                const channel = "test-channel";<br>
+                const token = null; // Using token-free mode for testing
+            </div>
+            
+            <p style="color: #ff6b6b; margin-top: 15px;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Note:</strong> This is a test implementation. In production, you would use proper token generation and user authentication.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+    // Agora configuration
+    const appId = "a5c04f8ae5164d7fa4c8a6b48d5f2e6a"; // Test App ID
+    const channel = "whisperchat-test-channel";
+    let localTracks = {
+        videoTrack: null,
+        audioTrack: null
+    };
+    let remoteTracks = {};
+    let agoraClient = null;
+    let currentDevice = null;
+    
+    // Initialize Agora Client
+    function initAgora(device) {
+        currentDevice = device;
+        
+        // Create Agora client
+        agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+        
+        // Set up event listeners
+        agoraClient.on("user-published", async (user, mediaType) => {
+            console.log(`User ${user.uid} published ${mediaType}`);
+            
+            await agoraClient.subscribe(user, mediaType);
+            
+            if (mediaType === "video") {
+                const remoteVideoTrack = user.videoTrack;
+                const remoteVideoPlayer = document.getElementById("remoteVideo");
+                const remotePlaceholder = document.getElementById("remotePlaceholder");
+                
+                remoteVideoTrack.play(remoteVideoPlayer);
+                remotePlaceholder.style.display = "none";
+                
+                remoteTracks[user.uid] = {
+                    videoTrack: remoteVideoTrack
+                };
+            }
+            
+            if (mediaType === "audio") {
+                const remoteAudioTrack = user.audioTrack;
+                remoteAudioTrack.play();
+                
+                if (!remoteTracks[user.uid]) {
+                    remoteTracks[user.uid] = {};
+                }
+                remoteTracks[user.uid].audioTrack = remoteAudioTrack;
+            }
+            
+            updateStatus(`${device} connected to remote user`, true);
+        });
+        
+        agoraClient.on("user-unpublished", (user, mediaType) => {
+            console.log(`User ${user.uid} unpublished ${mediaType}`);
+            
+            if (mediaType === "video") {
+                const remotePlaceholder = document.getElementById("remotePlaceholder");
+                remotePlaceholder.style.display = "flex";
+            }
+        });
+        
+        agoraClient.on("user-left", (user) => {
+            console.log(`User ${user.uid} left`);
+            delete remoteTracks[user.uid];
+            
+            const remotePlaceholder = document.getElementById("remotePlaceholder");
+            remotePlaceholder.style.display = "flex";
+            
+            updateStatus(`${device} remote user disconnected`, false);
+        });
+        
+        updateStatus(`${device} Agora client initialized`, false);
+    }
+    
+    // Join channel
+    async function joinChannel(device) {
+        if (!agoraClient) {
+            initAgora(device);
+        }
+        
+        try {
+            const uid = device === "Device 1" ? "user1" : "user2";
+            
+            // Join the channel
+            await agoraClient.join(appId, channel, null, uid);
+            console.log(`${device} joined channel successfully`);
+            
+            // Create local tracks
+            localTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+            
+            // Play local video
+            const localVideoPlayer = document.getElementById("localVideo");
+            const localPlaceholder = document.getElementById("localPlaceholder");
+            localTracks.videoTrack.play(localVideoPlayer);
+            localPlaceholder.style.display = "none";
+            
+            // Publish local tracks
+            await agoraClient.publish([localTracks.audioTrack, localTracks.videoTrack]);
+            console.log(`${device} published tracks`);
+            
+            // Enable controls
+            const muteBtn = document.getElementById(`${device === "Device 1" ? "muteBtn1" : "muteBtn2"}`);
+            const videoBtn = document.getElementById(`${device === "Device 1" ? "videoBtn1" : "videoBtn2"}`);
+            
+            muteBtn.disabled = false;
+            videoBtn.disabled = false;
+            
+            updateStatus(`${device} connected to channel`, true);
+            return true;
+            
+        } catch (error) {
+            console.error(`${device} failed to join channel:`, error);
+            updateStatus(`${device} connection failed: ${error.message}`, false);
+            return false;
+        }
+    }
+    
+    // Leave channel
+    async function leaveChannel(device) {
+        if (!agoraClient) return;
+        
+        try {
+            // Stop and close local tracks
+            if (localTracks.videoTrack) {
+                localTracks.videoTrack.stop();
+                localTracks.videoTrack.close();
+            }
+            if (localTracks.audioTrack) {
+                localTracks.audioTrack.stop();
+                localTracks.audioTrack.close();
+            }
+            
+            // Leave the channel
+            await agoraClient.leave();
+            
+            // Reset UI
+            const localPlaceholder = document.getElementById("localPlaceholder");
+            const remotePlaceholder = document.getElementById("remotePlaceholder");
+            
+            localPlaceholder.style.display = "flex";
+            remotePlaceholder.style.display = "flex";
+            
+            // Disable controls
+            const muteBtn = document.getElementById(`${device === "Device 1" ? "muteBtn1" : "muteBtn2"}`);
+            const videoBtn = document.getElementById(`${device === "Device 1" ? "videoBtn1" : "videoBtn2"}`);
+            
+            muteBtn.disabled = true;
+            videoBtn.disabled = true;
+            muteBtn.innerHTML = '<i class="fas fa-microphone"></i> Mute';
+            videoBtn.innerHTML = '<i class="fas fa-video"></i> Video Off';
+            
+            updateStatus(`${device} disconnected`, false);
+            console.log(`${device} left channel`);
+            
+        } catch (error) {
+            console.error(`${device} failed to leave channel:`, error);
+        }
+    }
+    
+    // Update status UI
+    function updateStatus(message, isConnected) {
+        const statusElement = document.getElementById(`status${currentDevice === "Device 1" ? "1" : "2"}`);
+        
+        if (statusElement) {
+            statusElement.innerHTML = `<strong>Status:</strong> ${message}`;
+            statusElement.className = `status ${isConnected ? "connected" : "disconnected"}`;
+        }
+        
+        // Log to console
+        console.log(`[${currentDevice}] ${message}`);
+    }
+    
+    // Toggle audio mute
+    function toggleMute(device) {
+        if (!localTracks.audioTrack) return;
+        
+        const muted = !localTracks.audioTrack.muted;
+        localTracks.audioTrack.setMuted(muted);
+        
+        const muteBtn = document.getElementById(`${device === "Device 1" ? "muteBtn1" : "muteBtn2"}`);
+        muteBtn.innerHTML = muted 
+            ? '<i class="fas fa-microphone-slash"></i> Unmute'
+            : '<i class="fas fa-microphone"></i> Mute';
+    }
+    
+    // Toggle video
+    function toggleVideo(device) {
+        if (!localTracks.videoTrack) return;
+        
+        const enabled = !localTracks.videoTrack.enabled;
+        localTracks.videoTrack.setEnabled(enabled);
+        
+        const videoBtn = document.getElementById(`${device === "Device 1" ? "videoBtn1" : "videoBtn2"}`);
+        videoBtn.innerHTML = enabled
+            ? '<i class="fas fa-video"></i> Video Off'
+            : '<i class="fas fa-video-slash"></i> Video On';
+    }
+    
+    // Event Listeners
+    document.getElementById("startBtn1").addEventListener("click", async () => {
+        const success = await joinChannel("Device 1");
+        if (success) {
+            document.getElementById("startBtn1").innerHTML = '<i class="fas fa-stop"></i> End Call';
+            document.getElementById("startBtn1").className = "btn btn-danger";
+            document.getElementById("startBtn1").onclick = () => leaveChannel("Device 1");
+        }
+    });
+    
+    document.getElementById("startBtn2").addEventListener("click", async () => {
+        const success = await joinChannel("Device 2");
+        if (success) {
+            document.getElementById("startBtn2").innerHTML = '<i class="fas fa-stop"></i> End Call';
+            document.getElementById("startBtn2").className = "btn btn-danger";
+            document.getElementById("startBtn2").onclick = () => leaveChannel("Device 2");
+        }
+    });
+    
+    document.getElementById("muteBtn1").addEventListener("click", () => toggleMute("Device 1"));
+    document.getElementById("muteBtn2").addEventListener("click", () => toggleMute("Device 2"));
+    document.getElementById("videoBtn1").addEventListener("click", () => toggleVideo("Device 1"));
+    document.getElementById("videoBtn2").addEventListener("click", () => toggleVideo("Device 2"));
+    
+    // Simulate two devices together
+    document.getElementById("testTogetherBtn").addEventListener("click", async () => {
+        alert("Simulating two devices connecting...\n\nThis will start two separate Agora clients in one browser for testing.");
+        
+        // Start Device 1
+        let success1 = await joinChannel("Device 1");
+        if (success1) {
+            document.getElementById("startBtn1").innerHTML = '<i class="fas fa-stop"></i> End Call';
+            document.getElementById("startBtn1").className = "btn btn-danger";
+            document.getElementById("startBtn1").onclick = () => leaveChannel("Device 1");
+        }
+        
+        // Wait 2 seconds, then start Device 2
+        setTimeout(async () => {
+            // Need to reinitialize for second "device"
+            agoraClient = null;
+            localTracks = { videoTrack: null, audioTrack: null };
+            remoteTracks = {};
+            
+            let success2 = await joinChannel("Device 2");
+            if (success2) {
+                document.getElementById("startBtn2").innerHTML = '<i class="fas fa-stop"></i> End Call';
+                document.getElementById("startBtn2").className = "btn btn-danger";
+                document.getElementById("startBtn2").onclick = () => leaveChannel("Device 2");
+            }
+        }, 2000);
+    });
+    
+    // Initialize page
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("Agora Test Page Loaded");
+        console.log("Agora SDK Version:", AgoraRTC.VERSION);
+        console.log("App ID:", appId);
+        console.log("Test Channel:", channel);
+        
+        // Request permissions on load
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(() => {
+                    console.log("Camera and microphone access granted");
+                })
+                .catch(error => {
+                    console.warn("Camera/microphone permission not granted:", error);
+                });
+        }
+    });
+    </script>
+</body>
+</html>

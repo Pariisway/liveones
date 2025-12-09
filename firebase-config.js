@@ -329,3 +329,62 @@ window.firebaseDB = db;
 window.firebaseStorage = storage;
 window.currentUser = () => currentUser;
 window.userData = () => userData;
+
+// Add this function to handle dashboard redirect
+function redirectToDashboard() {
+    if (currentUser) {
+        window.location.href = 'dashboard.html';
+    } else {
+        showToast('Please log in first');
+        showAuthModal();
+    }
+}
+
+// Update the button handlers in the auth state change
+function updateUIForAuth(isLoggedIn) {
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const heroSignupBtn = document.getElementById('heroSignupBtn');
+    
+    if (isLoggedIn) {
+        // User is logged in
+        if (loginBtn) {
+            loginBtn.textContent = 'Dashboard';
+            loginBtn.onclick = redirectToDashboard;
+            loginBtn.classList.remove('btn-outline');
+            loginBtn.classList.add('btn-primary');
+        }
+        
+        if (signupBtn) {
+            signupBtn.textContent = 'Log Out';
+            signupBtn.onclick = logoutUser;
+            signupBtn.classList.remove('btn-primary');
+            signupBtn.classList.add('btn-danger');
+        }
+        
+        if (heroSignupBtn) {
+            heroSignupBtn.textContent = 'Go to Dashboard';
+            heroSignupBtn.onclick = redirectToDashboard;
+        }
+    } else {
+        // User is logged out
+        if (loginBtn) {
+            loginBtn.textContent = 'Log In';
+            loginBtn.onclick = showAuthModal;
+            loginBtn.classList.remove('btn-primary');
+            loginBtn.classList.add('btn-outline');
+        }
+        
+        if (signupBtn) {
+            signupBtn.textContent = 'Sign Up Free';
+            signupBtn.onclick = showAuthModal;
+            signupBtn.classList.remove('btn-danger');
+            signupBtn.classList.add('btn-primary');
+        }
+        
+        if (heroSignupBtn) {
+            heroSignupBtn.textContent = 'Start Connecting';
+            heroSignupBtn.onclick = showAuthModal;
+        }
+    }
+}

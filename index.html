@@ -174,70 +174,140 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section class="section pricing-section" id="pricing">
-        <div class="container">
-            <div class="section-header">
-                <h2>Simple, Transparent Pricing</h2>
-                <p>No subscriptions, no hidden fees</p>
+    <!-- Updated Pricing Section -->
+<section class="pricing" id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <h2>Buy Whisper Coins</h2>
+            <p>Get coins to start calling whispers instantly</p>
+        </div>
+        
+        <div class="pricing-grid">
+            <!-- Single Coin Option -->
+            <div class="pricing-card featured">
+                <div class="pricing-header">
+                    <div class="popular-badge">MOST POPULAR</div>
+                    <h3>1 Whisper Coin</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">15</span>
+                        <span class="period">one-time</span>
+                    </div>
+                </div>
+                
+                <div class="pricing-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> 1 Coin = 1 Minute of call time</li>
+                        <li><i class="fas fa-check"></i> Connect with any whisper</li>
+                        <li><i class="fas fa-check"></i> No recurring charges</li>
+                        <li><i class="fas fa-check"></i> Instant delivery</li>
+                        <li><i class="fas fa-check"></i> 24/7 Support</li>
+                    </ul>
+                </div>
+                
+                <button class="btn-primary btn-block" id="buySingleCoin">
+                    <i class="fas fa-shopping-cart"></i> Buy Now for $15
+                </button>
             </div>
             
-            <div class="pricing-cards">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Basic Pack</h3>
-                        <div class="price">$15</div>
-                        <p class="price-sub">per Whisper Coin</p>
+            <!-- Bundle Option -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <div class="save-badge">SAVE $5</div>
+                    <h3>3 Whisper Coins</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">40</span>
+                        <span class="period">one-time</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 1 Whisper Coin</li>
-                        <li><i class="fas fa-check"></i> 5-minute call</li>
-                        <li><i class="fas fa-check"></i> Any Whisper</li>
-                        <li><i class="fas fa-check"></i> Instant connection</li>
-                    </ul>
-                    <button class="btn-primary btn-block" data-amount="1500" data-coins="1">
-                        <i class="fas fa-shopping-cart"></i> Buy 1 Coin
-                    </button>
                 </div>
                 
-                <div class="pricing-card popular">
-                    <div class="popular-badge">MOST POPULAR</div>
-                    <div class="pricing-header">
-                        <h3>Value Pack</h3>
-                        <div class="price">$60</div>
-                        <p class="price-sub">for 5 Coins ($12 each)</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 5 Whisper Coins</li>
-                        <li><i class="fas fa-check"></i> Save $15 total</li>
-                        <li><i class="fas fa-check"></i> All Whispers</li>
-                        <li><i class="fas fa-check"></i> Priority support</li>
+                <div class="pricing-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> 3 Coins = 3 Minutes of call time</li>
+                        <li><i class="fas fa-check"></i> Connect with any whisper</li>
+                        <li><i class="fas fa-check"></i> No recurring charges</li>
+                        <li><i class="fas fa-check"></i> Instant delivery</li>
+                        <li><i class="fas fa-check"></i> 24/7 Support</li>
                     </ul>
-                    <button class="btn-primary btn-block" data-amount="6000" data-coins="5">
-                        <i class="fas fa-shopping-cart"></i> Buy 5 Coins
-                    </button>
                 </div>
                 
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Pro Pack</h3>
-                        <div class="price">$150</div>
-                        <p class="price-sub">for 15 Coins ($10 each)</p>
+                <button class="btn-secondary btn-block" id="buyBundleCoins">
+                    <i class="fas fa-shopping-cart"></i> Buy Now for $40
+                </button>
+            </div>
+            
+            <!-- Premium Bundle -->
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <div class="save-badge">BEST VALUE</div>
+                    <h3>10 Whisper Coins</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">125</span>
+                        <span class="period">one-time</span>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 15 Whisper Coins</li>
-                        <li><i class="fas fa-check"></i> Save $75 total</li>
-                        <li><i class="fas fa-check"></i> All Whispers</li>
-                        <li><i class="fas fa-check"></i> VIP support</li>
-                        <li><i class="fas fa-check"></i> Early access</li>
-                    </ul>
-                    <button class="btn-primary btn-block" data-amount="15000" data-coins="15">
-                        <i class="fas fa-shopping-cart"></i> Buy 15 Coins
-                    </button>
                 </div>
+                
+                <div class="pricing-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> 10 Coins = 10 Minutes of call time</li>
+                        <li><i class="fas fa-check"></i> Connect with any whisper</li>
+                        <li><i class="fas fa-check"></i> No recurring charges</li>
+                        <li><i class="fas fa-check"></i> Instant delivery</li>
+                        <li><i class="fas fa-check"></i> Priority Support</li>
+                    </ul>
+                </div>
+                
+                <button class="btn-secondary btn-block" id="buyPremiumCoins">
+                    <i class="fas fa-crown"></i> Buy Now for $125
+                </button>
             </div>
         </div>
-    </section>
+        
+        <!-- Stripe Test Info -->
+        <div class="stripe-info" style="text-align: center; margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+            <i class="fab fa-stripe" style="font-size: 2rem; color: #635bff; margin-bottom: 10px;"></i>
+            <h4>Secure Payments with Stripe</h4>
+            <p style="color: var(--gray); font-size: 0.9rem;">Test Product ID: <code>prod_TZ0C0wOq1WjSyy</code></p>
+            <p style="color: var(--gray); font-size: 0.9rem;">All payments are processed securely through Stripe</p>
+        </div>
+    </div>
+</section>
+
+<style>
+.pricing-card.featured {
+    transform: scale(1.05);
+    border: 2px solid var(--primary);
+    position: relative;
+}
+
+.popular-badge, .save-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gradient);
+    color: white;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.save-badge {
+    background: linear-gradient(135deg, #ff9a00 0%, #ff5e00 100%);
+}
+
+.stripe-info code {
+    background: rgba(99, 91, 255, 0.2);
+    color: #635bff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: monospace;
+}
+</style>
 
     <!-- Footer -->
     <footer class="footer">

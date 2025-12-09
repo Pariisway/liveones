@@ -522,7 +522,7 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <h3>Loading Dashboard...</h3>
-        <p>Checking authentication status</p>
+        <p>Please wait while we check your authentication</p>
     </div>
     
     <!-- Navigation -->
@@ -737,28 +737,6 @@
                         </button>
                     </form>
                 </div>
-                
-                <!-- Call History Section (Hidden by default) -->
-                <div class="dashboard-card" id="callsSection" style="display: none;">
-                    <div class="card-header">
-                        <h2>Call History</h2>
-                        <div class="filter-options">
-                            <select id="callFilter">
-                                <option value="all">All Calls</option>
-                                <option value="completed">Completed</option>
-                                <option value="missed">Missed</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="recent-calls" id="recentCallsList">
-                        <p style="text-align: center; color: var(--gray); padding: 40px;">
-                            No call history yet. Start making calls to see them here!
-                        </p>
-                    </div>
-                </div>
             </main>
         </div>
     </section>
@@ -783,46 +761,47 @@
     <script src="scripts.js"></script>
     
     <script>
-    // Dashboard-specific JavaScript - FIXED VERSION
+    // Dashboard-specific JavaScript - SIMPLIFIED VERSION
     document.addEventListener('DOMContentLoaded', function() {
         console.log("Dashboard page loaded");
         
-        // Wait a moment for Firebase to initialize
-        setTimeout(function() {
-            checkAuthAndInitialize();
-        }, 500);
+        // Wait for Firebase to initialize
+        setTimeout(checkAuthStatus, 1000);
     });
     
-    function checkAuthAndInitialize() {
+    function checkAuthStatus() {
         console.log("Checking auth status...");
         
-        // Listen for auth state changes
-        auth.onAuthStateChanged(function(user) {
-            console.log("Auth state changed:", user ? "Logged in" : "Logged out");
+        // Check if user is logged in
+        if (!currentUser) {
+            console.log("No user found, checking auth state...");
             
-            if (!user) {
-                console.log("No user logged in, redirecting to home...");
-                // Not logged in, redirect to home
-                window.location.href = 'index.html';
-                return;
-            }
+            // Listen for auth state change
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    console.log("User logged in via auth state change");
+                    initializeDashboard();
+                } else {
+                    console.log("No user logged in, redirecting to home");
+                    window.location.href = 'index.html';
+                }
+            });
             
-            // User is logged in, initialize dashboard
-            console.log("User logged in:", user.email);
-            initializeDashboard(user.uid);
-        });
-        
-        // Also check current user immediately
-        if (currentUser) {
-            console.log("Current user found immediately:", currentUser.email);
-            initializeDashboard(currentUser.uid);
+            // Check again after a short delay
+            setTimeout(function() {
+                if (currentUser) {
+                    initializeDashboard();
+                }
+            }, 2000);
+            
         } else {
-            console.log("No current user found, waiting for auth state change...");
+            console.log("User already logged in:", currentUser.email);
+            initializeDashboard();
         }
     }
     
-    function initializeDashboard(userId) {
-        console.log("Initializing dashboard for user:", userId);
+    function initializeDashboard() {
+        console.log("Initializing dashboard...");
         
         // Hide loading overlay
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -832,33 +811,26 @@
         document.getElementById('dashboardMain').style.display = 'block';
         document.getElementById('mainFooter').style.display = 'block';
         
-        // Initialize dashboard functionality
-        initDashboard();
+        // Load user data
+        loadDashboardData();
+        
+        // Setup event listeners
+        setupDashboardEvents();
     }
     
-    function initDashboard() {
-        console.log("Setting up dashboard functionality...");
+    function loadDashboardData() {
+        if (!currentUser) return;
         
-        // Sidebar navigation
-        document.querySelectorAll('.sidebar-nav a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const section = this.getAttribute('data-section');
-                
-                // Update active link
-                document.querySelectorAll('.sidebar-nav a').forEach(l => {
-                    l.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Show corresponding section
-                document.querySelectorAll('.dashboard-card').forEach(card => {
-                    card.style.display = 'none';
-                });
-                document.getElementById(section + 'Section').style.display = 'block';
-            });
-        });
+        console.log("Loading data for user:", currentUser.uid);
         
+        // Simulate loading for now
+        setTimeout(function() {
+            document.getElementById('userName').textContent = 'PeeWee';
+            document.getElementById('coinsBalance').textContent = '0';
+        }, 500);
+    }
+    
+    function setupDashboardEvents() {
         // Logout button
         document.getElementById('logoutBtn').addEventListener('click', function() {
             auth.signOut().then(() => {
@@ -868,336 +840,19 @@
         
         // Buy coins button
         document.getElementById('buyCoinsBtn').addEventListener('click', function() {
-            showBuyCoinsModal();
+            alert('Buy coins feature coming soon!');
         });
         
         document.getElementById('quickBuyCoins').addEventListener('click', function() {
-            showBuyCoinsModal();
+            alert('Buy coins feature coming soon!');
         });
-        
-        // Mode selection
-        document.getElementById('whisperMode').addEventListener('click', function() {
-            selectMode('whisper');
-        });
-        
-        document.getElementById('callerMode').addEventListener('click', function() {
-            selectMode('caller');
-        });
-        
-        // Availability toggle
-        document.getElementById('availabilityToggle').addEventListener('change', function() {
-            updateAvailability(this.checked);
-        });
-        
-        // Save mode button
-        document.getElementById('saveModeBtn').addEventListener('click', function() {
-            saveModeSettings();
-        });
-        
-        // Profile form
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            saveProfile();
-        });
-        
-        // Avatar upload
-        document.getElementById('userAvatar').addEventListener('click', function() {
-            uploadAvatar();
-        });
-        
-        // Load user data
-        loadDashboardData();
     }
     
-    function selectMode(mode) {
-        const whisperMode = document.getElementById('whisperMode');
-        const callerMode = document.getElementById('callerMode');
-        const availabilitySection = document.getElementById('availabilitySection');
-        const availabilityDescription = document.getElementById('availabilityDescription');
-        
-        if (mode === 'whisper') {
-            whisperMode.classList.add('active');
-            callerMode.classList.remove('active');
-            availabilitySection.style.display = 'block';
-            availabilityDescription.textContent = 'When available, callers can connect with you instantly';
-        } else {
-            callerMode.classList.add('active');
-            whisperMode.classList.remove('active');
-            availabilitySection.style.display = 'none';
-        }
-        
-        // Update user role in Firestore
-        if (currentUser) {
-            db.collection('users').doc(currentUser.uid).update({
-                role: mode,
-                isWhisper: mode === 'whisper',
-                lastModeChange: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                showToast(`Switched to ${mode} mode!`);
-            });
-        }
-    }
-    
-    function updateAvailability(isAvailable) {
-        if (currentUser) {
-            db.collection('users').doc(currentUser.uid).update({
-                isAvailable: isAvailable,
-                lastStatusChange: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                showToast(isAvailable ? 'You are now available' : 'You are now unavailable');
-            });
-        }
-    }
-    
-    function saveModeSettings() {
-        const saveBtn = document.getElementById('saveModeBtn');
-        const originalText = saveBtn.innerHTML;
-        
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        saveBtn.disabled = true;
-        
-        setTimeout(() => {
-            saveBtn.innerHTML = '<i class="fas fa-check"></i> Settings Saved!';
-            showToast('Mode settings saved successfully');
-            
-            setTimeout(() => {
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-            }, 2000);
-        }, 1000);
-    }
-    
-    async function loadDashboardData() {
-        if (!currentUser) {
-            console.log("No current user, cannot load dashboard data");
-            return;
-        }
-        
-        try {
-            console.log("Loading dashboard data for user:", currentUser.uid);
-            const userDoc = await db.collection('users').doc(currentUser.uid).get();
-            if (userDoc.exists) {
-                const data = userDoc.data();
-                console.log("User data loaded:", data);
-                
-                // Update user info
-                document.getElementById('userName').textContent = data.displayName || 'User';
-                document.getElementById('userRole').textContent = data.role === 'whisper' ? 'Whisper' : 'Caller';
-                document.getElementById('userRating').textContent = data.rating?.toFixed(1) || '5.0';
-                document.getElementById('memberSince').textContent = data.createdAt ? 
-                    new Date(data.createdAt.toDate()).getFullYear() : '2024';
-                document.getElementById('coinsBalance').textContent = data.coins || 0;
-                document.getElementById('totalCalls').textContent = data.totalCalls || 0;
-                document.getElementById('totalMinutes').textContent = (data.totalCalls || 0) * 5;
-                document.getElementById('totalEarnings').textContent = data.earnings ? `$${data.earnings}` : '$0';
-                document.getElementById('avgRating').textContent = data.rating?.toFixed(1) || '5.0';
-                
-                // Update mode selection
-                if (data.role === 'whisper') {
-                    document.getElementById('whisperMode').click();
-                    document.getElementById('availabilityToggle').checked = data.isAvailable || false;
-                } else {
-                    document.getElementById('callerMode').click();
-                }
-                
-                // Update profile form
-                document.getElementById('editDisplayName').value = data.displayName || '';
-                document.getElementById('editBio').value = data.bio || '';
-                document.getElementById('editCategory').value = data.category || 'lifestyle';
-                
-                if (data.socialLinks) {
-                    document.getElementById('editInstagram').value = data.socialLinks.instagram || '';
-                    document.getElementById('editTwitter').value = data.socialLinks.twitter || '';
-                    document.getElementById('editTikTok').value = data.socialLinks.tiktok || '';
-                    document.getElementById('editYouTube').value = data.socialLinks.youtube || '';
-                }
-                
-                // Update response rate (simulated)
-                document.getElementById('responseRate').textContent = 
-                    data.totalCalls > 0 ? `${Math.min(100, Math.floor(Math.random() * 20) + 80)}%` : '100%';
-                    
-                // Update avatar if available
-                if (data.photoURL) {
-                    const avatar = document.querySelector('.user-avatar i');
-                    avatar.style.display = 'none';
-                    avatar.parentElement.style.backgroundImage = `url(${data.photoURL})`;
-                    avatar.parentElement.style.backgroundSize = 'cover';
-                    avatar.parentElement.style.backgroundPosition = 'center';
-                }
-                
-                console.log("Dashboard data loaded successfully");
-            }
-        } catch (error) {
-            console.error("Error loading dashboard data:", error);
-        }
-    }
-    
-    async function saveProfile() {
-        if (!currentUser) return;
-        
-        const saveBtn = document.querySelector('#profileForm button[type="submit"]');
-        const originalText = saveBtn.innerHTML;
-        
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-        saveBtn.disabled = true;
-        
-        try {
-            const profileData = {
-                displayName: document.getElementById('editDisplayName').value,
-                bio: document.getElementById('editBio').value,
-                category: document.getElementById('editCategory').value,
-                socialLinks: {
-                    instagram: document.getElementById('editInstagram').value,
-                    twitter: document.getElementById('editTwitter').value,
-                    tiktok: document.getElementById('editTikTok').value,
-                    youtube: document.getElementById('editYouTube').value
-                },
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            // Add payment info if user is a whisper
-            if (userData && userData.role === 'whisper') {
-                profileData.paymentInfo = {
-                    bankName: document.getElementById('editBankName').value,
-                    accountNumber: document.getElementById('editAccountNumber').value,
-                    routingNumber: document.getElementById('editRoutingNumber').value,
-                    paypalEmail: document.getElementById('editPayPalEmail').value
-                };
-            }
-            
-            await db.collection('users').doc(currentUser.uid).update(profileData);
-            
-            // Update UI
-            document.getElementById('userName').textContent = profileData.displayName;
-            showToast('Profile saved successfully!');
-            
-        } catch (error) {
-            console.error("Error saving profile:", error);
-            showToast('Error saving profile', 'error');
-        } finally {
-            saveBtn.innerHTML = originalText;
-            saveBtn.disabled = false;
-        }
-    }
-    
-    function uploadAvatar() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        
-        input.onchange = async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            // Show loading
-            const avatar = document.getElementById('userAvatar');
-            const originalContent = avatar.innerHTML;
-            avatar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            try {
-                // Upload to Firebase Storage
-                const storageRef = storage.ref();
-                const avatarRef = storageRef.child(`avatars/${currentUser.uid}/${file.name}`);
-                const snapshot = await avatarRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
-                
-                // Update user document with photoURL
-                await db.collection('users').doc(currentUser.uid).update({
-                    photoURL: downloadURL,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                // Update avatar in UI
-                const avatarIcon = avatar.querySelector('i');
-                avatarIcon.style.display = 'none';
-                avatar.style.backgroundImage = `url(${downloadURL})`;
-                avatar.style.backgroundSize = 'cover';
-                avatar.style.backgroundPosition = 'center';
-                
-                showToast('Profile picture updated!');
-                
-            } catch (error) {
-                console.error("Error uploading avatar:", error);
-                showToast('Error uploading picture', 'error');
-                avatar.innerHTML = originalContent;
-            }
-        };
-        
-        input.click();
-    }
-    
-    // Show toast notification
-    function showToast(message, type = 'success') {
-        // Remove existing toasts
-        document.querySelectorAll('.toast').forEach(toast => toast.remove());
-        
-        // Create toast element
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerHTML = `
-            <div class="toast-content">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        // Add styles if not already added
-        if (!document.getElementById('toast-styles')) {
-            const styles = document.createElement('style');
-            styles.id = 'toast-styles';
-            styles.textContent = `
-                .toast {
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    background: var(--dark);
-                    color: white;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    z-index: 10000;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    border-left: 4px solid var(--success);
-                    animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-                    max-width: 300px;
-                }
-                .toast-error {
-                    border-left-color: var(--danger);
-                }
-                .toast-warning {
-                    border-left-color: var(--warning);
-                }
-                .toast-content {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                .toast i {
-                    font-size: 20px;
-                }
-                @keyframes slideInRight {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                @keyframes fadeOut {
-                    from { opacity: 1; }
-                    to { opacity: 0; }
-                }
-            `;
-            document.head.appendChild(styles);
-        }
-        
-        document.body.appendChild(toast);
-        
-        // Remove toast after 3 seconds
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.remove();
-            }
-        }, 3000);
-    }
+    // Make sure auth functions are available
+    window.addEventListener('auth-ready', function() {
+        console.log("Auth ready event received");
+        checkAuthStatus();
+    });
     </script>
 </body>
 </html>

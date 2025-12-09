@@ -388,3 +388,29 @@ function updateUIForAuth(isLoggedIn) {
         }
     }
 }
+// Add this at the end of firebase-config.js
+console.log("Firebase config loaded for dashboard");
+
+// Create a global event to signal when auth is ready
+window.dispatchEvent(new Event('auth-ready'));
+
+// Function to check if we can access dashboard
+window.canAccessDashboard = function() {
+    return new Promise((resolve) => {
+        if (currentUser) {
+            resolve(true);
+        } else {
+            // Wait for auth state change
+            const unsubscribe = auth.onAuthStateChanged((user) => {
+                unsubscribe();
+                resolve(!!user);
+            });
+            
+            // Timeout after 3 seconds
+            setTimeout(() => {
+                unsubscribe();
+                resolve(false);
+            }, 3000);
+        }
+    });
+};

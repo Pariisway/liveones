@@ -586,3 +586,91 @@ window.startCall = startCall;
 window.showBuyCoinsModal = showBuyCoinsModal;
 window.showAuthModal = showAuthModal;
 window.closeModal = closeModal;
+
+// ============================================
+// PROFILE UPDATE LISTENER
+// ============================================
+
+// Listen for profile updates from dashboard
+window.addEventListener('storage', function(e) {
+    if (e.key === 'profileUpdated' && currentUser) {
+        console.log("Profile update detected, refreshing whispers...");
+        // Reload user data when profile is updated from dashboard
+        loadWhispers();
+    }
+});
+
+// Function to update user's own whisper card
+function updateUserProfileOnHomePage(userData) {
+    console.log("Updating user profile on home page", userData);
+    
+    // Find and update the user's whisper card
+    const whisperCards = document.querySelectorAll('.whisper-card');
+    whisperCards.forEach(card => {
+        const userId = card.getAttribute('data-user-id');
+        if (userId === userData.uid) {
+            // Update the card with new data
+            const name = card.querySelector('.whisper-name');
+            const category = card.querySelector('.whisper-category');
+            const bio = card.querySelector('.whisper-bio p');
+            
+            if (name) name.textContent = userData.displayName || "User";
+            if (category) category.textContent = userData.category || "Lifestyle";
+            if (bio) bio.textContent = userData.bio || "Available for calls";
+            
+            // Update avatar
+            const avatarContainer = card.querySelector('.whisper-avatar');
+            if (avatarContainer) {
+                if (userData.photoURL) {
+                    // Check if image already exists
+                    let img = avatarContainer.querySelector('img');
+                    if (!img) {
+                        img = document.createElement('img');
+                        img.alt = userData.displayName;
+                        avatarContainer.appendChild(img);
+                    }
+                    img.src = userData.photoURL;
+                    img.style.display = 'block';
+                    
+                    // Hide the icon
+                    const icon = avatarContainer.querySelector('i');
+                    if (icon) icon.style.display = 'none';
+                    
+                    // Handle image load error
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        if (icon) icon.style.display = 'flex';
+                    };
+                } else {
+                    // Show icon, hide image
+                    const img = avatarContainer.querySelector('img');
+                    const icon = avatarContainer.querySelector('i');
+                    if (img) img.style.display = 'none';
+                    if (icon) icon.style.display = 'flex';
+                }
+            }
+        }
+    });
+}
+
+// Enhanced loadWhispers function with real-time updates
+const originalLoadWhispers = window.loadWhispers;
+window.loadWhispers = function() {
+    if (!currentUser) return;
+    
+    // Listen for real-time updates to current user's profile
+    firebase.firestore().collection('users').doc(currentUser.uid)
+        .onSnapshot((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                updateUserProfileOnHomePage(userData);
+            }
+        });
+    
+    // Call original function
+    if (originalLoadWhispers) {
+        originalLoadWhispers();
+    }
+};
+
+console.log("Profile update listener added to scripts.js");

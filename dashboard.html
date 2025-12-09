@@ -68,6 +68,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: none;
         }
         
         .user-avatar .upload-overlay {
@@ -86,6 +87,43 @@
         
         .user-avatar:hover .upload-overlay {
             display: flex;
+        }
+        
+        #removeAvatar {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+        
+        .avatar-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 50% 50%;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
         }
         
         .user-name {
@@ -476,6 +514,46 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast.success {
+            background: var(--success);
+        }
+        
+        .toast.error {
+            background: var(--danger);
+        }
+        
+        .toast i {
+            font-size: 20px;
+        }
+        
         @media (max-width: 1024px) {
             .dashboard-container {
                 grid-template-columns: 1fr;
@@ -518,6 +596,12 @@
     </style>
 </head>
 <body>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Operation successful!</span>
+    </div>
+    
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
@@ -558,9 +642,17 @@
             <aside class="dashboard-sidebar">
                 <div class="user-profile">
                     <div class="user-avatar" id="userAvatar">
-                        <i class="fas fa-user-circle"></i>
+                        <img id="avatarImage" src="" alt="User Avatar" style="display: none;">
+                        <i class="fas fa-user-circle" id="avatarIcon"></i>
                         <div class="upload-overlay">
                             <i class="fas fa-camera"></i>
+                        </div>
+                        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                        <div class="avatar-progress" id="avatarProgress" style="display: none;">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div id="removeAvatar" title="Remove photo">
+                            <i class="fas fa-times"></i>
                         </div>
                     </div>
                     <div class="user-name" id="userName">Loading...</div>
@@ -644,7 +736,7 @@
                                 </p>
                             </div>
                             <label class="switch">
-                                <input type="checkbox" id="availabilityToggle">
+                                <input type="checkbox" id="availabilityToggle" checked>
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -677,12 +769,34 @@
                             <div class="label">Average Rating</div>
                         </div>
                     </div>
+                    
+                    <!-- Recent Calls -->
+                    <div class="recent-calls">
+                        <h3>Recent Calls</h3>
+                        <div id="recentCallsList">
+                            <div class="call-item">
+                                <div class="call-user">
+                                    <div class="call-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="call-info">
+                                        <h4>Anonymous Caller</h4>
+                                        <p>2 minutes ago • 5:23 duration</p>
+                                    </div>
+                                </div>
+                                <span class="call-status status-completed">Completed</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Profile Section (Hidden by default) -->
                 <div class="dashboard-card" id="profileSection" style="display: none;">
                     <div class="card-header">
                         <h2>Edit Profile</h2>
+                        <button class="btn-secondary" id="previewProfileBtn">
+                            <i class="fas fa-eye"></i> Preview Profile
+                        </button>
                     </div>
                     
                     <form id="profileForm">
@@ -723,12 +837,20 @@
                         </div>
                         
                         <div class="form-group">
+                            <label>Pricing (For Whispers Only)</label>
+                            <div class="form-grid">
+                                <input type="number" id="editPricePerMinute" placeholder="Price per minute" min="1" max="100" value="12">
+                                <input type="number" id="editMinCallDuration" placeholder="Minimum minutes" min="1" max="60" value="5">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
                             <label>Payment Information (For Whispers Only)</label>
                             <div class="form-grid">
                                 <input type="text" id="editBankName" placeholder="Bank Name">
                                 <input type="text" id="editAccountNumber" placeholder="Account Number">
                                 <input type="text" id="editRoutingNumber" placeholder="Routing Number">
-                                <input type="text" id="editPayPalEmail" placeholder="PayPal Email">
+                                <input type="email" id="editPayPalEmail" placeholder="PayPal Email">
                             </div>
                         </div>
                         
@@ -736,6 +858,51 @@
                             <i class="fas fa-save"></i> Save Profile Changes
                         </button>
                     </form>
+                </div>
+                
+                <!-- Call History Section -->
+                <div class="dashboard-card" id="callsSection" style="display: none;">
+                    <div class="card-header">
+                        <h2>Call History</h2>
+                        <button class="btn-secondary" id="exportCallsBtn">
+                            <i class="fas fa-download"></i> Export History
+                        </button>
+                    </div>
+                    <div id="callHistoryContent">
+                        <p>No call history yet. Start making or receiving calls!</p>
+                    </div>
+                </div>
+                
+                <!-- Earnings Section -->
+                <div class="dashboard-card" id="earningsSection" style="display: none;">
+                    <div class="card-header">
+                        <h2>Earnings</h2>
+                        <button class="btn-primary" id="withdrawEarningsBtn">
+                            <i class="fas fa-money-bill-wave"></i> Withdraw Earnings
+                        </button>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-calendar-week"></i>
+                            <div class="value" id="weeklyEarnings">$0</div>
+                            <div class="label">This Week</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-calendar-month"></i>
+                            <div class="value" id="monthlyEarnings">$0</div>
+                            <div class="label">This Month</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-calendar-alt"></i>
+                            <div class="value" id="totalEarningsAmount">$0</div>
+                            <div class="label">All Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-wallet"></i>
+                            <div class="value" id="availableBalance">$0</div>
+                            <div class="label">Available</div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
@@ -761,7 +928,10 @@
     <script src="scripts.js"></script>
     
     <script>
-    // Dashboard-specific JavaScript - SIMPLIFIED VERSION
+    // Dashboard-specific JavaScript
+    let currentUserData = null;
+    let unsubscribeUserData = null;
+
     document.addEventListener('DOMContentLoaded', function() {
         console.log("Dashboard page loaded");
         
@@ -772,11 +942,9 @@
     function checkAuthStatus() {
         console.log("Checking auth status...");
         
-        // Check if user is logged in
         if (!currentUser) {
             console.log("No user found, checking auth state...");
             
-            // Listen for auth state change
             auth.onAuthStateChanged(function(user) {
                 if (user) {
                     console.log("User logged in via auth state change");
@@ -787,7 +955,6 @@
                 }
             });
             
-            // Check again after a short delay
             setTimeout(function() {
                 if (currentUser) {
                     initializeDashboard();
@@ -816,6 +983,9 @@
         
         // Setup event listeners
         setupDashboardEvents();
+        
+        // Setup section navigation
+        setupSectionNavigation();
     }
     
     function loadDashboardData() {
@@ -823,14 +993,148 @@
         
         console.log("Loading data for user:", currentUser.uid);
         
-        // Simulate loading for now
-        setTimeout(function() {
-            document.getElementById('userName').textContent = 'PeeWee';
-            document.getElementById('coinsBalance').textContent = '0';
-        }, 500);
+        // Load user data from Firestore
+        const userRef = firebase.firestore().collection('users').doc(currentUser.uid);
+        
+        unsubscribeUserData = userRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                currentUserData = doc.data();
+                updateDashboardUI(currentUserData);
+                updateProfileForm(currentUserData);
+            } else {
+                // Create user document if it doesn't exist
+                createUserDocument();
+            }
+        }, (error) => {
+            console.error("Error loading user data:", error);
+            showToast("Error loading profile data", "error");
+        });
+    }
+    
+    function createUserDocument() {
+        const userData = {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName || "User",
+            photoURL: currentUser.photoURL || "",
+            role: "caller",
+            mode: "caller",
+            available: true,
+            coins: 0,
+            totalCalls: 0,
+            totalMinutes: 0,
+            totalEarnings: 0,
+            rating: 5.0,
+            responseRate: 100,
+            memberSince: new Date().toISOString().split('T')[0],
+            category: "lifestyle",
+            bio: "",
+            socialLinks: {},
+            paymentInfo: {},
+            settings: {}
+        };
+        
+        firebase.firestore().collection('users').doc(currentUser.uid).set(userData)
+            .then(() => {
+                console.log("User document created");
+                currentUserData = userData;
+            })
+            .catch((error) => {
+                console.error("Error creating user document:", error);
+            });
+    }
+    
+    function updateDashboardUI(userData) {
+        // Update user info
+        document.getElementById('userName').textContent = userData.displayName || "User";
+        document.getElementById('userRole').textContent = userData.role === "whisper" ? "Whisper" : "Caller";
+        document.getElementById('coinsBalance').textContent = userData.coins || 0;
+        document.getElementById('userRating').textContent = userData.rating || "5.0";
+        document.getElementById('memberSince').textContent = userData.memberSince || "2024";
+        document.getElementById('responseRate').textContent = (userData.responseRate || 100) + "%";
+        
+        // Update avatar
+        updateAvatar(userData.photoURL);
+        
+        // Update mode
+        const isWhisperMode = userData.mode === "whisper";
+        document.getElementById('whisperMode').classList.toggle('active', isWhisperMode);
+        document.getElementById('callerMode').classList.toggle('active', !isWhisperMode);
+        
+        // Update availability toggle
+        document.getElementById('availabilityToggle').checked = userData.available || false;
+        
+        // Update stats
+        document.getElementById('totalCalls').textContent = userData.totalCalls || 0;
+        document.getElementById('totalMinutes').textContent = userData.totalMinutes || 0;
+        document.getElementById('totalEarnings').textContent = "$" + (userData.totalEarnings || 0);
+        document.getElementById('avgRating').textContent = userData.rating || "5.0";
+        
+        // Update role text
+        document.getElementById('userRole').textContent = userData.role === "whisper" ? "Whisper" : "Caller";
+    }
+    
+    function updateAvatar(photoURL) {
+        const avatarImage = document.getElementById('avatarImage');
+        const avatarIcon = document.getElementById('avatarIcon');
+        const removeAvatarBtn = document.getElementById('removeAvatar');
+        
+        if (photoURL) {
+            avatarImage.src = photoURL;
+            avatarImage.style.display = 'block';
+            avatarIcon.style.display = 'none';
+            removeAvatarBtn.style.display = 'flex';
+        } else {
+            avatarImage.style.display = 'none';
+            avatarIcon.style.display = 'flex';
+            removeAvatarBtn.style.display = 'none';
+        }
+    }
+    
+    function updateProfileForm(userData) {
+        document.getElementById('editDisplayName').value = userData.displayName || "";
+        document.getElementById('editCategory').value = userData.category || "lifestyle";
+        document.getElementById('editBio').value = userData.bio || "";
+        document.getElementById('editInstagram').value = userData.socialLinks?.instagram || "";
+        document.getElementById('editTwitter').value = userData.socialLinks?.twitter || "";
+        document.getElementById('editTikTok').value = userData.socialLinks?.tiktok || "";
+        document.getElementById('editYouTube').value = userData.socialLinks?.youtube || "";
+        document.getElementById('editPricePerMinute').value = userData.pricePerMinute || 12;
+        document.getElementById('editMinCallDuration').value = userData.minCallDuration || 5;
+        document.getElementById('editBankName').value = userData.paymentInfo?.bankName || "";
+        document.getElementById('editAccountNumber').value = userData.paymentInfo?.accountNumber || "";
+        document.getElementById('editRoutingNumber').value = userData.paymentInfo?.routingNumber || "";
+        document.getElementById('editPayPalEmail').value = userData.paymentInfo?.paypalEmail || "";
     }
     
     function setupDashboardEvents() {
+        // Avatar upload
+        setupAvatarUpload();
+        
+        // Profile form submission
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveProfile();
+        });
+        
+        // Mode selection
+        document.getElementById('whisperMode').addEventListener('click', function() {
+            document.getElementById('whisperMode').classList.add('active');
+            document.getElementById('callerMode').classList.remove('active');
+        });
+        
+        document.getElementById('callerMode').addEventListener('click', function() {
+            document.getElementById('callerMode').classList.add('active');
+            document.getElementById('whisperMode').classList.remove('active');
+        });
+        
+        // Save mode settings
+        document.getElementById('saveModeBtn').addEventListener('click', saveModeSettings);
+        
+        // Buy coins buttons
+        document.getElementById('buyCoinsBtn').addEventListener('click', buyCoins);
+        document.getElementById('quickBuyCoins').addEventListener('click', buyCoins);
+        
         // Logout button
         document.getElementById('logoutBtn').addEventListener('click', function() {
             auth.signOut().then(() => {
@@ -838,20 +1142,360 @@
             });
         });
         
-        // Buy coins button
-        document.getElementById('buyCoinsBtn').addEventListener('click', function() {
-            alert('Buy coins feature coming soon!');
+        // Other buttons
+        document.getElementById('previewProfileBtn').addEventListener('click', previewProfile);
+        document.getElementById('exportCallsBtn').addEventListener('click', exportCallHistory);
+        document.getElementById('withdrawEarningsBtn').addEventListener('click', withdrawEarnings);
+        
+        // Remove avatar
+        document.getElementById('removeAvatar').addEventListener('click', removeAvatar);
+    }
+    
+    function setupAvatarUpload() {
+        const avatarUpload = document.getElementById('avatarUpload');
+        const userAvatar = document.getElementById('userAvatar');
+        const progressBar = document.getElementById('avatarProgress');
+        const progressBarInner = progressBar.querySelector('.progress-bar');
+        
+        userAvatar.addEventListener('click', function() {
+            avatarUpload.click();
         });
         
-        document.getElementById('quickBuyCoins').addEventListener('click', function() {
-            alert('Buy coins feature coming soon!');
+        avatarUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadAvatar(file, progressBar, progressBarInner);
+            }
         });
+    }
+    
+    function uploadAvatar(file, progressBar, progressBarInner) {
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast("File size too large. Maximum 5MB.", "error");
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.match('image.*')) {
+            showToast("Please select an image file.", "error");
+            return;
+        }
+        
+        // Show progress bar
+        progressBar.style.display = 'block';
+        progressBarInner.style.width = '0%';
+        
+        // Create storage reference
+        const storage = firebase.storage();
+        const storageRef = storage.ref();
+        const user = auth.currentUser;
+        
+        // Create unique filename
+        const fileExt = file.name.split('.').pop();
+        const filename = `avatar_${Date.now()}.${fileExt}`;
+        const avatarRef = storageRef.child(`avatars/${user.uid}/${filename}`);
+        
+        // Upload file
+        const uploadTask = avatarRef.put(file);
+        
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                // Update progress
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                progressBarInner.style.width = progress + '%';
+            },
+            (error) => {
+                // Handle error
+                console.error("Upload error:", error);
+                progressBar.style.display = 'none';
+                showToast("Upload failed. Please try again.", "error");
+            },
+            () => {
+                // Upload completed successfully
+                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    // Update user profile
+                    user.updateProfile({
+                        photoURL: downloadURL
+                    }).then(() => {
+                        // Update Firestore
+                        firebase.firestore().collection('users').doc(user.uid).update({
+                            photoURL: downloadURL
+                        }).then(() => {
+                            // Update UI
+                            updateAvatar(downloadURL);
+                            progressBar.style.display = 'none';
+                            showToast("Profile photo updated successfully!", "success");
+                            
+                            // Trigger update on home page
+                            localStorage.setItem('profileUpdated', Date.now());
+                        }).catch((error) => {
+                            console.error("Error updating Firestore:", error);
+                            progressBar.style.display = 'none';
+                            showToast("Error updating profile.", "error");
+                        });
+                    }).catch((error) => {
+                        console.error("Error updating profile:", error);
+                        progressBar.style.display = 'none';
+                        showToast("Error updating profile.", "error");
+                    });
+                });
+            }
+        );
+    }
+    
+    function removeAvatar() {
+        if (!confirm("Remove your profile photo?")) return;
+        
+        const user = auth.currentUser;
+        
+        // Update auth profile
+        user.updateProfile({
+            photoURL: ""
+        }).then(() => {
+            // Update Firestore
+            firebase.firestore().collection('users').doc(user.uid).update({
+                photoURL: ""
+            }).then(() => {
+                // Update UI
+                updateAvatar("");
+                showToast("Profile photo removed.", "success");
+                
+                // Trigger update on home page
+                localStorage.setItem('profileUpdated', Date.now());
+            }).catch((error) => {
+                console.error("Error updating Firestore:", error);
+                showToast("Error removing photo.", "error");
+            });
+        }).catch((error) => {
+            console.error("Error updating profile:", error);
+            showToast("Error removing photo.", "error");
+        });
+    }
+    
+    function saveProfile() {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        const profileData = {
+            displayName: document.getElementById('editDisplayName').value,
+            category: document.getElementById('editCategory').value,
+            bio: document.getElementById('editBio').value,
+            socialLinks: {
+                instagram: document.getElementById('editInstagram').value,
+                twitter: document.getElementById('editTwitter').value,
+                tiktok: document.getElementById('editTikTok').value,
+                youtube: document.getElementById('editYouTube').value
+            },
+            pricePerMinute: parseInt(document.getElementById('editPricePerMinute').value) || 12,
+            minCallDuration: parseInt(document.getElementById('editMinCallDuration').value) || 5,
+            paymentInfo: {
+                bankName: document.getElementById('editBankName').value,
+                accountNumber: document.getElementById('editAccountNumber').value,
+                routingNumber: document.getElementById('editRoutingNumber').value,
+                paypalEmail: document.getElementById('editPayPalEmail').value
+            }
+        };
+        
+        // Update auth profile
+        user.updateProfile({
+            displayName: profileData.displayName
+        }).then(() => {
+            // Update Firestore
+            firebase.firestore().collection('users').doc(user.uid).update(profileData)
+                .then(() => {
+                    showToast("Profile updated successfully!", "success");
+                    
+                    // Trigger update on home page
+                    localStorage.setItem('profileUpdated', Date.now());
+                })
+                .catch((error) => {
+                    console.error("Error updating profile:", error);
+                    showToast("Error updating profile.", "error");
+                });
+        }).catch((error) => {
+            console.error("Error updating auth profile:", error);
+            showToast("Error updating profile.", "error");
+        });
+    }
+    
+    function saveModeSettings() {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        const isWhisperMode = document.getElementById('whisperMode').classList.contains('active');
+        const mode = isWhisperMode ? "whisper" : "caller";
+        const available = document.getElementById('availabilityToggle').checked;
+        
+        const updateData = {
+            mode: mode,
+            role: mode, // Also update role
+            available: available
+        };
+        
+        firebase.firestore().collection('users').doc(user.uid).update(updateData)
+            .then(() => {
+                showToast("Mode settings saved!", "success");
+                
+                // Update home page if needed
+                localStorage.setItem('profileUpdated', Date.now());
+            })
+            .catch((error) => {
+                console.error("Error saving mode:", error);
+                showToast("Error saving settings.", "error");
+            });
+    }
+    
+    function buyCoins() {
+        showToast("Coin purchase feature coming soon!", "success");
+        
+        // For now, simulate adding coins
+        const user = auth.currentUser;
+        if (user) {
+            firebase.firestore().collection('users').doc(user.uid).update({
+                coins: firebase.firestore.FieldValue.increment(10)
+            }).then(() => {
+                showToast("10 coins added!", "success");
+            });
+        }
+    }
+    
+    function previewProfile() {
+        // Show a preview modal of how the profile appears to others
+        alert("Profile preview feature coming soon! Your profile looks great!");
+    }
+    
+    function exportCallHistory() {
+        showToast("Exporting call history...", "success");
+        // In a real app, this would generate and download a CSV file
+    }
+    
+    function withdrawEarnings() {
+        const user = auth.currentUser;
+        if (!user || !currentUserData) return;
+        
+        const availableBalance = currentUserData.totalEarnings || 0;
+        
+        if (availableBalance < 20) {
+            showToast("Minimum withdrawal amount is $20", "error");
+            return;
+        }
+        
+        if (!currentUserData.paymentInfo?.paypalEmail && !currentUserData.paymentInfo?.bankName) {
+            showToast("Please add payment information in your profile first.", "error");
+            // Switch to profile section
+            document.querySelector('a[data-section="profile"]').click();
+            return;
+        }
+        
+        if (confirm(`Withdraw $${availableBalance} to your payment method?`)) {
+            showToast("Withdrawal request submitted! Processing takes 3-5 business days.", "success");
+        }
+    }
+    
+    function setupSectionNavigation() {
+        const navLinks = document.querySelectorAll('.sidebar-nav a');
+        const sections = {
+            overview: document.getElementById('overviewSection'),
+            profile: document.getElementById('profileSection'),
+            calls: document.getElementById('callsSection'),
+            earnings: document.getElementById('earningsSection'),
+            settings: document.getElementById('overviewSection'), // Placeholder
+            help: document.getElementById('overviewSection') // Placeholder
+        };
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Update active link
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Get section to show
+                const section = this.getAttribute('data-section');
+                
+                // Hide all sections
+                Object.values(sections).forEach(sec => {
+                    if (sec) sec.style.display = 'none';
+                });
+                
+                // Show selected section
+                if (sections[section]) {
+                    sections[section].style.display = 'block';
+                }
+                
+                // Handle special sections
+                if (section === 'calls') {
+                    loadCallHistory();
+                } else if (section === 'earnings') {
+                    loadEarningsData();
+                }
+            });
+        });
+    }
+    
+    function loadCallHistory() {
+        // Placeholder for call history
+        const content = document.getElementById('callHistoryContent');
+        content.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <i class="fas fa-phone-alt" style="font-size: 48px; color: var(--primary); margin-bottom: 20px;"></i>
+                <h3>No Calls Yet</h3>
+                <p>Start making or receiving calls to see your history here.</p>
+                <button class="btn-primary" onclick="window.location.href='index.html'">
+                    <i class="fas fa-headphones"></i> Start Calling
+                </button>
+            </div>
+        `;
+    }
+    
+    function loadEarningsData() {
+        // Update earnings display
+        if (currentUserData) {
+            document.getElementById('weeklyEarnings').textContent = "$" + (currentUserData.weeklyEarnings || 0);
+            document.getElementById('monthlyEarnings').textContent = "$" + (currentUserData.monthlyEarnings || 0);
+            document.getElementById('totalEarningsAmount').textContent = "$" + (currentUserData.totalEarnings || 0);
+            document.getElementById('availableBalance').textContent = "$" + (currentUserData.totalEarnings || 0);
+        }
+    }
+    
+    function showToast(message, type = "success") {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = toast.querySelector('i');
+        
+        // Update content
+        toastMessage.textContent = message;
+        toast.className = 'toast ' + type;
+        
+        // Update icon
+        if (type === 'success') {
+            toastIcon.className = 'fas fa-check-circle';
+        } else if (type === 'error') {
+            toastIcon.className = 'fas fa-exclamation-circle';
+        }
+        
+        // Show toast
+        toast.style.display = 'flex';
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
     }
     
     // Make sure auth functions are available
     window.addEventListener('auth-ready', function() {
         console.log("Auth ready event received");
         checkAuthStatus();
+    });
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+        if (unsubscribeUserData) {
+            unsubscribeUserData();
+        }
     });
     </script>
 </body>

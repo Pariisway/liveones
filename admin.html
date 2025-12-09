@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | WhisperChat</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-dashboard {
+            padding: 100px 0 50px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+        }
+        
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-title {
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .admin-title i {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .admin-stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: var(--radius);
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .admin-stat-card.orange { border-left-color: var(--warning); }
+        .admin-stat-card.green { border-left-color: var(--success); }
+        .admin-stat-card.red { border-left-color: var(--danger); }
+        .admin-stat-card.purple { border-left-color: var(--primary); }
+        
+        .admin-stat-icon {
+            font-size: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .admin-stat-icon.orange { color: var(--warning); }
+        .admin-stat-icon.green { color: var(--success); }
+        .admin-stat-icon.red { color: var(--danger); }
+        .admin-stat-icon.purple { color: var(--primary); }
+        
+        .admin-stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: white;
+        }
+        
+        .admin-stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .admin-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .admin-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-section h3 {
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-section h3 i {
+            color: var(--primary);
+        }
+        
+        .admin-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .admin-list-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-list-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(108, 99, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .user-details h4 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+        }
+        
+        .user-details p {
+            margin: 0;
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        .user-role {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .role-whisper {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary);
+        }
+        
+        .role-caller {
+            background: rgba(72, 187, 120, 0.2);
+            color: var(--success);
+        }
+        
+        .user-balance {
+            font-weight: 600;
+            color: white;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .btn-icon.edit {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary);
+        }
+        
+        .btn-icon.edit:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-icon.delete {
+            background: rgba(245, 101, 101, 0.2);
+            color: var(--danger);
+        }
+        
+        .btn-icon.delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-icon.coin {
+            background: rgba(237, 137, 54, 0.2);
+            color: var(--warning);
+        }
+        
+        .btn-icon.coin:hover {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .search-bar {
+            margin-bottom: 30px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+        
+        .admin-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 5px;
+        }
+        
+        .admin-tab.active {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary);
+        }
+        
+        .admin-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .admin-warning {
+            background: rgba(237, 137, 54, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            color: var(--gray);
+        }
+        
+        .admin-warning i {
+            color: var(--warning);
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .admin-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .admin-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-list-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .admin-actions {
+                align-self: flex-end;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-comment-dots"></i>
+                <span>WhisperChat Admin</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">View Site</a>
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#users" class="nav-link">Users</a>
+                <a href="#calls" class="nav-link">Calls</a>
+                <a href="#earnings" class="nav-link">Earnings</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button id="adminLogout" class="btn-outline">Log Out</button>
+                <button id="refreshData" class="btn-primary">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Admin Dashboard -->
+    <section class="admin-dashboard">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1 class="admin-title">
+                    <i class="fas fa-shield-alt"></i> Admin Dashboard
+                </h1>
+                <div class="admin-date">
+                    <i class="far fa-calendar"></i>
+                    <span id="currentDate">Loading...</span>
+                </div>
+            </div>
+            
+            <div class="admin-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Restricted Access:</strong> This area is for authorized administrators only. 
+                All actions are logged and monitored.
+            </div>
+            
+            <!-- Stats Overview -->
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon purple">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="admin-stat-value" id="totalUsers">0</div>
+                    <div class="admin-stat-label">Total Users</div>
+                </div>
+                
+                <div class="admin-stat-card green">
+                    <div class="admin-stat-icon green">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="admin-stat-value" id="totalCalls">0</div>
+                    <div class="admin-stat-label">Total Calls</div>
+                </div>
+                
+                <div class="admin-stat-card orange">
+                    <div class="admin-stat-icon orange">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="admin-stat-value" id="totalRevenue">$0</div>
+                    <div class="admin-stat-label">Platform Revenue</div>
+                </div>
+                
+                <div class="admin-stat-card red">
+                    <div class="admin-stat-icon red">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="admin-stat-value" id="reportedIssues">0</div>
+                    <div class="admin-stat-label">Reported Issues</div>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search users, calls, or transactions..." id="adminSearch">
+            </div>
+            
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="users">Users</button>
+                <button class="admin-tab" data-tab="calls">Recent Calls</button>
+                <button class="admin-tab" data-tab="earnings">Earnings</button>
+                <button class="admin-tab" data-tab="support">Support Tickets</button>
+            </div>
+            
+            <!-- Content Sections -->
+            <div class="admin-sections">
+                <!-- Users Section -->
+                <div class="admin-section" id="usersSection">
+                    <h3><i class="fas fa-user-friends"></i> Recent Users</h3>
+                    <div class="admin-list" id="usersList">
+                        <div class="admin-list-item">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <h4>Jessica Star</h4>
+                                    <p>jessica@example.com</p>
+                                </div>
+                            </div>
+                            <div class="user-role role-whisper">Whisper</div>
+                            <div class="user-balance">$1,488</div>
+                            <div class="admin-actions">
+                                <button class="btn-icon edit" title="Edit User">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon coin" title="Add Coins">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p style="text-align: center; color: var(--gray); padding: 20px;">
+                            Loading users...
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Calls Section -->
+                <div class="admin-section" id="callsSection">
+                    <h3><i class="fas fa-phone-alt"></i> Recent Calls</h3>
+                    <div class="admin-list" id="callsList">
+                        <div class="admin-list-item">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <h4>Caller → Whisper</h4>
+                                    <p>5:00 minutes • Just now</p>
+                                </div>
+                            </div>
+                            <div class="user-balance">$15</div>
+                            <div class="admin-actions">
+                                <button class="btn-icon edit" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p style="text-align: center; color: var(--gray); padding: 20px;">
+                            Loading calls...
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Earnings Section -->
+                <div class="admin-section" id="earningsSection">
+                    <h3><i class="fas fa-wallet"></i> Today's Earnings</h3>
+                    <div class="admin-list" id="earningsList">
+                        <div class="admin-list-item">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <h4>Mike Fitness</h4>
+                                    <p>3 calls today</p>
+                                </div>
+                            </div>
+                            <div class="user-balance">$36</div>
+                            <div class="admin-actions">
+                                <button class="btn-icon edit" title="Payment Details">
+                                    <i class="fas fa-receipt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p style="text-align: center; color: var(--gray); padding: 20px;">
+                            Loading earnings...
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Support Section -->
+                <div class="admin-section" id="supportSection">
+                    <h3><i class="fas fa-headset"></i> Recent Tickets</h3>
+                    <div class="admin-list" id="supportList">
+                        <div class="admin-list-item">
+                            <div class="user-info">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-details">
+                                    <h4>Connection Issue</h4>
+                                    <p>Priority: Medium • 2 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="user-role role-whisper">Open</div>
+                            <div class="admin-actions">
+                                <button class="btn-icon edit" title="Respond">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p style="text-align: center; color: var(--gray); padding: 20px;">
+                            Loading tickets...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script>
+    // Admin Dashboard JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current date
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+        
+        // Check if user is admin (you'll need to implement proper admin authentication)
+        checkAdminAccess();
+        
+        // Initialize admin dashboard
+        initAdminDashboard();
+    });
+    
+    function checkAdminAccess() {
+        // In a real implementation, you would check if the user has admin privileges
+        // For now, we'll just check if they're logged in
+        if (!currentUser) {
+            alert("Admin access only. Please log in.");
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // You should add proper admin role checking here
+        console.log("Admin access granted for:", currentUser.email);
+    }
+    
+    function initAdminDashboard() {
+        // Tab switching
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active tab
+                document.querySelectorAll('.admin-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Load tab data
+                loadTabData(tabId);
+            });
+        });
+        
+        // Logout button
+        document.getElementById('adminLogout').addEventListener('click', function() {
+            if (confirm("Are you sure you want to log out?")) {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                });
+            }
+        });
+        
+        // Refresh button
+        document.getElementById('refreshData').addEventListener('click', function() {
+            loadAdminData();
+            showToast("Data refreshed");
+        });
+        
+        // Search functionality
+        document.getElementById('adminSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            filterAdminData(searchTerm);
+        });
+        
+        // Load initial data
+        loadAdminData();
+        loadTabData('users');
+    }
+    
+    async function loadAdminData() {
+        try {
+            // Load total users
+            const usersSnapshot = await db.collection('users').get();
+            document.getElementById('totalUsers').textContent = usersSnapshot.size;
+            
+            // Load total calls
+            const callsSnapshot = await db.collection('calls').get();
+            document.getElementById('totalCalls').textContent = callsSnapshot.size;
+            
+            // Calculate revenue (simulated)
+            const revenue = callsSnapshot.size * 3; // $3 per call
+            document.getElementById('totalRevenue').textContent = `$${revenue}`;
+            
+            // Update users list
+            updateUsersList(usersSnapshot);
+            
+        } catch (error) {
+            console.error("Error loading admin data:", error);
+        }
+    }
+    
+    async function loadTabData(tabId) {
+        try {
+            switch(tabId) {
+                case 'users':
+                    await loadUsersTab();
+                    break;
+                case 'calls':
+                    await loadCallsTab();
+                    break;
+                case 'earnings':
+                    await loadEarningsTab();
+                    break;
+                case 'support':
+                    await loadSupportTab();
+                    break;
+            }
+        } catch (error) {
+            console.error(`Error loading ${tabId} tab:`, error);
+        }
+    }
+    
+    async function loadUsersTab() {
+        const usersSnapshot = await db.collection('users').limit(10).get();
+        updateUsersList(usersSnapshot);
+    }
+    
+    function updateUsersList(snapshot) {
+        const usersList = document.getElementById('usersList');
+        if (!usersList) return;
+        
+        usersList.innerHTML = '';
+        
+        if (snapshot.empty) {
+            usersList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No users found</p>';
+            return;
+        }
+        
+        snapshot.forEach(doc => {
+            const user = doc.data();
+            const listItem = document.createElement('div');
+            listItem.className = 'admin-list-item';
+            
+            listItem.innerHTML = `
+                <div class="user-info">
+                    <div class="user-avatar">
+                        ${user.photoURL ? `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : '<i class="fas fa-user"></i>'}
+                    </div>
+                    <div class="user-details">
+                        <h4>${user.displayName || 'Anonymous'}</h4>
+                        <p>${user.email || 'No email'}</p>
+                    </div>
+                </div>
+                <div class="user-role ${user.role === 'whisper' ? 'role-whisper' : 'role-caller'}">
+                    ${user.role === 'whisper' ? 'Whisper' : 'Caller'}
+                </div>
+                <div class="user-balance">
+                    ${user.role === 'whisper' ? `$${user.earnings || 0}` : `${user.coins || 0} coins`}
+                </div>
+                <div class="admin-actions">
+                    <button class="btn-icon edit" title="Edit User" onclick="editUser('${doc.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon coin" title="Add Coins" onclick="addCoins('${doc.id}')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            `;
+            
+            usersList.appendChild(listItem);
+        });
+    }
+    
+    async function loadCallsTab() {
+        const callsList = document.getElementById('callsList');
+        if (!callsList) return;
+        
+        try {
+            const callsSnapshot = await db.collection('calls')
+                .orderBy('endTime', 'desc')
+                .limit(10)
+                .get();
+            
+            callsList.innerHTML = '';
+            
+            if (callsSnapshot.empty) {
+                callsList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No calls found</p>';
+                return;
+            }
+            
+            // We'll need to load user data for each call
+            const calls = [];
+            for (const doc of callsSnapshot.docs) {
+                const call = doc.data();
+                calls.push(call);
+            }
+            
+            // Display calls (simplified for now)
+            calls.forEach(call => {
+                const listItem = document.createElement('div');
+                listItem.className = 'admin-list-item';
+                
+                const duration = call.duration ? `${Math.floor(call.duration / 60)}:${(call.duration % 60).toString().padStart(2, '0')}` : '5:00';
+                
+                listItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="user-details">
+                            <h4>Call Completed</h4>
+                            <p>${duration} • ${formatTimeAgo(call.endTime)}</p>
+                        </div>
+                    </div>
+                    <div class="user-balance">$15</div>
+                    <div class="admin-actions">
+                        <button class="btn-icon edit" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                `;
+                
+                callsList.appendChild(listItem);
+            });
+            
+        } catch (error) {
+            console.error("Error loading calls:", error);
+            callsList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Error loading calls</p>';
+        }
+    }
+    
+    async function loadEarningsTab() {
+        const earningsList = document.getElementById('earningsList');
+        if (!earningsList) return;
+        
+        try {
+            const whispersSnapshot = await db.collection('users')
+                .where('role', '==', 'whisper')
+                .orderBy('earnings', 'desc')
+                .limit(10)
+                .get();
+            
+            earningsList.innerHTML = '';
+            
+            if (whispersSnapshot.empty) {
+                earningsList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No whispers found</p>';
+                return;
+            }
+            
+            whispersSnapshot.forEach(doc => {
+                const whisper = doc.data();
+                const listItem = document.createElement('div');
+                listItem.className = 'admin-list-item';
+                
+                listItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            ${whisper.photoURL ? `<img src="${whisper.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : '<i class="fas fa-user"></i>'}
+                        </div>
+                        <div class="user-details">
+                            <h4>${whisper.displayName || 'Anonymous Whisper'}</h4>
+                            <p>${whisper.totalCalls || 0} calls • Rating: ${whisper.rating?.toFixed(1) || '5.0'}</p>
+                        </div>
+                    </div>
+                    <div class="user-balance">$${whisper.earnings || 0}</div>
+                    <div class="admin-actions">
+                        <button class="btn-icon edit" title="Payment Details" onclick="viewEarnings('${doc.id}')">
+                            <i class="fas fa-receipt"></i>
+                        </button>
+                    </div>
+                `;
+                
+                earningsList.appendChild(listItem);
+            });
+            
+        } catch (error) {
+            console.error("Error loading earnings:", error);
+            earningsList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Error loading earnings</p>';
+        }
+    }
+    
+    async function loadSupportTab() {
+        // This would connect to your support ticket system
+        const supportList = document.getElementById('supportList');
+        if (supportList) {
+            supportList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">Support system coming soon</p>';
+        }
+    }
+    
+    function filterAdminData(searchTerm) {
+        // Implement search filtering
+        console.log("Searching for:", searchTerm);
+        // You would filter the displayed lists based on the search term
+    }
+    
+    function editUser(userId) {
+        alert(`Edit user ${userId} - This feature will open a user editor modal`);
+        // In a real implementation, you would open a modal to edit the user
+    }
+    
+    function addCoins(userId) {
+        const coins = prompt("How many coins to add?", "1");
+        if (coins && !isNaN(coins)) {
+            db.collection('users').doc(userId).update({
+                coins: firebase.firestore.FieldValue.increment(parseInt(coins))
+            }).then(() => {
+                showToast(`${coins} coins added to user`);
+                loadAdminData();
+            });
+        }
+    }
+    
+    function viewEarnings(userId) {
+        alert(`View earnings for user ${userId} - This would show detailed earnings report`);
+    }
+    
+    function formatTimeAgo(timestamp) {
+        if (!timestamp || !timestamp.toDate) return 'Recently';
+        
+        const date = timestamp.toDate();
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} min ago`;
+        if (diffMins < 1440) {
+            const hours = Math.floor(diffMins / 60);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        }
+        return date.toLocaleDateString();
+    }
+    
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+    </script>
+</body>
+</html>

@@ -716,3 +716,257 @@ window.loadWhispers = function() {
 };
 
 console.log("Profile update listener added to scripts.js");
+// ============================================
+// CALL NOTIFICATION SYSTEM
+// ============================================
+
+let incomingCallNotifications = [];
+let notificationInterval = null;
+
+function setupCallNotifications() {
+    if (!currentUser) return;
+    
+    console.log("Setting up call notifications for user:", currentUser.uid);
+    
+    // Check if user is a whisper
+    if (currentUserData && currentUserData.mode === 'whisper' && currentUserData.available) {
+        startNotificationListener();
+    }
+    
+    // Listen for mode changes
+    if (unsubscribeUserData) {
+        // We're already listening to user data changes
+    } else {
+        // Set up listener for user data
+        const userRef = firebase.firestore().collection('users').doc(currentUser.uid);
+        unsubscribeUserData = userRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const userData = doc.data();
+                if (userData.mode === 'whisper' && userData.available) {
+                    startNotificationListener();
+                } else {
+                    stopNotificationListener();
+                }
+            }
+        });
+    }
+}
+
+function startNotificationListener() {
+    if (notificationInterval) {
+        clearInterval(notificationInterval);
+    }
+    
+    // Simulate incoming calls for testing
+    notificationInterval = setInterval(() => {
+        // 10% chance of getting a call every 30 seconds
+        if (Math.random() < 0.1) {
+            simulateIncomingCall();
+        }
+    }, 30000);
+    
+    console.log("Call notification listener started");
+}
+
+function stopNotificationListener() {
+    if (notificationInterval) {
+        clearInterval(notificationInterval);
+        notificationInterval = null;
+    }
+    console.log("Call notification listener stopped");
+}
+
+function simulateIncomingCall() {
+    const callers = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley'];
+    const caller = callers[Math.floor(Math.random() * callers.length)];
+    
+    const notification = {
+        id: Date.now(),
+        type: 'call',
+        callerName: caller,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'waiting'
+    };
+    
+    addIncomingCallNotification(notification);
+}
+
+function addIncomingCallNotification(notification) {
+    incomingCallNotifications.unshift(notification);
+    
+    // Limit to 10 notifications
+    if (incomingCallNotifications.length > 10) {
+        incomingCallNotifications = incomingCallNotifications.slice(0, 10);
+    }
+    
+    updateNotificationUI();
+    
+    // Show desktop notification if supported
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`📞 Incoming Call from ${notification.callerName}`, {
+            body: 'Click to answer the call',
+            icon: 'https://pariisway.github.io/liveones/favicon.ico',
+            tag: 'whisperchat-call'
+        });
+    }
+    
+    // Play notification sound
+    playNotificationSound();
+    
+    // Flash browser tab
+    flashBrowserTab();
+}
+
+function updateNotificationUI() {
+    const notificationBell = document.getElementById('notificationBell');
+    const notificationCount = document.getElementById('notificationCount');
+    const notificationList = document.getElementById('notificationList');
+    
+    if (!notificationBell || !notificationCount || !notificationList) return;
+    
+    // Update count
+    const callCount = incomingCallNotifications.filter(n => n.type === 'call' && n.status === 'waiting').length;
+    notificationCount.textContent = callCount;
+    
+    // Show/hide bell
+    if (callCount > 0) {
+        notificationBell.style.display = 'flex';
+    } else {
+        notificationBell.style.display = 'none';
+    }
+    
+    // Update notification list
+    let notificationsHTML = '';
+    incomingCallNotifications.forEach(notification => {
+        notificationsHTML += `
+        <div class="notification-item ${notification.type}">
+            <div class="notification-content">
+                <div class="notification-header">
+                    <strong>${notification.type === 'call' ? '📞 Call' : '✉️ Message'}</strong>
+                    <small>${notification.timestamp}</small>
+                </div>
+                <p>${notification.type === 'call' 
+                    ? `From: ${notification.callerName}` 
+                    : notification.message || 'New message'}</p>
+                ${notification.status === 'waiting' && notification.type === 'call' 
+                    ? `<button class="btn-small btn-primary answer-call-btn" data-id="${notification.id}">Answer</button>
+                       <button class="btn-small btn-outline decline-call-btn" data-id="${notification.id}">Decline</button>`
+                    : `<span class="notification-status ${notification.status}">${notification.status}</span>`
+                }
+            </div>
+        </div>
+        `;
+    });
+    
+    notificationList.innerHTML = notificationsHTML || '<p style="text-align: center; padding: 20px; color: var(--gray);">No notifications</p>';
+    
+    // Add event listeners to answer/decline buttons
+    document.querySelectorAll('.answer-call-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.getAttribute('data-id'));
+            answerCallNotification(id);
+        });
+    });
+    
+    document.querySelectorAll('.decline-call-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = parseInt(this.getAttribute('data-id'));
+            declineCallNotification(id);
+        });
+    });
+}
+
+function answerCallNotification(id) {
+    const notification = incomingCallNotifications.find(n => n.id === id);
+    if (notification) {
+        notification.status = 'answered';
+        updateNotificationUI();
+        
+        // Start the call
+        alert(`Answering call from ${notification.callerName}...\n\nThis would start an Agora video call.`);
+        
+        // In real implementation:
+        // startAgoraCall(notification.callerId);
+    }
+}
+
+function declineCallNotification(id) {
+    const notification = incomingCallNotifications.find(n => n.id === id);
+    if (notification) {
+        notification.status = 'declined';
+        updateNotificationUI();
+    }
+}
+
+function playNotificationSound() {
+    // Create notification sound
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+        
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+        console.log("Audio context not supported:", error);
+    }
+}
+
+function flashBrowserTab() {
+    if (!document.hidden) return;
+    
+    const originalTitle = document.title;
+    let flashCount = 0;
+    const maxFlashes = 10;
+    
+    const flashInterval = setInterval(() => {
+        document.title = document.title === originalTitle 
+            ? '📞 INCOMING CALL! - WhisperChat' 
+            : originalTitle;
+        
+        flashCount++;
+        
+        if (flashCount >= maxFlashes * 2) {
+            clearInterval(flashInterval);
+            document.title = originalTitle;
+        }
+    }, 500);
+}
+
+// Request notification permission
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+                console.log('Notification permission:', permission);
+            });
+        }
+    }
+}
+
+// Call this when dashboard initializes
+window.addEventListener('auth-ready', function() {
+    setTimeout(requestNotificationPermission, 2000);
+    setTimeout(setupCallNotifications, 3000);
+});
+
+// Clear all notifications
+document.addEventListener('click', function(e) {
+    if (e.target.id === 'clearNotifications') {
+        incomingCallNotifications = incomingCallNotifications.filter(n => n.status === 'waiting');
+        updateNotificationUI();
+    }
+});
+

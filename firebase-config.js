@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 // ===== THIRD-PARTY CONFIGURATION =====
-const STRIPE_PUBLISHABLE_KEY = "pk_live_51SP9s4Rq1zgRH7tLgHlNWLcpK8wPWWpi0Kn5br1kyzjtVTFeuumj08wyDQ7dkwCnwEZTWklgc0agz6llxfWsdSP300rWyAOidO";
+const STRIPE_PUBLISHABLE_KEY = "pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I";
 const AGORA_APP_ID = "966c8e41da614722a88d4372c3d95dba";
 
 // ===== INITIALIZATION =====
@@ -35,41 +35,19 @@ let currentCallId = null;
 
 // ===== AUTHENTICATION HANDLER =====
 let authInitialized = false;
-let redirecting = false;
 
 function initializeAuth() {
     if (authInitialized) return;
     
     auth.onAuthStateChanged(async (user) => {
+        console.log("🚨 AUTH STATE CHANGED - User:", user ? "Logged in" : "Logged out");
+        console.log("Current page:", window.location.pathname);
+        
         currentUser = user;
-        console.log("Auth state changed:", user ? "Logged in" : "Logged out");
         
         if (user) {
             try {
                 await loadUserData(user.uid);
-                
-                // CRITICAL FIX: Only redirect from homepage to dashboard ONCE after login
-                const currentPage = window.location.pathname;
-                const isHomePage = currentPage.includes('index.html') || currentPage === '/' || currentPage === '';
-                const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
-                
-                console.log('Current page:', currentPage, 'Is home page:', isHomePage, 'Just logged in:', justLoggedIn);
-                
-                // ONLY redirect if:
-                // 1. User just logged in (has justLoggedIn flag)
-                // 2. User is on the homepage (not dashboard or other pages)
-                // 3. We're not already redirecting
-                if (justLoggedIn && isHomePage && !redirecting) {
-                    console.log('Redirecting from homepage to dashboard...');
-                    redirecting = true;
-                    sessionStorage.removeItem('justLoggedIn');
-                    
-                    // Small delay to show login success message
-                    setTimeout(() => {
-                        window.location.href = 'enhanced-dashboard.html';
-                    }, 1500);
-                }
-                
                 updateUIForAuth(true, user);
                 
                 if (sessionStorage.getItem('newUser') === 'true') {
@@ -85,8 +63,6 @@ function initializeAuth() {
         } else {
             userData = null;
             updateUIForAuth(false, null);
-            redirecting = false;
-            sessionStorage.removeItem('justLoggedIn');
         }
     });
     
@@ -163,7 +139,6 @@ async function signUpWithEmail(email, password, displayName, role = 'caller') {
         });
         
         sessionStorage.setItem('newUser', 'true');
-        sessionStorage.setItem('justLoggedIn', 'true'); // Mark as just logged in
         
         showToast('Account created successfully!', 'success');
         return { success: true, user: userCredential.user };
@@ -178,7 +153,6 @@ async function signUpWithEmail(email, password, displayName, role = 'caller') {
 async function signInWithEmail(email, password) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        sessionStorage.setItem('justLoggedIn', 'true'); // Mark as just logged in
         
         showToast('Logged in successfully!', 'success');
         return { success: true, user: userCredential.user };
@@ -202,8 +176,6 @@ async function signInWithGoogle() {
             sessionStorage.setItem('newUser', 'true');
         }
         
-        sessionStorage.setItem('justLoggedIn', 'true'); // Mark as just logged in
-        
         showToast('Logged in with Google!', 'success');
         return { success: true, user: result.user };
         
@@ -225,17 +197,8 @@ async function logoutUser() {
             });
         }
         
-        // Clear session storage
-        sessionStorage.removeItem('justLoggedIn');
-        sessionStorage.removeItem('newUser');
-        
         await auth.signOut();
         showToast('Logged out successfully', 'success');
-        
-        // Always redirect to home page on logout
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1000);
         
     } catch (error) {
         console.error("Logout error:", error);
@@ -280,7 +243,7 @@ async function switchUserRole(newRole) {
         };
         
         if (newRole === 'whisper') {
-            updates.isAvailable = false; // Start as unavailable
+            updates.isAvailable = false;
         } else {
             updates.isAvailable = false;
         }
@@ -292,14 +255,12 @@ async function switchUserRole(newRole) {
         
         showToast(`Role switched to ${newRole}`, 'success');
         
-        // Update UI
         updateRoleSwitchUI(newRole);
         
         if (newRole === 'whisper') {
             updateWhisperUI(false);
         }
         
-        // Reload dashboard data
         if (typeof loadDashboardData === 'function') {
             loadDashboardData();
         }
@@ -315,7 +276,7 @@ async function switchUserRole(newRole) {
 
 // ===== UI FUNCTIONS =====
 function updateUIForAuth(isLoggedIn, user) {
-    console.log('updateUIForAuth called:', isLoggedIn, user);
+    console.log('updateUIForAuth called. Logged in:', isLoggedIn);
     
     const loginBtn = document.getElementById('loginBtn');
     const signupBtn = document.getElementById('signupBtn');
@@ -408,13 +369,11 @@ function updateRoleSwitchUI(role) {
     if (roleToggle) {
         roleToggle.checked = role === 'whisper';
         
-        // Update label
         const roleLabel = document.getElementById('roleLabel');
         if (roleLabel) {
             roleLabel.textContent = role === 'whisper' ? 'Whisper Mode' : 'Caller Mode';
         }
         
-        // Show/hide availability section
         const availabilitySection = document.getElementById('availabilitySection');
         if (availabilitySection) {
             availabilitySection.style.display = role === 'whisper' ? 'block' : 'none';
@@ -427,7 +386,6 @@ function updateWhisperUI(isAvailable) {
     if (availabilityToggle) {
         availabilityToggle.checked = isAvailable;
         
-        // Update status indicator
         const statusIndicator = document.getElementById('statusIndicator');
         const statusText = document.getElementById('statusText');
         
@@ -592,7 +550,6 @@ async function startCallWithWhisper(whisperId) {
         console.error("Error starting call:", error);
         showToast('Error starting call: ' + error.message, 'error');
         
-        // Refund coin on error
         if (userData) {
             await db.collection('users').doc(currentUser.uid).update({
                 coins: firebase.firestore.FieldValue.increment(1),
@@ -834,9 +791,6 @@ async function loadWhispers() {
                     <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--text-gray); margin-bottom: 20px;"></i>
                     <h3>No whispers available at the moment</h3>
                     <p>Check back soon or become a whisper yourself!</p>
-                    ${currentUser ? `<button class="btn-outline" onclick="window.location.href='enhanced-dashboard.html'" style="margin-top: 20px;">
-                        <i class="fas fa-user-plus"></i> Switch to Whisper Mode
-                    </button>` : ''}
                 </div>
             `;
             return;

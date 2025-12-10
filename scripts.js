@@ -34,6 +34,11 @@ async function loginUser(email, password) {
         const result = await signInWithEmail(email, password);
         if (result.success) {
             closeModal();
+            // MANUAL redirect to dashboard (not automatic)
+            showToast('Login successful! Going to dashboard...', 'success');
+            setTimeout(() => {
+                window.location.href = 'enhanced-dashboard.html';
+            }, 1500);
             return true;
         }
         return false;
@@ -49,6 +54,11 @@ async function signupUser(email, password, displayName, role) {
         const result = await signUpWithEmail(email, password, displayName, role);
         if (result.success) {
             closeModal();
+            // MANUAL redirect to dashboard (not automatic)
+            showToast('Account created! Going to dashboard...', 'success');
+            setTimeout(() => {
+                window.location.href = 'enhanced-dashboard.html';
+            }, 1500);
             return true;
         }
         return false;
@@ -97,6 +107,8 @@ function formatDate(date) {
 
 // ===== INITIALIZATION =====
 function initializeApp() {
+    console.log("🚀 Initializing app...");
+    
     initMobileMenu();
     
     // Setup event listeners
@@ -184,6 +196,11 @@ function initializeApp() {
             
             try {
                 await signInWithGoogle();
+                // MANUAL redirect after Google login
+                showToast('Login successful! Going to dashboard...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'enhanced-dashboard.html';
+                }, 1500);
             } finally {
                 googleLoginBtn.innerHTML = originalText;
                 googleLoginBtn.disabled = false;
@@ -201,6 +218,11 @@ function initializeApp() {
             
             try {
                 await signInWithGoogle();
+                // MANUAL redirect after Google signup
+                showToast('Account created! Going to dashboard...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'enhanced-dashboard.html';
+                }, 1500);
             } finally {
                 googleSignupBtn.innerHTML = originalText;
                 googleSignupBtn.disabled = false;

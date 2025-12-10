@@ -602,12 +602,65 @@
     <script src="scripts.js"></script>
     
     <script>
+        // Dashboard initialization
+        let dashboardInitialized = false;
+        
+        function initializeDashboard() {
+            if (dashboardInitialized) return;
+            dashboardInitialized = true;
+            
+            console.log("🔧 Initializing dashboard...");
+            console.log("Current user on dashboard init:", currentUser);
+            console.log("User data on dashboard init:", userData);
+            
+            initMobileMenu();
+            
+            // Use auth state to determine if user is logged in
+            auth.onAuthStateChanged((user) => {
+                console.log("🔄 Dashboard auth state changed:", user ? "Logged in" : "Logged out");
+                
+                if (!user) {
+                    console.log("⚠️ User not logged in on dashboard, showing message");
+                    showToast('Please log in to view dashboard', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                    return;
+                }
+                
+                // User is logged in, proceed with dashboard
+                console.log("✅ User is logged in, loading dashboard data");
+                
+                // Wait for userData to load
+                const checkUserData = setInterval(() => {
+                    if (userData) {
+                        clearInterval(checkUserData);
+                        loadDashboardData();
+                        
+                        // Setup logout button
+                        const logoutBtn = document.getElementById('logoutBtn');
+                        if (logoutBtn) {
+                            logoutBtn.addEventListener('click', logoutUser);
+                        }
+                        
+                        // Update user nav
+                        const userNav = document.getElementById('userNav');
+                        if (userNav && userData.displayName) {
+                            userNav.textContent = userData.displayName || user.email || 'User';
+                        }
+                    }
+                }, 100);
+            });
+        }
+        
         async function loadDashboardData() {
             if (!userData) {
                 console.log('Waiting for user data...');
                 setTimeout(loadDashboardData, 1000);
                 return;
             }
+            
+            console.log("📊 Loading dashboard data for user:", userData);
             
             // Update coin balance
             document.getElementById('coinBalance').textContent = userData.coins || 0;
@@ -620,6 +673,16 @@
             document.getElementById('userRating').textContent = rating.toFixed(1);
             
             // Update star rating
+            updateStarRating(rating);
+            
+            // Update role management
+            updateRoleUI();
+            
+            // Load call history
+            await loadCallHistory();
+        }
+        
+        function updateStarRating(rating) {
             const starRating = document.getElementById('starRating');
             const fullStars = Math.floor(rating);
             const hasHalfStar = rating % 1 >= 0.5;
@@ -635,21 +698,19 @@
                 }
             }
             starRating.innerHTML = stars;
-            
-            // Update role management
-            updateRoleUI();
-            
-            // Load call history
-            await loadCallHistory();
         }
         
         function updateRoleUI() {
             const role = userData.role || 'caller';
             const isAvailable = userData.isAvailable || false;
             
+            console.log("Updating role UI. Role:", role, "Available:", isAvailable);
+            
             // Update role toggle
             const roleToggle = document.getElementById('roleToggle');
-            roleToggle.checked = role === 'whisper';
+            if (roleToggle) {
+                roleToggle.checked = role === 'whisper';
+            }
             
             // Update role label and description
             const roleLabel = document.getElementById('roleLabel');
@@ -660,39 +721,48 @@
             const startWhisperingBtn = document.getElementById('startWhisperingBtn');
             
             if (role === 'whisper') {
-                roleLabel.textContent = 'Whisper Mode';
-                roleDescription.textContent = 'You are currently a whisper. Switch to caller mode to connect with other whispers.';
-                callerDescription.style.display = 'none';
-                whisperDescription.style.display = 'block';
-                availabilitySection.style.display = 'block';
-                startWhisperingBtn.innerHTML = '<i class="fas fa-phone"></i> <span>Take a Call</span>';
-                startWhisperingBtn.onclick = () => {
-                    showToast('Check the whispers page to see available calls!', 'info');
-                    setTimeout(() => {
-                        window.location.href = 'index.html#whispers';
-                    }, 1500);
-                };
+                if (roleLabel) roleLabel.textContent = 'Whisper Mode';
+                if (roleDescription) roleDescription.textContent = 'You are currently a whisper. Switch to caller mode to connect with other whispers.';
+                if (callerDescription) callerDescription.style.display = 'none';
+                if (whisperDescription) whisperDescription.style.display = 'block';
+                if (availabilitySection) availabilitySection.style.display = 'block';
+                
+                if (startWhisperingBtn) {
+                    startWhisperingBtn.innerHTML = '<i class="fas fa-phone"></i> <span>Take a Call</span>';
+                    startWhisperingBtn.onclick = () => {
+                        showToast('Check the whispers page to see available calls!', 'info');
+                        setTimeout(() => {
+                            window.location.href = 'index.html#whispers';
+                        }, 1500);
+                    };
+                }
                 
                 // Update availability
                 const availabilityToggle = document.getElementById('availabilityToggle');
                 const statusIndicator = document.getElementById('statusIndicator');
                 const statusText = document.getElementById('statusText');
                 
-                availabilityToggle.checked = isAvailable;
-                statusIndicator.className = 'status-indicator ' + (isAvailable ? 'available' : '');
-                statusText.textContent = isAvailable ? 'Currently available for calls' : 'Currently unavailable';
+                if (availabilityToggle) availabilityToggle.checked = isAvailable;
+                if (statusIndicator) statusIndicator.className = 'status-indicator ' + (isAvailable ? 'available' : '');
+                if (statusText) statusText.textContent = isAvailable ? 'Currently available for calls' : 'Currently unavailable';
                 
             } else {
-                roleLabel.textContent = 'Caller Mode';
-                roleDescription.textContent = 'You are currently a caller. Switch to whisper mode to earn coins by taking calls.';
-                callerDescription.style.display = 'block';
-                whisperDescription.style.display = 'none';
-                availabilitySection.style.display = 'none';
-                startWhisperingBtn.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Start Whispering</span>';
-                startWhisperingBtn.onclick = () => {
-                    document.getElementById('roleToggle').checked = true;
-                    handleRoleToggle();
-                };
+                if (roleLabel) roleLabel.textContent = 'Caller Mode';
+                if (roleDescription) roleDescription.textContent = 'You are currently a caller. Switch to whisper mode to earn coins by taking calls.';
+                if (callerDescription) callerDescription.style.display = 'block';
+                if (whisperDescription) whisperDescription.style.display = 'none';
+                if (availabilitySection) availabilitySection.style.display = 'none';
+                
+                if (startWhisperingBtn) {
+                    startWhisperingBtn.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Start Whispering</span>';
+                    startWhisperingBtn.onclick = () => {
+                        const roleToggle = document.getElementById('roleToggle');
+                        if (roleToggle) {
+                            roleToggle.checked = true;
+                            handleRoleToggle();
+                        }
+                    };
+                }
             }
         }
         
@@ -718,8 +788,11 @@
         
         function startAsWhisper() {
             if (userData.role === 'caller') {
-                document.getElementById('roleToggle').checked = true;
-                handleRoleToggle();
+                const roleToggle = document.getElementById('roleToggle');
+                if (roleToggle) {
+                    roleToggle.checked = true;
+                    handleRoleToggle();
+                }
             } else {
                 showToast('Check the whispers page to see available calls!', 'info');
                 setTimeout(() => {
@@ -780,29 +853,10 @@
             }
         }
         
-        // Initialize dashboard
+        // Initialize dashboard when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            initMobileMenu();
-            
-            // Check if user is logged in
-            if (!currentUser) {
-                showToast('Please log in to view dashboard', 'warning');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-                return;
-            }
-            
-            // Load dashboard data
-            setTimeout(loadDashboardData, 1000);
-            
-            // Setup logout button
-            document.getElementById('logoutBtn').addEventListener('click', logoutUser);
-            
-            // Update user nav
-            if (currentUser) {
-                document.getElementById('userNav').textContent = currentUser.displayName || currentUser.email || 'User';
-            }
+            console.log("🏠 Dashboard DOM loaded");
+            initializeDashboard();
             
             // Setup role toggle
             const roleToggle = document.getElementById('roleToggle');
@@ -815,7 +869,24 @@
             if (availabilityToggle) {
                 availabilityToggle.addEventListener('change', handleAvailabilityToggle);
             }
+            
+            // Add redirect blocker
+            window.addEventListener('beforeunload', function(e) {
+                console.log("Page unloading, current URL:", window.location.href);
+            });
         });
+        
+        // Monitor for any redirects
+        let lastUrl = window.location.href;
+        setInterval(() => {
+            if (window.location.href !== lastUrl) {
+                console.log("🚨 UNEXPECTED REDIRECT DETECTED!");
+                console.log("From:", lastUrl);
+                console.log("To:", window.location.href);
+                console.trace("Stack trace:");
+                lastUrl = window.location.href;
+            }
+        }, 100);
     </script>
 </body>
 </html>

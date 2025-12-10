@@ -133,7 +133,17 @@ function initializeApp() {
             const password = document.getElementById('loginPassword')?.value;
             
             if (email && password) {
-                await loginUser(email, password);
+                const loginBtn = loginForm.querySelector('button[type="submit"]');
+                const originalText = loginBtn.innerHTML;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                loginBtn.disabled = true;
+                
+                try {
+                    await loginUser(email, password);
+                } finally {
+                    loginBtn.innerHTML = originalText;
+                    loginBtn.disabled = false;
+                }
             }
         });
     }
@@ -149,7 +159,17 @@ function initializeApp() {
             const role = document.querySelector('input[name="role"]:checked')?.value || 'caller';
             
             if (email && password && displayName) {
-                await signupUser(email, password, displayName, role);
+                const signupBtn = signupForm.querySelector('button[type="submit"]');
+                const originalText = signupBtn.innerHTML;
+                signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+                signupBtn.disabled = true;
+                
+                try {
+                    await signupUser(email, password, displayName, role);
+                } finally {
+                    signupBtn.innerHTML = originalText;
+                    signupBtn.disabled = false;
+                }
             }
         });
     }
@@ -158,7 +178,16 @@ function initializeApp() {
     const googleLoginBtn = document.getElementById('googleLoginBtn');
     if (googleLoginBtn) {
         googleLoginBtn.addEventListener('click', async () => {
-            await signInWithGoogle();
+            const originalText = googleLoginBtn.innerHTML;
+            googleLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+            googleLoginBtn.disabled = true;
+            
+            try {
+                await signInWithGoogle();
+            } finally {
+                googleLoginBtn.innerHTML = originalText;
+                googleLoginBtn.disabled = false;
+            }
         });
     }
     
@@ -166,7 +195,16 @@ function initializeApp() {
     const googleSignupBtn = document.getElementById('googleSignupBtn');
     if (googleSignupBtn) {
         googleSignupBtn.addEventListener('click', async () => {
-            await signInWithGoogle();
+            const originalText = googleSignupBtn.innerHTML;
+            googleSignupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+            googleSignupBtn.disabled = true;
+            
+            try {
+                await signInWithGoogle();
+            } finally {
+                googleSignupBtn.innerHTML = originalText;
+                googleSignupBtn.disabled = false;
+            }
         });
     }
     

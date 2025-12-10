@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 // ===== THIRD-PARTY CONFIGURATION =====
-const STRIPE_PUBLISHABLE_KEY = "pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I";
+const STRIPE_PUBLISHABLE_KEY = "pk_live_51TZ0C0wOq1WjSyy00EaQ2V8sZ4v7e4D6vK8J4q9X7y3mN1pL2r5t8gHjK4l9M7w3bQ6c8d9f0g1h2j3";
 const AGORA_APP_ID = "966c8e41da614722a88d4372c3d95dba";
 
 // ===== INITIALIZATION =====
@@ -32,6 +32,7 @@ let agoraClient = null;
 let localStream = null;
 let remoteStream = null;
 let currentCallId = null;
+let redirecting = false; // Prevents multiple redirects
 
 // ===== AUTHENTICATION HANDLER =====
 let authInitialized = false;
@@ -47,12 +48,18 @@ function initializeAuth() {
             try {
                 await loadUserData(user.uid);
                 
-                // REDIRECT TO DASHBOARD ON LOGIN
-                if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-                    // Small delay to show login success message
-                    setTimeout(() => {
-                        window.location.href = 'enhanced-dashboard.html';
-                    }, 1000);
+                // Only redirect to dashboard if we JUST logged in (not on page refresh)
+                const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
+                
+                if (justLoggedIn && (window.location.pathname.includes('index.html') || window.location.pathname === '/')) {
+                    sessionStorage.removeItem('justLoggedIn');
+                    if (!redirecting) {
+                        redirecting = true;
+                        console.log('Redirecting to dashboard after login...');
+                        setTimeout(() => {
+                            window.location.href = 'enhanced-dashboard.html';
+                        }, 1500);
+                    }
                 }
                 
                 updateUIForAuth(true, user);
@@ -70,6 +77,7 @@ function initializeAuth() {
         } else {
             userData = null;
             updateUIForAuth(false, null);
+            redirecting = false;
         }
     });
     
@@ -146,6 +154,7 @@ async function signUpWithEmail(email, password, displayName, role = 'caller') {
         });
         
         sessionStorage.setItem('newUser', 'true');
+        sessionStorage.setItem('justLoggedIn', 'true'); // Mark as just logged in
         
         showToast('Account created successfully!', 'success');
         return { success: true, user: userCredential.user };
@@ -160,13 +169,9 @@ async function signUpWithEmail(email, password, displayName, role = 'caller') {
 async function signInWithEmail(email, password) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        sessionStorage.setItem('justLoggedIn', 'true'); // Mark as just logged in
+        
         showToast('Logged in successfully!', 'success');
-        
-        // Redirect to dashboard after successful login
-        setTimeout(() => {
-            window.location.href = 'enhanced-dashboard.html';
-        }, 500);
-        
         return { success: true, user: userCredential.user };
         
     } catch (error) {
@@ -188,13 +193,9 @@ async function signInWithGoogle() {
             sessionStorage.setItem('newUser', 'true');
         }
         
+        sessionStorage.setItem('justLoggedIn', 'true'); // Mark as just logged in
+        
         showToast('Logged in with Google!', 'success');
-        
-        // Redirect to dashboard after successful login
-        setTimeout(() => {
-            window.location.href = 'enhanced-dashboard.html';
-        }, 500);
-        
         return { success: true, user: result.user };
         
     } catch (error) {
@@ -214,6 +215,10 @@ async function logoutUser() {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
+        
+        // Clear session storage
+        sessionStorage.removeItem('justLoggedIn');
+        sessionStorage.removeItem('newUser');
         
         await auth.signOut();
         showToast('Logged out successfully', 'success');
@@ -412,6 +417,18 @@ function updateWhisperUI(isAvailable) {
     const availabilityToggle = document.getElementById('availabilityToggle');
     if (availabilityToggle) {
         availabilityToggle.checked = isAvailable;
+        
+        // Update status indicator
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        
+        if (statusIndicator) {
+            statusIndicator.className = 'status-indicator ' + (isAvailable ? 'available' : '');
+        }
+        
+        if (statusText) {
+            statusText.textContent = isAvailable ? 'Currently available for calls' : 'Currently unavailable';
+        }
     }
 }
 
@@ -424,14 +441,17 @@ async function getAvailableWhispers(limit = 12) {
             .limit(limit)
             .get();
         
-        return snapshot.docs.map(doc => ({
+        const whispers = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
         
+        console.log(`Loaded ${whispers.length} whispers`);
+        return whispers;
+        
     } catch (error) {
         console.error("Error getting whispers:", error);
-        showToast('Error loading whispers', 'error');
+        // Don't show error toast for public pages - just return empty array
         return [];
     }
 }
@@ -446,6 +466,8 @@ async function updateWhisperAvailability(isAvailable) {
         });
         
         userData.isAvailable = isAvailable;
+        updateWhisperUI(isAvailable);
+        
         showToast(`You are now ${isAvailable ? 'available' : 'unavailable'} for calls`, 'success');
         
     } catch (error) {
@@ -804,6 +826,9 @@ async function loadWhispers() {
                     <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--text-gray); margin-bottom: 20px;"></i>
                     <h3>No whispers available at the moment</h3>
                     <p>Check back soon or become a whisper yourself!</p>
+                    ${currentUser ? `<button class="btn-outline" onclick="window.location.href='enhanced-dashboard.html'" style="margin-top: 20px;">
+                        <i class="fas fa-user-plus"></i> Switch to Whisper Mode
+                    </button>` : ''}
                 </div>
             `;
             return;
@@ -924,8 +949,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Handle page exit/refresh - set user back to caller
 window.addEventListener('beforeunload', function() {
-    if (currentUser && userData && userData.role === 'whisper') {
-        // We can't use async here, but we can try to sync call
-        // For now, we'll rely on logout handler
-    }
+    // We'll handle this in the logout function instead
 });

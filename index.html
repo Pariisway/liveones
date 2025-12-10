@@ -18,12 +18,12 @@
     <style>
         /* Additional styles for the centered hero */
         .hero {
-            min-height: 90vh;
+            min-height: 80vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 120px 0 80px;
+            padding: 120px 0 60px;
         }
         
         .hero-content {
@@ -36,10 +36,11 @@
             margin-bottom: var(--space-xl) !important;
             text-align: center;
             width: 100%;
+            font-size: 4rem !important;
         }
         
         .hero-subtitle {
-            font-size: 1.8rem !important;
+            font-size: 1.5rem !important;
             color: var(--text-gray);
             margin-bottom: var(--space-2xl);
             line-height: 1.6;
@@ -49,15 +50,23 @@
         }
         
         .hero-buttons {
-            margin-top: var(--space-2xl);
+            display: flex;
+            gap: 20px !important;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: var(--space-2xl) auto;
+            max-width: 800px;
         }
         
         .hero-buttons .btn {
-            min-width: 250px;
+            min-width: 200px;
+            font-size: 1.2rem !important;
+            padding: 18px 35px !important;
         }
         
+        /* Stats section */
         .stats-section {
-            padding: 60px 0;
+            padding: 40px 0;
             background: rgba(108, 99, 255, 0.05);
             border-radius: var(--radius-lg);
             margin: 40px auto;
@@ -67,44 +76,44 @@
         .stats {
             display: flex;
             justify-content: center;
-            gap: var(--space-2xl);
+            gap: var(--space-xl);
             flex-wrap: wrap;
         }
         
         .stat-item {
             text-align: center;
             flex: 1;
-            min-width: 200px;
+            min-width: 150px;
         }
         
         .stat-value {
-            font-size: 3.5rem !important;
+            font-size: 2.5rem !important;
             font-weight: 800;
             background: var(--gradient);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
         .stat-label {
             color: var(--text-gray);
-            font-size: 1.2rem !important;
+            font-size: 1rem !important;
             font-weight: 500;
         }
         
         /* Feature highlights */
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: var(--space-xl);
-            margin: var(--space-2xl) 0;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin: var(--space-xl) 0;
         }
         
         .feature-card {
             background: var(--card-bg);
-            padding: var(--space-xl);
+            padding: var(--space-lg);
             border-radius: var(--radius-lg);
             text-align: center;
             transition: var(--transition);
@@ -116,46 +125,97 @@
         }
         
         .feature-icon {
-            font-size: 3rem !important;
+            font-size: 2.5rem !important;
             color: var(--primary);
-            margin-bottom: var(--space-lg);
-        }
-        
-        .feature-card h3 {
-            font-size: 1.8rem !important;
             margin-bottom: var(--space-md);
         }
         
+        .feature-card h3 {
+            font-size: 1.5rem !important;
+            margin-bottom: var(--space-sm);
+        }
+        
         .feature-card p {
-            font-size: 1.1rem !important;
+            font-size: 1rem !important;
+            color: var(--text-gray);
+        }
+        
+        /* Immediate whispers section */
+        .immediate-whispers {
+            padding: 60px 0;
+            background: var(--dark-light);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem !important;
+            margin-bottom: var(--space-md);
+        }
+        
+        .section-header p {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.2rem !important;
             color: var(--text-gray);
         }
         
         /* CTA Section */
         .cta-section {
             text-align: center;
-            padding: 80px 0;
+            padding: 60px 0;
             background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 101, 132, 0.1) 100%);
             border-radius: var(--radius-lg);
-            margin: var(--space-2xl) 0;
+            margin: var(--space-xl) 0;
         }
         
         .cta-section h2 {
-            font-size: 3rem !important;
-            margin-bottom: var(--space-lg);
+            font-size: 2.5rem !important;
+            margin-bottom: var(--space-md);
         }
         
         .cta-section p {
-            font-size: 1.3rem !important;
+            font-size: 1.2rem !important;
             max-width: 600px;
-            margin: 0 auto var(--space-xl);
+            margin: 0 auto var(--space-lg);
             color: var(--text-gray);
         }
         
         .cta-button {
-            font-size: 1.4rem !important;
-            padding: 20px 50px !important;
-            min-height: 70px !important;
+            font-size: 1.3rem !important;
+            padding: 18px 40px !important;
+            min-height: 60px !important;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1/-1;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-gray);
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -206,23 +266,7 @@
                     </button>
                 </div>
                 
-                <div class="stats-section">
-                    <div class="stats">
-                        <div class="stat-item">
-                            <div class="stat-value">10,000+</div>
-                            <div class="stat-label">Active Members</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">50,000+</div>
-                            <div class="stat-label">Calls Made</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4.9★</div>
-                            <div class="stat-label">Average Rating</div>
-                        </div>
-                    </div>
-                </div>
-                
+                <!-- Feature Highlights -->
                 <div class="features">
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -248,23 +292,41 @@
                         <p>One coin = five minutes. No subscriptions, no commitments</p>
                     </div>
                 </div>
+                
+                <!-- Stats -->
+                <div class="stats-section">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">10K+</div>
+                            <div class="stat-label">Active Members</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">50K+</div>
+                            <div class="stat-label">Calls Made</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Average Rating</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Available Whispers -->
-    <section class="whispers-section" id="whispers">
+    <!-- Available Whispers (MOVED HERE - right after buttons) -->
+    <section class="immediate-whispers" id="whispers">
         <div class="container">
             <div class="section-header">
-                <h2>Available Whispers</h2>
-                <p>Connect with amazing people ready to have meaningful conversations with you</p>
+                <h2>Available Whispers Right Now</h2>
+                <p>Connect instantly with amazing people ready to have meaningful conversations with you</p>
             </div>
             
             <div class="whispers-grid" id="whispersGrid">
-                <!-- Whispers will be loaded here -->
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading whispers...</p>
+                <!-- Whispers will be loaded here dynamically -->
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                    <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
+                    <p>Loading available whispers...</p>
                 </div>
             </div>
             
@@ -501,90 +563,10 @@
     <script src="scripts.js"></script>
     
     <script>
-        // Load whispers function
-        async function loadWhispers() {
-            try {
-                const whispers = await getAvailableWhispers();
-                const container = document.getElementById('whispersGrid');
-                
-                if (!container) return;
-                
-                if (whispers.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-user-slash"></i>
-                            <h3>No whispers available</h3>
-                            <p>Check back later or refresh the page.</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                whispers.forEach(whisper => {
-                    html += `
-                        <div class="whisper-card" data-whisper-id="${whisper.id}">
-                            <div class="whisper-avatar">
-                                ${whisper.avatarUrl ? 
-                                    `<img src="${whisper.avatarUrl}" alt="${whisper.displayName}">` : 
-                                    `<i class="fas fa-user"></i>`}
-                            </div>
-                            <div class="whisper-info">
-                                <h3>${whisper.displayName}</h3>
-                                <div class="whisper-category">${whisper.category || 'Entertainment'}</div>
-                                <div class="whisper-rating">
-                                    <div class="stars">
-                                        ${generateStarRating(whisper.rating || 5.0)}
-                                    </div>
-                                    <span>${(whisper.rating || 5.0).toFixed(1)}</span>
-                                </div>
-                                <div class="whisper-stats">
-                                    <span><i class="fas fa-phone-alt"></i> ${whisper.totalCalls || 0} calls</span>
-                                    <span><i class="fas fa-clock"></i> ${formatDuration(whisper.avgDuration || 300)} avg</span>
-                                </div>
-                            </div>
-                            <button class="btn-primary whisper-call-btn" onclick="startCall('${whisper.id}')">
-                                <i class="fas fa-phone-alt"></i> Call - 1 Coin
-                            </button>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading whispers:', error);
-                const container = document.getElementById('whispersGrid');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <h3>Error loading whispers</h3>
-                            <p>Please try again later.</p>
-                        </div>
-                    `;
-                }
-            }
-        }
-        
-        function generateStarRating(rating) {
-            let stars = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= Math.floor(rating)) {
-                    stars += '<i class="fas fa-star"></i>';
-                } else if (i === Math.ceil(rating) && rating % 1 !== 0) {
-                    stars += '<i class="fas fa-star-half-alt"></i>';
-                } else {
-                    stars += '<i class="far fa-star"></i>';
-                }
-            }
-            return stars;
-        }
-        
-        // Initialize
+        // Initialize the app when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            loadWhispers();
+            console.log('Page loaded, initializing...');
+            // App is initialized through scripts.js
         });
     </script>
 </body>

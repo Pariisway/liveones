@@ -2,7 +2,6 @@
 let currentCall = null;
 let callTimer = null;
 let callDuration = 0;
-// Note: agoraClient, localStream, remoteStream are declared in firebase-config.js
 
 // ===== MOBILE MENU =====
 function initMobileMenu() {
@@ -68,7 +67,7 @@ async function startCall(whisperId) {
         return;
     }
     
-    if (userData.coins < 1) {
+    if (userData && userData.coins < 1) {
         showToast('You need at least 1 coin to start a call', 'error');
         window.location.href = 'payment.html';
         return;
@@ -100,21 +99,7 @@ function formatDate(date) {
 function initializeApp() {
     initMobileMenu();
     
-    if (auth) {
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log('User authenticated:', user.email);
-                if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-                    loadWhispers();
-                }
-                updateUIForAuth(true);
-            } else {
-                console.log('User signed out');
-                updateUIForAuth(false);
-            }
-        });
-    }
-    
+    // Setup event listeners
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal') || 
             e.target.classList.contains('modal-close') ||
@@ -139,6 +124,7 @@ function initializeApp() {
         }
     });
     
+    // Login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -152,6 +138,7 @@ function initializeApp() {
         });
     }
     
+    // Signup form
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
@@ -167,6 +154,7 @@ function initializeApp() {
         });
     }
     
+    // Google login
     const googleLoginBtn = document.getElementById('googleLoginBtn');
     if (googleLoginBtn) {
         googleLoginBtn.addEventListener('click', async () => {
@@ -174,9 +162,18 @@ function initializeApp() {
         });
     }
     
-    console.log('App initialized successfully');
+    // Google signup (if separate button exists)
+    const googleSignupBtn = document.getElementById('googleSignupBtn');
+    if (googleSignupBtn) {
+        googleSignupBtn.addEventListener('click', async () => {
+            await signInWithGoogle();
+        });
+    }
+    
+    console.log('✅ App initialized successfully');
 }
 
+// ===== EXPOSE FUNCTIONS TO WINDOW =====
 window.initMobileMenu = initMobileMenu;
 window.loginUser = loginUser;
 window.signupUser = signupUser;
@@ -184,7 +181,10 @@ window.startCall = startCall;
 window.formatDuration = formatDuration;
 window.formatDate = formatDate;
 window.initializeApp = initializeApp;
-window.closeModal = closeModal;
-window.showAuthModal = showAuthModal;
 
-document.addEventListener('DOMContentLoaded', initializeApp);
+// ===== INITIALIZE ON LOAD =====
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}

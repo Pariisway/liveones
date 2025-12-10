@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile | Whisper+Me</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .edit-profile-page {
+            padding-top: 100px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #151515 100%);
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .avatar-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid var(--primary);
+        }
+        
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-preview i {
+            font-size: 4rem;
+            line-height: 150px;
+            color: var(--text-gray);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .social-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .social-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .social-input i {
+            font-size: 1.5rem;
+            width: 30px;
+        }
+        
+        .banking-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border-radius: var(--radius);
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .banking-section h3 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .profile-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-comment-dots"></i>
+                <span>Whisper+Me</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#whispers" class="nav-link">Whispers</a>
+                <a href="enhanced-dashboard.html" class="nav-link">Dashboard</a>
+                <a href="payment.html" class="nav-link">Buy Coins</a>
+                <a href="edit-profile.html" class="nav-link active">Edit Profile</a>
+            </div>
+            
+            <div class="nav-actions">
+                <span id="userNav" class="nav-user">User</span>
+                <button id="logoutBtn" class="btn-outline">Log Out</button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="edit-profile-page">
+        <div class="container">
+            <div class="profile-header">
+                <h1>Edit Your Profile</h1>
+                <p style="color: var(--text-gray); font-size: 1.2rem;">Update your information, photo, and settings</p>
+            </div>
+            
+            <div class="profile-container">
+                <!-- Basic Information -->
+                <div class="profile-card">
+                    <h2 style="margin-bottom: 25px; font-size: 2rem;">Basic Information</h2>
+                    
+                    <div class="avatar-section">
+                        <div class="avatar-preview" id="avatarPreview">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                        <button class="btn-outline" onclick="document.getElementById('avatarUpload').click()">
+                            <i class="fas fa-upload"></i> Upload Photo
+                        </button>
+                        <p style="color: var(--text-gray); margin-top: 10px; font-size: 0.9rem;">
+                            Recommended: 500x500px JPG or PNG
+                        </p>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="displayName">Display Name</label>
+                            <input type="text" id="displayName" placeholder="How others see you">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" disabled style="background: rgba(255,255,255,0.02);">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">Primary Category</label>
+                            <select id="category">
+                                <option value="general">General Conversation</option>
+                                <option value="dating">Dating & Relationships</option>
+                                <option value="advice">Life Advice</option>
+                                <option value="friendship">Friendship</option>
+                                <option value="therapy">Therapeutic Talk</option>
+                                <option value="business">Business & Career</option>
+                                <option value="entertainment">Entertainment</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bio">Bio (Tell people about yourself)</label>
+                        <textarea id="bio" placeholder="Share what makes you unique and what conversations you're good at..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Social Links -->
+                <div class="profile-card">
+                    <h2 style="margin-bottom: 25px; font-size: 2rem;">Social Media Links</h2>
+                    <p style="color: var(--text-gray); margin-bottom: 25px;">Add your social profiles to build credibility</p>
+                    
+                    <div class="social-links-grid">
+                        <div class="social-input">
+                            <i class="fab fa-instagram" style="color: #E1306C;"></i>
+                            <input type="text" id="instagram" placeholder="Instagram username">
+                        </div>
+                        
+                        <div class="social-input">
+                            <i class="fab fa-twitter" style="color: #1DA1F2;"></i>
+                            <input type="text" id="twitter" placeholder="Twitter username">
+                        </div>
+                        
+                        <div class="social-input">
+                            <i class="fab fa-tiktok" style="color: #000000;"></i>
+                            <input type="text" id="tiktok" placeholder="TikTok username">
+                        </div>
+                        
+                        <div class="social-input">
+                            <i class="fab fa-youtube" style="color: #FF0000;"></i>
+                            <input type="text" id="youtube" placeholder="YouTube channel">
+                        </div>
+                        
+                        <div class="social-input">
+                            <i class="fab fa-twitch" style="color: #9146FF;"></i>
+                            <input type="text" id="twitch" placeholder="Twitch username">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Banking Information (For Whispers) -->
+                <div class="profile-card">
+                    <h2 style="margin-bottom: 25px; font-size: 2rem;">Payment Information</h2>
+                    <p style="color: var(--text-gray); margin-bottom: 25px;">Set up your payment details to receive earnings</p>
+                    
+                    <div class="banking-section">
+                        <h3><i class="fas fa-university"></i> Bank Details</h3>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="bankName">Bank Name</label>
+                                <input type="text" id="bankName" placeholder="e.g., Chase, Bank of America">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="accountName">Account Holder Name</label>
+                                <input type="text" id="accountName" placeholder="Name on account">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="accountNumber">Account Number</label>
+                                <input type="text" id="accountNumber" placeholder="Bank account number">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="routingNumber">Routing Number</label>
+                                <input type="text" id="routingNumber" placeholder="9-digit routing number">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="paypalEmail">PayPal Email (Alternative)</label>
+                            <input type="email" id="paypalEmail" placeholder="paypal@example.com">
+                        </div>
+                        
+                        <p style="color: var(--warning); font-size: 0.9rem; margin-top: 20px;">
+                            <i class="fas fa-shield-alt"></i> Your payment information is encrypted and secure
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Save/Cancel Buttons -->
+                <div class="form-actions">
+                    <button class="btn-outline" onclick="window.location.href='enhanced-dashboard.html'">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    
+                    <button class="btn-primary" onclick="saveProfile()">
+                        <i class="fas fa-save"></i> Save All Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Whisper+Me</span>
+                    <p style="margin-top: 15px; max-width: 300px; font-size: 1.1rem;">
+                        Connecting people through meaningful conversations.
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <a href="index.html#whispers">Find Whispers</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="payment.html">Buy Coins</a>
+                    <a href="become-whisper.html">Become a Whisper</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="faq.html">FAQ</a>
+                    <a href="guidelines.html">Community Guidelines</a>
+                    <a href="contact.html">Contact Us</a>
+                    <a href="status.html">Service Status</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Whisper+Me. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="guidelines.html">Guidelines</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="scripts.js"></script>
+    
+    <script>
+        let profileData = null;
+        let avatarFile = null;
+        
+        async function loadProfileData() {
+            if (!currentUser) {
+                showToast('Please log in to edit profile', 'error');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return;
+            }
+            
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                
+                if (userDoc.exists) {
+                    profileData = { id: userDoc.id, ...userDoc.data() };
+                    
+                    // Fill form fields
+                    document.getElementById('displayName').value = profileData.displayName || '';
+                    document.getElementById('email').value = currentUser.email || '';
+                    document.getElementById('category').value = profileData.category || 'general';
+                    document.getElementById('bio').value = profileData.bio || '';
+                    
+                    // Social links
+                    const socials = profileData.socialLinks || {};
+                    document.getElementById('instagram').value = socials.instagram || '';
+                    document.getElementById('twitter').value = socials.twitter || '';
+                    document.getElementById('tiktok').value = socials.tiktok || '';
+                    document.getElementById('youtube').value = socials.youtube || '';
+                    document.getElementById('twitch').value = socials.twitch || '';
+                    
+                    // Payment info
+                    const payment = profileData.paymentInfo || {};
+                    document.getElementById('bankName').value = payment.bankName || '';
+                    document.getElementById('accountName').value = payment.accountName || '';
+                    document.getElementById('accountNumber').value = payment.accountNumber || '';
+                    document.getElementById('routingNumber').value = payment.routingNumber || '';
+                    document.getElementById('paypalEmail').value = payment.paypalEmail || '';
+                    
+                    // Update avatar preview
+                    if (profileData.avatarUrl) {
+                        const avatarPreview = document.getElementById('avatarPreview');
+                        avatarPreview.innerHTML = `<img src="${profileData.avatarUrl}" alt="${profileData.displayName}">`;
+                    }
+                    
+                    // Update nav
+                    const userNav = document.getElementById('userNav');
+                    if (userNav) {
+                        userNav.textContent = profileData.displayName || currentUser.email || 'User';
+                    }
+                    
+                    console.log('Profile data loaded:', profileData);
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showToast('Error loading profile data', 'error');
+            }
+        }
+        
+        async function saveProfile() {
+            if (!currentUser || !profileData) {
+                showToast('Please log in to save profile', 'error');
+                return;
+            }
+            
+            const saveBtn = document.querySelector('.btn-primary');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveBtn.disabled = true;
+            
+            try {
+                let avatarUrl = profileData.avatarUrl;
+                
+                // Upload avatar if selected
+                if (avatarFile) {
+                    showToast('Uploading image...', 'info');
+                    avatarUrl = await uploadAvatar(avatarFile);
+                }
+                
+                // Collect updated data
+                const updates = {
+                    displayName: document.getElementById('displayName').value.trim(),
+                    category: document.getElementById('category').value,
+                    bio: document.getElementById('bio').value.trim(),
+                    socialLinks: {
+                        instagram: document.getElementById('instagram').value.trim(),
+                        twitter: document.getElementById('twitter').value.trim(),
+                        tiktok: document.getElementById('tiktok').value.trim(),
+                        youtube: document.getElementById('youtube').value.trim(),
+                        twitch: document.getElementById('twitch').value.trim()
+                    },
+                    paymentInfo: {
+                        bankName: document.getElementById('bankName').value.trim(),
+                        accountName: document.getElementById('accountName').value.trim(),
+                        accountNumber: document.getElementById('accountNumber').value.trim(),
+                        routingNumber: document.getElementById('routingNumber').value.trim(),
+                        paypalEmail: document.getElementById('paypalEmail').value.trim()
+                    },
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Add avatar URL if uploaded
+                if (avatarUrl) {
+                    updates.avatarUrl = avatarUrl;
+                }
+                
+                // Update in Firestore
+                await db.collection('users').doc(currentUser.uid).update(updates);
+                
+                // Update local data
+                profileData = { ...profileData, ...updates };
+                if (avatarUrl) profileData.avatarUrl = avatarUrl;
+                
+                // Also update global userData
+                if (window.userData) {
+                    window.userData = { ...window.userData, ...updates };
+                    if (avatarUrl) window.userData.avatarUrl = avatarUrl;
+                }
+                
+                showToast('Profile saved successfully!', 'success');
+                
+                // Redirect back to dashboard after delay
+                setTimeout(() => {
+                    window.location.href = 'enhanced-dashboard.html';
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                showToast('Error saving profile: ' + error.message, 'error');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+        
+        async function uploadAvatar(file) {
+            return new Promise((resolve, reject) => {
+                const storageRef = firebase.storage().ref();
+                const avatarRef = storageRef.child(`avatars/${currentUser.uid}/${Date.now()}_${file.name}`);
+                
+                const uploadTask = avatarRef.put(file);
+                
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Progress monitoring
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('Upload progress: ' + progress + '%');
+                    },
+                    (error) => {
+                        console.error('Upload error:', error);
+                        reject(error);
+                    },
+                    async () => {
+                        // Upload completed
+                        try {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            resolve(downloadURL);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }
+                );
+            });
+        }
+        
+        // Initialize profile editor
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Edit profile page loaded');
+            
+            initMobileMenu();
+            
+            // Check auth
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    loadProfileData();
+                    
+                    // Setup logout button
+                    const logoutBtn = document.getElementById('logoutBtn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', logoutUser);
+                    }
+                } else {
+                    showToast('Please log in to edit profile', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                }
+            });
+            
+            // Avatar upload handler
+            const avatarUpload = document.getElementById('avatarUpload');
+            if (avatarUpload) {
+                avatarUpload.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    // Validate file type
+                    if (!file.type.match('image.*')) {
+                        showToast('Please select an image file', 'error');
+                        return;
+                    }
+                    
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('Image must be less than 5MB', 'error');
+                        return;
+                    }
+                    
+                    avatarFile = file;
+                    
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const avatarPreview = document.getElementById('avatarPreview');
+                        avatarPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    showToast('Image selected - click Save to upload', 'info');
+                });
+            }
+        });
+        
+        // Make functions available globally
+        window.saveProfile = saveProfile;
+    </script>
+</body>
+</html>

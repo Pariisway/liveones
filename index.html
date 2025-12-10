@@ -64,6 +64,29 @@
             padding: 18px 35px !important;
         }
         
+        /* IMMEDIATE WHISPERS SECTION - FIRST COLUMN UNDER BUTTONS */
+        .immediate-whispers {
+            padding: 40px 0 80px;
+            background: var(--dark-light);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem !important;
+            margin-bottom: var(--space-md);
+        }
+        
+        .section-header p {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.2rem !important;
+            color: var(--text-gray);
+        }
+        
         /* Stats section */
         .stats-section {
             padding: 40px 0;
@@ -140,27 +163,10 @@
             color: var(--text-gray);
         }
         
-        /* Immediate whispers section */
-        .immediate-whispers {
-            padding: 60px 0;
-            background: var(--dark-light);
-        }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: var(--space-xl);
-        }
-        
-        .section-header h2 {
-            font-size: 2.5rem !important;
-            margin-bottom: var(--space-md);
-        }
-        
-        .section-header p {
-            max-width: 600px;
-            margin: 0 auto;
-            font-size: 1.2rem !important;
-            color: var(--text-gray);
+        /* How It Works */
+        .how-it-works-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(255, 101, 132, 0.05) 100%);
         }
         
         /* CTA Section */
@@ -265,56 +271,11 @@
                         <i class="fas fa-play-circle"></i> How It Works
                     </button>
                 </div>
-                
-                <!-- Feature Highlights -->
-                <div class="features">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3>Safe & Secure</h3>
-                        <p>Verified users and secure connections for worry-free conversations</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <h3>Instant Connect</h3>
-                        <p>Start talking in seconds with our seamless connection system</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                        <h3>Simple Pricing</h3>
-                        <p>One coin = five minutes. No subscriptions, no commitments</p>
-                    </div>
-                </div>
-                
-                <!-- Stats -->
-                <div class="stats-section">
-                    <div class="stats">
-                        <div class="stat-item">
-                            <div class="stat-value">10K+</div>
-                            <div class="stat-label">Active Members</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">50K+</div>
-                            <div class="stat-label">Calls Made</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4.9★</div>
-                            <div class="stat-label">Average Rating</div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Available Whispers (MOVED HERE - right after buttons) -->
+    <!-- Available Whispers (FIRST COLUMN UNDER BUTTONS) -->
     <section class="immediate-whispers" id="whispers">
         <div class="container">
             <div class="section-header">
@@ -338,8 +299,64 @@
         </div>
     </section>
 
+    <!-- Feature Highlights -->
+    <section class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose Whisper+Me</h2>
+                <p>Experience the best platform for meaningful connections</p>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Safe & Secure</h3>
+                    <p>Verified users and secure connections for worry-free conversations</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Instant Connect</h3>
+                    <p>Start talking in seconds with our seamless connection system</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h3>Simple Pricing</h3>
+                    <p>One coin = five minutes. No subscriptions, no commitments</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value">10K+</div>
+                    <div class="stat-label">Active Members</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">50K+</div>
+                    <div class="stat-label">Calls Made</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">4.9★</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- How It Works -->
-    <section class="how-it-works" id="how-it-works">
+    <section class="how-it-works-section" id="how-it-works">
         <div class="container">
             <div class="section-header">
                 <h2>How Whisper+Me Works</h2>
@@ -566,7 +583,8 @@
         // Initialize the app when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, initializing...');
-            // App is initialized through scripts.js
+            // Load whispers immediately
+            loadWhispers();
         });
     </script>
 </body>

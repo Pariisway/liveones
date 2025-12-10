@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 // ===== THIRD-PARTY CONFIGURATION =====
-const STRIPE_PUBLISHABLE_KEY = "pk_live_51SP9s4Rq1zgRH7tLgHlNWLcpK8wPWWpi0Kn5br1kyzjtVTFeuumj08wyDQ7dkwCnwEZTWklgc0agz6llxfWsdSP300rWyAOidO";
+const STRIPE_PUBLISHABLE_KEY = "pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I";
 const AGORA_APP_ID = "966c8e41da614722a88d4372c3d95dba";
 
 // ===== INITIALIZATION =====
@@ -46,6 +46,15 @@ function initializeAuth() {
         if (user) {
             try {
                 await loadUserData(user.uid);
+                
+                // REDIRECT TO DASHBOARD ON LOGIN
+                if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+                    // Small delay to show login success message
+                    setTimeout(() => {
+                        window.location.href = 'enhanced-dashboard.html';
+                    }, 1000);
+                }
+                
                 updateUIForAuth(true, user);
                 
                 if (sessionStorage.getItem('newUser') === 'true') {
@@ -54,11 +63,6 @@ function initializeAuth() {
                 }
                 
                 await checkActiveCall(user.uid);
-                
-                // Load whispers if on index page
-                if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-                    loadWhispers();
-                }
                 
             } catch (error) {
                 console.error("Error in auth state change:", error);
@@ -80,6 +84,9 @@ async function loadUserData(userId) {
             userData = { id: userDoc.id, ...userDoc.data() };
             console.log("User data loaded:", userData);
             updateUserUI(userData);
+            
+            // Set role switch in dashboard if exists
+            updateRoleSwitchUI(userData.role);
             
             if (userData.role === 'whisper') {
                 updateWhisperUI(userData.isAvailable || false);
@@ -154,6 +161,12 @@ async function signInWithEmail(email, password) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         showToast('Logged in successfully!', 'success');
+        
+        // Redirect to dashboard after successful login
+        setTimeout(() => {
+            window.location.href = 'enhanced-dashboard.html';
+        }, 500);
+        
         return { success: true, user: userCredential.user };
         
     } catch (error) {
@@ -176,6 +189,12 @@ async function signInWithGoogle() {
         }
         
         showToast('Logged in with Google!', 'success');
+        
+        // Redirect to dashboard after successful login
+        setTimeout(() => {
+            window.location.href = 'enhanced-dashboard.html';
+        }, 500);
+        
         return { success: true, user: result.user };
         
     } catch (error) {
@@ -187,14 +206,22 @@ async function signInWithGoogle() {
 
 async function logoutUser() {
     try {
+        // Set user role back to caller on logout
+        if (currentUser && userData && userData.role === 'whisper') {
+            await db.collection('users').doc(currentUser.uid).update({
+                role: 'caller',
+                isAvailable: false,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
         await auth.signOut();
         showToast('Logged out successfully', 'success');
         
-        if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
-        }
+        // Always redirect to home page on logout
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
         
     } catch (error) {
         console.error("Logout error:", error);
@@ -222,6 +249,53 @@ function getAuthErrorMessage(error) {
             return 'Too many attempts. Try again later';
         default:
             return error.message;
+    }
+}
+
+// ===== ROLE MANAGEMENT =====
+async function switchUserRole(newRole) {
+    if (!currentUser || !userData) {
+        showToast('Please log in to switch roles', 'error');
+        return false;
+    }
+    
+    try {
+        const updates = {
+            role: newRole,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        if (newRole === 'whisper') {
+            updates.isAvailable = false; // Start as unavailable
+        } else {
+            updates.isAvailable = false;
+        }
+        
+        await db.collection('users').doc(currentUser.uid).update(updates);
+        
+        userData.role = newRole;
+        userData.isAvailable = newRole === 'whisper' ? false : false;
+        
+        showToast(`Role switched to ${newRole}`, 'success');
+        
+        // Update UI
+        updateRoleSwitchUI(newRole);
+        
+        if (newRole === 'whisper') {
+            updateWhisperUI(false);
+        }
+        
+        // Reload dashboard data
+        if (typeof loadDashboardData === 'function') {
+            loadDashboardData();
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error("Error switching role:", error);
+        showToast('Error switching role', 'error');
+        return false;
     }
 }
 
@@ -313,6 +387,25 @@ function updateCoinBalance() {
             element.textContent = userData.coins;
         }
     });
+}
+
+function updateRoleSwitchUI(role) {
+    const roleToggle = document.getElementById('roleToggle');
+    if (roleToggle) {
+        roleToggle.checked = role === 'whisper';
+        
+        // Update label
+        const roleLabel = document.getElementById('roleLabel');
+        if (roleLabel) {
+            roleLabel.textContent = role === 'whisper' ? 'Whisper Mode' : 'Caller Mode';
+        }
+        
+        // Show/hide availability section
+        const availabilitySection = document.getElementById('availabilitySection');
+        if (availabilitySection) {
+            availabilitySection.style.display = role === 'whisper' ? 'block' : 'none';
+        }
+    }
 }
 
 function updateWhisperUI(isAvailable) {
@@ -795,6 +888,7 @@ window.signUpWithEmail = signUpWithEmail;
 window.signInWithEmail = signInWithEmail;
 window.signInWithGoogle = signInWithGoogle;
 window.logoutUser = logoutUser;
+window.switchUserRole = switchUserRole;
 window.getAvailableWhispers = getAvailableWhispers;
 window.updateWhisperAvailability = updateWhisperAvailability;
 window.getWhisperProfile = getWhisperProfile;
@@ -825,5 +919,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         `;
         document.head.appendChild(style);
+    }
+});
+
+// Handle page exit/refresh - set user back to caller
+window.addEventListener('beforeunload', function() {
+    if (currentUser && userData && userData.role === 'whisper') {
+        // We can't use async here, but we can try to sync call
+        // For now, we'll rely on logout handler
     }
 });

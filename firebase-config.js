@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 // ===== THIRD-PARTY CONFIGURATION =====
-const STRIPE_PUBLISHABLE_KEY = "pk_live_51TZ0C0wOq1WjSyy00EaQ2V8sZ4v7e4D6vK8J4q9X7y3mN1pL2r5t8gHjK4l9M7w3bQ6c8d9f0g1h2j3";
+const STRIPE_PUBLISHABLE_KEY = "pk_live_51SP9s4Rq1zgRH7tLgHlNWLcpK8wPWWpi0Kn5br1kyzjtVTFeuumj08wyDQ7dkwCnwEZTWklgc0agz6llxfWsdSP300rWyAOidO";
 const AGORA_APP_ID = "966c8e41da614722a88d4372c3d95dba";
 
 // ===== INITIALIZATION =====
@@ -32,10 +32,10 @@ let agoraClient = null;
 let localStream = null;
 let remoteStream = null;
 let currentCallId = null;
-let redirecting = false; // Prevents multiple redirects
 
 // ===== AUTHENTICATION HANDLER =====
 let authInitialized = false;
+let redirecting = false;
 
 function initializeAuth() {
     if (authInitialized) return;
@@ -48,18 +48,26 @@ function initializeAuth() {
             try {
                 await loadUserData(user.uid);
                 
-                // Only redirect to dashboard if we JUST logged in (not on page refresh)
+                // CRITICAL FIX: Only redirect from homepage to dashboard ONCE after login
+                const currentPage = window.location.pathname;
+                const isHomePage = currentPage.includes('index.html') || currentPage === '/' || currentPage === '';
                 const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
                 
-                if (justLoggedIn && (window.location.pathname.includes('index.html') || window.location.pathname === '/')) {
+                console.log('Current page:', currentPage, 'Is home page:', isHomePage, 'Just logged in:', justLoggedIn);
+                
+                // ONLY redirect if:
+                // 1. User just logged in (has justLoggedIn flag)
+                // 2. User is on the homepage (not dashboard or other pages)
+                // 3. We're not already redirecting
+                if (justLoggedIn && isHomePage && !redirecting) {
+                    console.log('Redirecting from homepage to dashboard...');
+                    redirecting = true;
                     sessionStorage.removeItem('justLoggedIn');
-                    if (!redirecting) {
-                        redirecting = true;
-                        console.log('Redirecting to dashboard after login...');
-                        setTimeout(() => {
-                            window.location.href = 'enhanced-dashboard.html';
-                        }, 1500);
-                    }
+                    
+                    // Small delay to show login success message
+                    setTimeout(() => {
+                        window.location.href = 'enhanced-dashboard.html';
+                    }, 1500);
                 }
                 
                 updateUIForAuth(true, user);
@@ -78,6 +86,7 @@ function initializeAuth() {
             userData = null;
             updateUIForAuth(false, null);
             redirecting = false;
+            sessionStorage.removeItem('justLoggedIn');
         }
     });
     
@@ -451,7 +460,6 @@ async function getAvailableWhispers(limit = 12) {
         
     } catch (error) {
         console.error("Error getting whispers:", error);
-        // Don't show error toast for public pages - just return empty array
         return [];
     }
 }
@@ -945,9 +953,4 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.head.appendChild(style);
     }
-});
-
-// Handle page exit/refresh - set user back to caller
-window.addEventListener('beforeunload', function() {
-    // We'll handle this in the logout function instead
 });

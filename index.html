@@ -4,26 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-adsense-account" content="ca-pub-1184595877548269">
-    <title>WhisperChat | Connect With Your Favorite Stars</title>
+    <title>Whisper+Me - Connect with Amazing People</title>
     
-    <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
     
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     
-    <!-- Open Graph for Social Sharing -->
-    <meta property="og:title" content="WhisperChat | Connect 1-on-1 with Stars">
-    <meta property="og:description" content="5-minute private calls with your favorite influencers. Only $15!">
-    <meta property="og:image" content="https://iaiwaf.com/assets/og-image.jpg">
-    <meta property="og:url" content="https://iaiwaf.com">
-    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        /* Additional styles for the centered hero */
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 0 80px;
+        }
+        
+        .hero-content {
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .hero h1 {
+            margin-top: 0 !important;
+            margin-bottom: var(--space-xl) !important;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.8rem !important;
+            color: var(--text-gray);
+            margin-bottom: var(--space-2xl);
+            line-height: 1.6;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-buttons {
+            margin-top: var(--space-2xl);
+        }
+        
+        .hero-buttons .btn {
+            min-width: 250px;
+        }
+        
+        .stats-section {
+            padding: 60px 0;
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: var(--radius-lg);
+            margin: 40px auto;
+            max-width: 900px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-2xl);
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .stat-value {
+            font-size: 3.5rem !important;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: var(--text-gray);
+            font-size: 1.2rem !important;
+            font-weight: 500;
+        }
+        
+        /* Feature highlights */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-xl);
+            margin: var(--space-2xl) 0;
+        }
+        
+        .feature-card {
+            background: var(--card-bg);
+            padding: var(--space-xl);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .feature-icon {
+            font-size: 3rem !important;
+            color: var(--primary);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.8rem !important;
+            margin-bottom: var(--space-md);
+        }
+        
+        .feature-card p {
+            font-size: 1.1rem !important;
+            color: var(--text-gray);
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 80px 0;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 101, 132, 0.1) 100%);
+            border-radius: var(--radius-lg);
+            margin: var(--space-2xl) 0;
+        }
+        
+        .cta-section h2 {
+            font-size: 3rem !important;
+            margin-bottom: var(--space-lg);
+        }
+        
+        .cta-section p {
+            font-size: 1.3rem !important;
+            max-width: 600px;
+            margin: 0 auto var(--space-xl);
+            color: var(--text-gray);
+        }
+        
+        .cta-button {
+            font-size: 1.4rem !important;
+            padding: 20px 50px !important;
+            min-height: 70px !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -31,19 +165,20 @@
         <div class="nav-container">
             <div class="nav-brand">
                 <i class="fas fa-comment-dots"></i>
-                <span>WhisperChat</span>
+                <span>Whisper+Me</span>
             </div>
             
             <div class="nav-menu">
                 <a href="#home" class="nav-link active">Home</a>
-                <a href="#whispers" class="nav-link">Available Whispers</a>
+                <a href="#whispers" class="nav-link">Whispers</a>
                 <a href="#how-it-works" class="nav-link">How It Works</a>
-                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="#pricing" class="nav-link">Buy Coins</a>
             </div>
             
             <div class="nav-actions">
-                <button id="loginBtn" class="btn-outline">Log In</button>
-                <button id="signupBtn" class="btn-primary">Sign Up Free</button>
+                <span id="userNav" class="nav-user">User</span>
+                <button id="logoutBtn" class="btn-outline" style="display: none;">Log Out</button>
+                <button id="loginBtn" class="btn-primary">Log In</button>
             </div>
             
             <button class="mobile-menu-btn">
@@ -54,93 +189,99 @@
 
     <!-- Hero Section -->
     <section class="hero" id="home">
-        <div class="hero-container">
+        <div class="container">
             <div class="hero-content">
-                <h1 class="hero-title">
-                    <span class="gradient-text">Connect 1-on-1</span><br>
-                    With Your Favorite Stars
-                </h1>
+                <h1>Whisper+Me</h1>
                 <p class="hero-subtitle">
-                    5-minute private calls with influencers, celebrities, and creators.<br>
-                    Share your thoughts, ask questions, or just say hello!
+                    Connect instantly with amazing people for meaningful conversations. 
+                    One coin, five minutes, endless possibilities.
                 </p>
-                <div class="hero-cta">
-                    <button class="btn-primary btn-large" id="heroSignupBtn">
-                        <i class="fas fa-play-circle"></i> Start Connecting
+                
+                <div class="hero-buttons">
+                    <button class="btn-primary btn-lg" onclick="showAuthModal('signup')">
+                        <i class="fas fa-bolt"></i> Start Connecting
                     </button>
-                    <button class="btn-secondary btn-large" id="learnMoreBtn">
-                        <i class="fas fa-info-circle"></i> How It Works
+                    <button class="btn-outline btn-lg" onclick="document.querySelector('#how-it-works').scrollIntoView({ behavior: 'smooth' })">
+                        <i class="fas fa-play-circle"></i> How It Works
                     </button>
                 </div>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <i class="fas fa-users"></i>
-                        <span class="stat-number">10,000+</span>
-                        <span class="stat-label">Active Users</span>
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-phone-alt"></i>
-                        <span class="stat-number">50,000+</span>
-                        <span class="stat-label">Calls Made</span>
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-star"></i>
-                        <span class="stat-number">4.9</span>
-                        <span class="stat-label">Average Rating</span>
-                    </div>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="mockup-phone">
-                    <div class="phone-screen">
-                        <!-- Animated call interface preview -->
-                        <div class="call-preview">
-                            <div class="caller-avatar">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
-                            <div class="timer">05:00</div>
-                            <div class="call-controls">
-                                <button class="call-btn"><i class="fas fa-microphone"></i></button>
-                                <button class="call-btn end"><i class="fas fa-phone-slash"></i></button>
-                                <button class="call-btn"><i class="fas fa-volume-up"></i></button>
-                            </div>
+                
+                <div class="stats-section">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">10,000+</div>
+                            <div class="stat-label">Active Members</div>
                         </div>
+                        <div class="stat-item">
+                            <div class="stat-value">50,000+</div>
+                            <div class="stat-label">Calls Made</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Average Rating</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Safe & Secure</h3>
+                        <p>Verified users and secure connections for worry-free conversations</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Instant Connect</h3>
+                        <p>Start talking in seconds with our seamless connection system</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <h3>Simple Pricing</h3>
+                        <p>One coin = five minutes. No subscriptions, no commitments</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Available Whispers Section -->
-    <section class="section whispers-section" id="whispers">
+    <!-- Available Whispers -->
+    <section class="whispers-section" id="whispers">
         <div class="container">
             <div class="section-header">
-                <h2>Available Whispers Right Now</h2>
-                <p>Connect instantly with these amazing creators</p>
+                <h2>Available Whispers</h2>
+                <p>Connect with amazing people ready to have meaningful conversations with you</p>
             </div>
             
             <div class="whispers-grid" id="whispersGrid">
-                <!-- Whisper cards will be loaded here -->
-                <div class="loading-whispers">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Loading available whispers...</p>
+                <!-- Whispers will be loaded here -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading whispers...</p>
                 </div>
             </div>
             
-            <div class="section-cta">
-                <button class="btn-primary" id="viewAllWhispers">
-                    <i class="fas fa-list"></i> View All Whispers
+            <div style="text-align: center; margin-top: var(--space-xl);">
+                <button class="btn-outline" onclick="loadWhispers()">
+                    <i class="fas fa-sync-alt"></i> Refresh Whispers
                 </button>
             </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section class="section steps-section" id="how-it-works">
+    <section class="how-it-works" id="how-it-works">
         <div class="container">
             <div class="section-header">
-                <h2>How WhisperChat Works</h2>
-                <p>Get started in just 3 easy steps</p>
+                <h2>How Whisper+Me Works</h2>
+                <p>Get started in three simple steps</p>
             </div>
             
             <div class="steps-grid">
@@ -150,7 +291,7 @@
                         <i class="fas fa-user-plus"></i>
                     </div>
                     <h3>Create Account</h3>
-                    <p>Sign up for free in under 2 minutes. Choose to be a Whisper (earn money) or Caller (connect with stars).</p>
+                    <p>Sign up for free in seconds. No credit card required to browse.</p>
                 </div>
                 
                 <div class="step-card">
@@ -158,263 +299,196 @@
                     <div class="step-icon">
                         <i class="fas fa-coins"></i>
                     </div>
-                    <h3>Get Whisper Coins</h3>
-                    <p>Purchase Whisper Coins ($15 each). One coin = one 5-minute call with any available Whisper.</p>
+                    <h3>Get Coins</h3>
+                    <p>Purchase coins at $15 each. One coin = five minutes of conversation.</p>
                 </div>
                 
                 <div class="step-card">
                     <div class="step-number">3</div>
                     <div class="step-icon">
-                        <i class="fas fa-phone-volume"></i>
+                        <i class="fas fa-phone-alt"></i>
                     </div>
-                    <h3>Start Connecting</h3>
-                    <p>Browse available Whispers, click "Call Now", and you'll be connected instantly for your private chat.</p>
+                    <h3>Start Talking</h3>
+                    <p>Choose a whisper and connect instantly. Have meaningful conversations!</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section class="section pricing-section" id="pricing">
+    <!-- Pricing -->
+    <section class="pricing-section" id="pricing">
         <div class="container">
             <div class="section-header">
-                <h2>Simple, Transparent Pricing</h2>
-                <p>No subscriptions, no hidden fees</p>
+                <h2>Simple Pricing</h2>
+                <p>One coin, five minutes. No subscriptions, no hidden fees</p>
             </div>
             
-            <div class="pricing-cards">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Basic Pack</h3>
-                        <div class="price">$15</div>
-                        <p class="price-sub">per Whisper Coin</p>
+            <div class="coins-grid">
+                <div class="coin-package popular">
+                    <div class="package-icon">
+                        <i class="fas fa-crown"></i>
                     </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 1 Whisper Coin</li>
-                        <li><i class="fas fa-check"></i> 5-minute call</li>
-                        <li><i class="fas fa-check"></i> Any Whisper</li>
-                        <li><i class="fas fa-check"></i> Instant connection</li>
+                    <h3 class="package-name">Whisper Coin</h3>
+                    <div class="coin-amount">1</div>
+                    <div class="coin-label">Whisper Coin</div>
+                    <div class="package-price">$15<span> + tax</span></div>
+                    
+                    <ul class="package-features">
+                        <li><i class="fas fa-check"></i> 5 minutes of conversation</li>
+                        <li><i class="fas fa-check"></i> Connect with any whisper</li>
+                        <li><i class="fas fa-check"></i> Instant activation</li>
+                        <li><i class="fas fa-check"></i> Money-back guarantee</li>
                     </ul>
-                    <button class="btn-primary btn-block buy-coins-btn" data-amount="1500" data-coins="1" data-product-id="prod_TZ0C0wOq1WjSyy">
-                        <i class="fas fa-shopping-cart"></i> Buy 1 Coin
-                    </button>
-                </div>
-                
-                <div class="pricing-card popular">
-                    <div class="popular-badge">MOST POPULAR</div>
-                    <div class="pricing-header">
-                        <h3>Value Pack</h3>
-                        <div class="price">$60</div>
-                        <p class="price-sub">for 5 Coins ($12 each)</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 5 Whisper Coins</li>
-                        <li><i class="fas fa-check"></i> Save $15 total</li>
-                        <li><i class="fas fa-check"></i> All Whispers</li>
-                        <li><i class="fas fa-check"></i> Priority support</li>
-                    </ul>
-                    <button class="btn-primary btn-block buy-coins-btn" data-amount="6000" data-coins="5" data-product-id="prod_TZ0C0wOq1WjSyy">
-                        <i class="fas fa-shopping-cart"></i> Buy 5 Coins
-                    </button>
-                </div>
-                
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <h3>Pro Pack</h3>
-                        <div class="price">$150</div>
-                        <p class="price-sub">for 15 Coins ($10 each)</p>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 15 Whisper Coins</li>
-                        <li><i class="fas fa-check"></i> Save $75 total</li>
-                        <li><i class="fas fa-check"></i> All Whispers</li>
-                        <li><i class="fas fa-check"></i> VIP support</li>
-                        <li><i class="fas fa-check"></i> Early access</li>
-                    </ul>
-                    <button class="btn-primary btn-block buy-coins-btn" data-amount="15000" data-coins="15" data-product-id="prod_TZ0C0wOq1WjSyy">
-                        <i class="fas fa-shopping-cart"></i> Buy 15 Coins
+                    
+                    <button class="btn-primary btn-block" onclick="window.location.href='payment.html'">
+                        <i class="fas fa-shopping-cart"></i> Buy Now
                     </button>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Connect?</h2>
+            <p>Join thousands of people having meaningful conversations on Whisper+Me</p>
+            <button class="btn-primary cta-button" onclick="showAuthModal('signup')">
+                <i class="fas fa-user-plus"></i> Sign Up Free
+            </button>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <div class="footer-brand">
-                        <i class="fas fa-comment-dots"></i>
-                        <span>WhisperChat</span>
-                    </div>
-                    <p class="footer-description">
-                        Connecting fans with their favorite stars through private, authentic conversations.
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Whisper+Me</span>
+                    <p style="margin-top: 15px; max-width: 300px; font-size: 1.1rem !important;">
+                        Connecting people through meaningful conversations.
                     </p>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                    </div>
                 </div>
                 
-                <div class="footer-col">
-                    <h4>For Callers</h4>
-                    <ul class="footer-links">
-                        <li><a href="#whispers">Browse Whispers</a></li>
-                        <li><a href="#how-it-works">How It Works</a></li>
-                        <li><a href="#pricing">Buy Coins</a></li>
-                        <li><a href="faq.html">FAQ</a></li>
-                    </ul>
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <a href="#whispers">Find Whispers</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#pricing">Buy Coins</a>
+                    <a href="become-whisper.html">Become a Whisper</a>
                 </div>
                 
-                <div class="footer-col">
-                    <h4>For Whispers</h4>
-                    <ul class="footer-links">
-                        <li><a href="#" id="becomeWhisperLink">Become a Whisper</a></li>
-                        <li><a href="dashboard.html#earnings">Earnings Calculator</a></li>
-                        <li><a href="#" id="promoteProfileLink">Promote Your Profile</a></li>
-                        <li><a href="guidelines.html">Whisper Guidelines</a></li>
-                    </ul>
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="faq.html">FAQ</a>
+                    <a href="guidelines.html">Community Guidelines</a>
+                    <a href="contact.html">Contact Us</a>
+                    <a href="status.html">Service Status</a>
                 </div>
                 
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul class="footer-links">
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="privacy.html">Privacy Policy</a></li>
-                        <li><a href="terms.html">Terms of Service</a></li>
-                        <li><a href="contact.html">Contact Support</a></li>
-                    </ul>
+                <div class="footer-links">
+                    <h4>Connect</h4>
+                    <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                    <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+                    <a href="#"><i class="fab fa-tiktok"></i> TikTok</a>
+                    <a href="#"><i class="fab fa-discord"></i> Discord</a>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 WhisperChat. All rights reserved. | <a href="mailto:contact@iaiwaf.com">contact@iaiwaf.com</a></p>
-                <p>Domain: iaiwaf.com | Hosted on GitHub Pages</p>
+                <p>&copy; 2024 Whisper+Me. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="guidelines.html">Guidelines</a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- Modals -->
+    <!-- Auth Modal -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <button class="modal-close">&times;</button>
+            
             <div class="auth-tabs">
                 <button class="auth-tab active" data-tab="login">Log In</button>
                 <button class="auth-tab" data-tab="signup">Sign Up</button>
             </div>
             
+            <!-- Login Form -->
             <form id="loginForm" class="auth-form active">
                 <div class="form-group">
                     <label for="loginEmail">Email</label>
                     <input type="email" id="loginEmail" required placeholder="your@email.com">
                 </div>
+                
                 <div class="form-group">
                     <label for="loginPassword">Password</label>
                     <input type="password" id="loginPassword" required placeholder="••••••••">
                 </div>
+                
                 <button type="submit" class="btn-primary btn-block">
                     <i class="fas fa-sign-in-alt"></i> Log In
                 </button>
-                <p class="auth-footer">
-                    <a href="#forgot-password" id="forgotPasswordLink">Forgot password?</a>
-                </p>
+                
+                <div class="auth-divider">
+                    <span>or continue with</span>
+                </div>
+                
+                <div class="social-login">
+                    <button type="button" class="btn-outline" id="googleLoginBtn">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                </div>
             </form>
             
+            <!-- Signup Form -->
             <form id="signupForm" class="auth-form">
                 <div class="form-group">
                     <label for="signupEmail">Email</label>
                     <input type="email" id="signupEmail" required placeholder="your@email.com">
                 </div>
+                
                 <div class="form-group">
                     <label for="signupPassword">Password</label>
                     <input type="password" id="signupPassword" required placeholder="••••••••">
                 </div>
+                
                 <div class="form-group">
                     <label for="displayName">Display Name</label>
-                    <input type="text" id="displayName" required placeholder="Your public name">
+                    <input type="text" id="displayName" required placeholder="What should we call you?">
                 </div>
+                
                 <div class="form-group">
-                    <label>I want to be a:</label>
-                    <div class="role-select">
-                        <label class="role-option">
-                            <input type="radio" name="role" value="whisper" checked>
-                            <div class="role-card">
-                                <i class="fas fa-ear-listen"></i>
-                                <span>Whisper</span>
-                                <small>Earn $12 per call</small>
-                            </div>
+                    <label>I want to join as a:</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="role" value="caller" checked>
+                            <span>Caller</span>
                         </label>
-                        <label class="role-option">
-                            <input type="radio" name="role" value="caller">
-                            <div class="role-card">
-                                <i class="fas fa-phone-alt"></i>
-                                <span>Caller</span>
-                                <small>Connect with stars</small>
-                            </div>
+                        <label class="radio-option">
+                            <input type="radio" name="role" value="whisper">
+                            <span>Whisper</span>
                         </label>
                     </div>
                 </div>
+                
                 <button type="submit" class="btn-primary btn-block">
                     <i class="fas fa-user-plus"></i> Create Account
                 </button>
+                
+                <div class="auth-divider">
+                    <span>or continue with</span>
+                </div>
+                
+                <div class="social-login">
+                    <button type="button" class="btn-outline" id="googleSignupBtn">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Stripe Payment Modal -->
-    <div class="modal" id="stripePaymentModal">
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <h2 style="margin-bottom: 20px;">Complete Your Purchase</h2>
-            
-            <div class="payment-summary">
-                <div class="summary-item">
-                    <span>Product:</span>
-                    <span id="paymentProduct">Whisper Coin</span>
-                </div>
-                <div class="summary-item">
-                    <span>Quantity:</span>
-                    <span id="paymentQuantity">1</span>
-                </div>
-                <div class="summary-item">
-                    <span>Amount:</span>
-                    <span id="paymentAmount">$15.00</span>
-                </div>
-                <div class="summary-item total">
-                    <span>Total:</span>
-                    <span id="paymentTotal">$15.00</span>
-                </div>
-            </div>
-            
-            <div id="payment-form">
-                <div class="form-group">
-                    <label for="card-element">Credit Card Information</label>
-                    <div id="card-element" style="padding: 12px; border: 1px solid #ccc; border-radius: 4px;"></div>
-                    <div id="card-errors" role="alert" style="color: #fa755a; margin-top: 10px;"></div>
-                </div>
-                
-                <button id="submit-payment" class="btn-primary btn-block">
-                    <i class="fas fa-lock"></i> Pay Now
-                </button>
-                
-                <p style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9rem;">
-                    <i class="fas fa-shield-alt"></i> Secure payment processed by Stripe
-                </p>
-            </div>
-            
-            <div id="payment-success" style="display: none; text-align: center; padding: 20px;">
-                <div style="color: #48bb78; font-size: 48px; margin-bottom: 20px;">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3>Payment Successful!</h3>
-                <p>Your Whisper Coins have been added to your account.</p>
-                <button class="btn-primary mt-20" onclick="window.location.href='dashboard.html'">
-                    Go to Dashboard
-                </button>
-            </div>
         </div>
     </div>
 
@@ -422,12 +496,96 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-    
-    <!-- Stripe -->
-    <script src="https://js.stripe.com/v3/"></script>
     
     <script src="firebase-config.js"></script>
     <script src="scripts.js"></script>
+    
+    <script>
+        // Load whispers function
+        async function loadWhispers() {
+            try {
+                const whispers = await getAvailableWhispers();
+                const container = document.getElementById('whispersGrid');
+                
+                if (!container) return;
+                
+                if (whispers.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i class="fas fa-user-slash"></i>
+                            <h3>No whispers available</h3>
+                            <p>Check back later or refresh the page.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                whispers.forEach(whisper => {
+                    html += `
+                        <div class="whisper-card" data-whisper-id="${whisper.id}">
+                            <div class="whisper-avatar">
+                                ${whisper.avatarUrl ? 
+                                    `<img src="${whisper.avatarUrl}" alt="${whisper.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div class="whisper-info">
+                                <h3>${whisper.displayName}</h3>
+                                <div class="whisper-category">${whisper.category || 'Entertainment'}</div>
+                                <div class="whisper-rating">
+                                    <div class="stars">
+                                        ${generateStarRating(whisper.rating || 5.0)}
+                                    </div>
+                                    <span>${(whisper.rating || 5.0).toFixed(1)}</span>
+                                </div>
+                                <div class="whisper-stats">
+                                    <span><i class="fas fa-phone-alt"></i> ${whisper.totalCalls || 0} calls</span>
+                                    <span><i class="fas fa-clock"></i> ${formatDuration(whisper.avgDuration || 300)} avg</span>
+                                </div>
+                            </div>
+                            <button class="btn-primary whisper-call-btn" onclick="startCall('${whisper.id}')">
+                                <i class="fas fa-phone-alt"></i> Call - 1 Coin
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading whispers:', error);
+                const container = document.getElementById('whispersGrid');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Error loading whispers</h3>
+                            <p>Please try again later.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function generateStarRating(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else if (i === Math.ceil(rating) && rating % 1 !== 0) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            return stars;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadWhispers();
+        });
+    </script>
 </body>
 </html>

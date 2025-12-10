@@ -1,6 +1,6 @@
 {
-  "name": "WhisperChat",
-  "short_name": "WhisperChat",
+  "name": "Whisper+Me",
+  "short_name": "Whisper+Me",
   "description": "Connect with interesting people through voice and video calls",
   "start_url": "/",
   "display": "standalone",

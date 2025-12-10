@@ -1,20 +1,19 @@
 // ===== FIREBASE CONFIGURATION =====
 const firebaseConfig = {
     apiKey: "AIzaSyALbIJSI2C-p6IyMtj_F0ZqGyN1i79jOd4",
-    authDomain: "whisper-chat-live.firebaseapp.com",
-    databaseURL: "https://whisper-chat-live-default-rtdb.firebaseio.com",
-    projectId: "whisper-chat-live",
-    storageBucket: "whisper-chat-live.firebasestorage.app",
+    authDomain: "whisper-plus-me-live.firebaseapp.com",
+    databaseURL: "https://whisper-plus-me-live-default-rtdb.firebaseio.com",
+    projectId: "whisper-plus-me-live",
+    storageBucket: "whisper-plus-me-live.firebasestorage.app",
     messagingSenderId: "302894848452",
     appId: "1:302894848452:web:61a7ab21a269533c426c91"
 };
 
 // ===== THIRD-PARTY CONFIGURATION =====
-const STRIPE_PUBLISHABLE_KEY = "pk_live_51TZ0C0wOq1WjSyy00EaQ2V8sZ4v7e4D6vK8J4q9X7y3mN1pL2r5t8gHjK4l9M7w3bQ6c8d9f0g1h2j3";
+const STRIPE_PUBLISHABLE_KEY = "pk_live_51SP9s4Rq1zgRH7tLgHlNWLcpK8wPWWpi0Kn5br1kyzjtVTFeuumj08wyDQ7dkwCnwEZTWklgc0agz6llxfWsdSP300rWyAOidO";
 const AGORA_APP_ID = "966c8e41da614722a88d4372c3d95dba";
 
 // ===== INITIALIZATION =====
-// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -22,7 +21,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// Initialize Stripe
 let stripe = null;
 if (typeof Stripe !== 'undefined') {
     stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
@@ -37,26 +35,20 @@ let remoteStream = null;
 let currentCallId = null;
 
 // ===== AUTHENTICATION =====
-// Listen for auth state changes
 auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     console.log("Auth state changed:", user ? "Logged in" : "Logged out");
     
     if (user) {
         try {
-            // Load user data from Firestore
             await loadUserData(user.uid);
-            
-            // Update UI for logged in state
             updateUIForAuth(true);
             
-            // Show welcome toast for new users
             if (sessionStorage.getItem('newUser') === 'true') {
-                showToast('Welcome to WhisperChat!', 'success');
+                showToast('Welcome to Whisper+Me!', 'success');
                 sessionStorage.removeItem('newUser');
             }
             
-            // Check if user is in an active call
             await checkActiveCall(user.uid);
             
         } catch (error) {
@@ -68,7 +60,6 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-// Load user data from Firestore
 async function loadUserData(userId) {
     try {
         const userDoc = await db.collection('users').doc(userId).get();
@@ -78,7 +69,6 @@ async function loadUserData(userId) {
             console.log("User data loaded:", userData);
             updateUserUI(userData);
             
-            // If user is a whisper, update availability
             if (userData.role === 'whisper') {
                 updateWhisperUI(userData.isAvailable || false);
             }
@@ -90,7 +80,6 @@ async function loadUserData(userId) {
     }
 }
 
-// Create user document
 async function createUserDocument(userId) {
     const user = auth.currentUser;
     const userDoc = {
@@ -137,7 +126,6 @@ async function signUpWithEmail(email, password, displayName, role = 'caller') {
             displayName: displayName
         });
         
-        // Mark as new user for welcome message
         sessionStorage.setItem('newUser', 'true');
         
         showToast('Account created successfully!', 'success');
@@ -169,7 +157,6 @@ async function signInWithGoogle() {
     try {
         const result = await auth.signInWithPopup(provider);
         
-        // Check if user document exists
         const userDoc = await db.collection('users').doc(result.user.uid).get();
         
         if (!userDoc.exists) {
@@ -191,7 +178,6 @@ async function logoutUser() {
         await auth.signOut();
         showToast('Logged out successfully', 'success');
         
-        // If not on homepage, redirect
         if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
             setTimeout(() => {
                 window.location.href = 'index.html';
@@ -229,53 +215,85 @@ function getAuthErrorMessage(error) {
 
 // ===== UI FUNCTIONS =====
 function updateUIForAuth(isLoggedIn) {
+    console.log('updateUIForAuth called:', isLoggedIn);
+    
     const loginBtn = document.getElementById('loginBtn');
     const signupBtn = document.getElementById('signupBtn');
     const userNav = document.getElementById('userNav');
     const logoutBtn = document.getElementById('logoutBtn');
+    const heroSignupBtn = document.getElementById('heroSignupBtn');
     
     if (isLoggedIn && currentUser) {
-        // User is logged in
+        console.log('User is logged in, updating UI');
+        
         if (loginBtn) {
             loginBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i> Dashboard';
             loginBtn.onclick = () => window.location.href = 'enhanced-dashboard.html';
+            loginBtn.style.display = 'block';
+            loginBtn.style.fontSize = '1.1rem';
+            loginBtn.style.padding = '15px 25px';
         }
         
         if (signupBtn) {
             signupBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Log Out';
             signupBtn.onclick = logoutUser;
+            signupBtn.style.display = 'block';
+            signupBtn.style.fontSize = '1.1rem';
+            signupBtn.style.padding = '15px 25px';
         }
         
         if (userNav && userData) {
             userNav.textContent = userData.displayName || 'User';
+            userNav.style.display = 'inline-block';
         }
         
         if (logoutBtn) {
             logoutBtn.style.display = 'block';
+            logoutBtn.onclick = logoutUser;
         }
+        
+        if (heroSignupBtn) {
+            heroSignupBtn.textContent = 'Go to Dashboard';
+            heroSignupBtn.onclick = () => window.location.href = 'enhanced-dashboard.html';
+        }
+        
     } else {
-        // User is logged out
+        console.log('User is logged out, updating UI');
+        
         if (loginBtn) {
             loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log In';
             loginBtn.onclick = () => showAuthModal('login');
+            loginBtn.style.display = 'block';
+            loginBtn.style.fontSize = '1.1rem';
+            loginBtn.style.padding = '15px 25px';
         }
         
         if (signupBtn) {
             signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Sign Up';
             signupBtn.onclick = () => showAuthModal('signup');
+            signupBtn.style.display = 'block';
+            signupBtn.style.fontSize = '1.1rem';
+            signupBtn.style.padding = '15px 25px';
+        }
+        
+        if (userNav) {
+            userNav.style.display = 'none';
         }
         
         if (logoutBtn) {
             logoutBtn.style.display = 'none';
         }
+        
+        if (heroSignupBtn) {
+            heroSignupBtn.textContent = 'Start Connecting';
+            heroSignupBtn.onclick = () => showAuthModal('signup');
+        }
     }
 }
 
 function updateUserUI(data) {
-    // Update coin balance
     updateCoinBalance();
     
-    // Update user name
     const userNavElement = document.getElementById('userNav');
     if (userNavElement && data.displayName) {
         userNavElement.textContent = data.displayName;
@@ -405,14 +423,12 @@ async function startCallWithWhisper(whisperId) {
     }
     
     try {
-        // Get whisper data
         const whisperData = await getWhisperProfile(whisperId);
         if (!whisperData || !whisperData.isAvailable) {
             showToast('This whisper is not available right now', 'error');
             return;
         }
         
-        // Deduct coin from caller
         await db.collection('users').doc(currentUser.uid).update({
             coins: firebase.firestore.FieldValue.increment(-1),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -421,7 +437,6 @@ async function startCallWithWhisper(whisperId) {
         userData.coins -= 1;
         updateCoinBalance();
         
-        // Create call document
         const callRef = await db.collection('activeCalls').add({
             callerId: currentUser.uid,
             whisperId: whisperId,
@@ -430,7 +445,7 @@ async function startCallWithWhisper(whisperId) {
             startTime: firebase.firestore.FieldValue.serverTimestamp(),
             endTime: null,
             cost: 1,
-            earnings: 0.70, // Whisper gets 70% ($10.50 of $15)
+            earnings: 0.70,
             duration: 0,
             actualDuration: 0,
             rating: null,
@@ -438,13 +453,11 @@ async function startCallWithWhisper(whisperId) {
             channelName: `call_${Date.now()}_${currentUser.uid}_${whisperId}`
         });
         
-        // Update whisper's availability
         await db.collection('users').doc(whisperId).update({
             isAvailable: false,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // Redirect to call page
         window.location.href = `call.html?callId=${callRef.id}`;
         
     } catch (error) {
@@ -463,16 +476,13 @@ async function refundCall(callId) {
         
         const callData = callDoc.data();
         
-        // Only refund if call was missed or lasted less than 30 seconds
         const duration = callData.actualDuration || 0;
         if (callData.status === 'missed' || duration < 30) {
-            // Refund coin to caller
             await db.collection('users').doc(callData.callerId).update({
                 coins: firebase.firestore.FieldValue.increment(1),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            // Update call status
             await db.collection('activeCalls').doc(callId).update({
                 status: 'refunded',
                 refunded: true,
@@ -480,7 +490,6 @@ async function refundCall(callId) {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            // Make whisper available again
             await db.collection('users').doc(callData.whisperId).update({
                 isAvailable: true,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -503,18 +512,14 @@ async function refundCall(callId) {
 async function initializeStripePayment(amount, coins, productId) {
     showToast('Processing payment...', 'info');
     
-    // In production, this would call your backend
-    // For demo, simulate successful payment
     setTimeout(async () => {
         try {
-            // Add coins to user's balance
             await db.collection('users').doc(currentUser.uid).update({
                 coins: firebase.firestore.FieldValue.increment(coins),
                 totalSpent: firebase.firestore.FieldValue.increment(amount),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            // Record transaction
             await db.collection('transactions').add({
                 userId: currentUser.uid,
                 type: 'purchase',
@@ -525,11 +530,9 @@ async function initializeStripePayment(amount, coins, productId) {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            // Update local user data
             userData.coins += coins;
             userData.totalSpent = (userData.totalSpent || 0) + amount;
             
-            // Update UI
             updateCoinBalance();
             
             showToast(`Payment successful! ${coins} coins added`, 'success');
@@ -549,17 +552,13 @@ async function initializeAgoraClient(channelName) {
     }
     
     try {
-        // Create Agora client
         agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
         
-        // Initialize client
         await agoraClient.init(AGORA_APP_ID);
         
-        // Join channel
         const uid = currentUser ? currentUser.uid.substring(0, 8) : Math.random().toString(36).substr(2, 9);
         await agoraClient.join(null, channelName, uid);
         
-        // Create local stream
         localStream = AgoraRTC.createStream({
             streamID: uid,
             audio: true,
@@ -570,19 +569,16 @@ async function initializeAgoraClient(channelName) {
         await localStream.init();
         await agoraClient.publish(localStream);
         
-        // Set up event listeners
         agoraClient.on("stream-added", (evt) => {
             agoraClient.subscribe(evt.stream);
         });
         
         agoraClient.on("stream-subscribed", (evt) => {
             remoteStream = evt.stream;
-            // Play remote stream
             remoteStream.play("remoteAudio");
         });
         
         agoraClient.on("peer-leave", (evt) => {
-            // Handle peer leaving
             if (remoteStream && remoteStream.getId() === evt.uid) {
                 remoteStream.stop();
                 remoteStream = null;
@@ -616,11 +612,9 @@ async function leaveAgoraCall() {
 
 // ===== TOAST NOTIFICATIONS =====
 function showToast(message, type = 'info') {
-    // Remove existing toasts
     const existingToasts = document.querySelectorAll('.toast');
     existingToasts.forEach(toast => toast.remove());
     
-    // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
@@ -640,7 +634,6 @@ function showToast(message, type = 'info') {
     
     document.body.appendChild(toast);
     
-    // Add styles if not present
     if (!document.querySelector('#toast-styles')) {
         const style = document.createElement('style');
         style.id = 'toast-styles';
@@ -693,13 +686,11 @@ function showToast(message, type = 'info') {
         document.head.appendChild(style);
     }
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, 5000);
     
-    // Close button
     toast.querySelector('.toast-close').addEventListener('click', () => {
         toast.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
@@ -712,7 +703,6 @@ function showAuthModal(tab = 'login') {
     if (modal) {
         modal.classList.add('active');
         
-        // Set active tab
         document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
         
@@ -722,7 +712,6 @@ function showAuthModal(tab = 'login') {
         if (activeTab) activeTab.classList.add('active');
         if (activeForm) activeForm.classList.add('active');
     } else {
-        // Fallback: redirect to index.html which should have the modal
         window.location.href = 'index.html';
     }
 }
@@ -739,7 +728,6 @@ function closeModal(modalId = null) {
 }
 
 // ===== INITIALIZATION =====
-// Export functions globally
 window.auth = auth;
 window.db = db;
 window.storage = storage;
@@ -764,9 +752,7 @@ window.closeModal = closeModal;
 
 console.log("✅ Firebase configuration loaded successfully");
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Close modal when clicking outside or on close button
     document.addEventListener('click', function(event) {
         if (event.target.classList.contains('modal') || 
             event.target.classList.contains('modal-close') ||
@@ -775,14 +761,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Escape key closes modal
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeModal();
         }
     });
     
-    // Initialize logout button if it exists
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logoutUser);

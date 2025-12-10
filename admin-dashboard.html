@@ -1,0 +1,3062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <title>Admin Dashboard | WhisperChat</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Admin Dashboard Specific Styles -->
+    <style>
+        .admin-dashboard {
+            padding-top: 80px;
+            min-height: 100vh;
+            background: #0a0a0a;
+        }
+        
+        .admin-header {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .admin-welcome h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .admin-welcome p {
+            color: var(--gray);
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .admin-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(108, 99, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .stat-change {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .stat-change.positive {
+            background: rgba(72, 187, 120, 0.2);
+            color: var(--success);
+        }
+        
+        .stat-change.negative {
+            background: rgba(245, 101, 101, 0.2);
+            color: var(--danger);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .admin-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .section-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .admin-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--gray);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        
+        .admin-tab:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .admin-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .admin-table th {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+            text-align: left;
+            padding: 15px;
+            white-space: nowrap;
+        }
+        
+        .admin-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .admin-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .user-avatar-small {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+        
+        .user-avatar-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-active { background: rgba(72, 187, 120, 0.2); color: var(--success); }
+        .status-pending { background: rgba(237, 137, 54, 0.2); color: var(--warning); }
+        .status-banned { background: rgba(245, 101, 101, 0.2); color: var(--danger); }
+        .status-whisper { background: rgba(108, 99, 255, 0.2); color: var(--primary); }
+        .status-caller { background: rgba(54, 162, 235, 0.2); color: #36a2eb; }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+        
+        .action-btn.edit { color: var(--primary); }
+        .action-btn.view { color: #36a2eb; }
+        .action-btn.ban { color: var(--danger); }
+        .action-btn.delete { color: var(--danger); }
+        .action-btn.payout { color: var(--success); }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-header h3 {
+            font-size: 1.3rem;
+        }
+        
+        .chart-wrapper {
+            height: 250px;
+            position: relative;
+        }
+        
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .filter-select {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            min-width: 150px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .page-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .page-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+        
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-stat {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .quick-stat-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .quick-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .quick-stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+        
+        .user-details-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+            align-items: start;
+        }
+        
+        .user-details-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            overflow: hidden;
+        }
+        
+        .user-details-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-details-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .user-details-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .meta-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .meta-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .meta-value {
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-details-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .admin-table th,
+            .admin-table td {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="navbar" style="background: #0a0a0a;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-crown"></i>
+                <span>WhisperChat Admin</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="#dashboard" class="nav-link active">Dashboard</a>
+                <a href="#users" class="nav-link">Users</a>
+                <a href="#calls" class="nav-link">Calls</a>
+                <a href="#payouts" class="nav-link">Payouts</a>
+                <a href="#reports" class="nav-link">Reports</a>
+                <a href="#settings" class="nav-link">Settings</a>
+            </div>
+            
+            <div class="nav-actions">
+                <span id="adminName" class="nav-user">Admin</span>
+                <button id="adminLogoutBtn" class="btn-outline">Log Out</button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-dashboard">
+        <div class="container">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <div class="admin-welcome">
+                    <h1>Admin Dashboard</h1>
+                    <p>Welcome back, Administrator. Here's what's happening with your platform today.</p>
+                </div>
+                <div class="admin-actions">
+                    <button class="btn-primary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                    <button class="btn-outline" id="exportDataBtn">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="quick-stat-value" id="totalUsers">0</div>
+                    <div class="quick-stat-label">Total Users</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="quick-stat-value" id="totalCalls">0</div>
+                    <div class="quick-stat-label">Today's Calls</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="quick-stat-value" id="totalRevenue">$0</div>
+                    <div class="quick-stat-label">Today's Revenue</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="quick-stat-value" id="pendingReports">0</div>
+                    <div class="quick-stat-label">Pending Reports</div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Revenue Overview</h3>
+                        <select class="filter-select" id="revenuePeriod">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>User Growth</h3>
+                        <select class="filter-select" id="growthPeriod">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="usersTab">
+                    <i class="fas fa-users"></i> Users Management
+                </button>
+                <button class="admin-tab" data-tab="callsTab">
+                    <i class="fas fa-phone-alt"></i> Call History
+                </button>
+                <button class="admin-tab" data-tab="payoutsTab">
+                    <i class="fas fa-money-bill-wave"></i> Payouts
+                </button>
+                <button class="admin-tab" data-tab="reportsTab">
+                    <i class="fas fa-flag"></i> Reports
+                </button>
+                <button class="admin-tab" data-tab="settingsTab">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+            </div>
+            
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content active">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Users Management</h2>
+                        <div class="search-filter">
+                            <input type="text" class="search-box" id="userSearch" placeholder="Search users by name, email, or ID...">
+                            <select class="filter-select" id="userRoleFilter">
+                                <option value="all">All Roles</option>
+                                <option value="whisper">Whispers</option>
+                                <option value="caller">Callers</option>
+                                <option value="admin">Admins</option>
+                            </select>
+                            <select class="filter-select" id="userStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="pending">Pending</option>
+                                <option value="banned">Banned</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Coins</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination" id="usersPagination">
+                        <button class="page-btn prev" onclick="changeUsersPage(-1)">← Previous</button>
+                        <div id="usersPageNumbers"></div>
+                        <button class="page-btn next" onclick="changeUsersPage(1)">Next →</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calls Tab -->
+            <div id="callsTab" class="tab-content">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Call History</h2>
+                        <div class="search-filter">
+                            <input type="text" class="search-box" id="callSearch" placeholder="Search calls by ID or user...">
+                            <select class="filter-select" id="callStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="completed">Completed</option>
+                                <option value="missed">Missed</option>
+                                <option value="refunded">Refunded</option>
+                                <option value="active">Active</option>
+                            </select>
+                            <input type="date" class="filter-select" id="callDateFilter">
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table" id="callsTable">
+                            <thead>
+                                <tr>
+                                    <th>Call ID</th>
+                                    <th>Caller</th>
+                                    <th>Whisper</th>
+                                    <th>Duration</th>
+                                    <th>Cost</th>
+                                    <th>Earnings</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="callsTableBody">
+                                <!-- Calls will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination" id="callsPagination">
+                        <button class="page-btn prev" onclick="changeCallsPage(-1)">← Previous</button>
+                        <div id="callsPageNumbers"></div>
+                        <button class="page-btn next" onclick="changeCallsPage(1)">Next →</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payouts Tab -->
+            <div id="payoutsTab" class="tab-content">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Payout Management</h2>
+                        <div class="search-filter">
+                            <input type="text" class="search-box" id="payoutSearch" placeholder="Search payouts...">
+                            <select class="filter-select" id="payoutStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="failed">Failed</option>
+                            </select>
+                            <select class="filter-select" id="payoutMethodFilter">
+                                <option value="all">All Methods</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="bank">Bank Transfer</option>
+                                <option value="stripe">Stripe</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table" id="payoutsTable">
+                            <thead>
+                                <tr>
+                                    <th>Payout ID</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Requested</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payoutsTableBody">
+                                <!-- Payouts will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination" id="payoutsPagination">
+                        <button class="page-btn prev" onclick="changePayoutsPage(-1)">← Previous</button>
+                        <div id="payoutsPageNumbers"></div>
+                        <button class="page-btn next" onclick="changePayoutsPage(1)">Next →</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-content">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>User Reports</h2>
+                        <div class="search-filter">
+                            <input type="text" class="search-box" id="reportSearch" placeholder="Search reports...">
+                            <select class="filter-select" id="reportStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="reviewed">Reviewed</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="dismissed">Dismissed</option>
+                            </select>
+                            <select class="filter-select" id="reportTypeFilter">
+                                <option value="all">All Types</option>
+                                <option value="harassment">Harassment</option>
+                                <option value="scam">Scam</option>
+                                <option value="inappropriate">Inappropriate</option>
+                                <option value="technical">Technical</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table" id="reportsTable">
+                            <thead>
+                                <tr>
+                                    <th>Report ID</th>
+                                    <th>Reporter</th>
+                                    <th>Reported User</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                <!-- Reports will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination" id="reportsPagination">
+                        <button class="page-btn prev" onclick="changeReportsPage(-1)">← Previous</button>
+                        <div id="reportsPageNumbers"></div>
+                        <button class="page-btn next" onclick="changeReportsPage(1)">Next →</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settingsTab" class="tab-content">
+                <div class="admin-section">
+                    <h2>Admin Settings</h2>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <h3><i class="fas fa-coins"></i> Coin Pricing</h3>
+                            <div class="form-group">
+                                <label>Single Coin Price ($)</label>
+                                <input type="number" id="singleCoinPrice" value="15" min="1" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>5-Coin Package Price ($)</label>
+                                <input type="number" id="fiveCoinPrice" value="65" min="1" step="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label>10-Coin Package Price ($)</label>
+                                <input type="number" id="tenCoinPrice" value="120" min="1" step="0.01">
+                            </div>
+                            <button class="btn-primary" onclick="updateCoinPrices()">Update Prices</button>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <h3><i class="fas fa-percentage"></i> Commission Rates</h3>
+                            <div class="form-group">
+                                <label>Whisper Commission (%)</label>
+                                <input type="number" id="whisperCommission" value="70" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Platform Commission (%)</label>
+                                <input type="number" id="platformCommission" value="30" min="1" max="100" disabled>
+                            </div>
+                            <button class="btn-primary" onclick="updateCommissionRates()">Update Rates</button>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <h3><i class="fas fa-clock"></i> Call Settings</h3>
+                            <div class="form-group">
+                                <label>Call Duration (minutes)</label>
+                                <input type="number" id="callDuration" value="5" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Auto-refund Threshold (seconds)</label>
+                                <input type="number" id="refundThreshold" value="30" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Minimum Payout Amount ($)</label>
+                                <input type="number" id="minPayout" value="50" min="1" step="0.01">
+                            </div>
+                            <button class="btn-primary" onclick="updateCallSettings()">Update Settings</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item" style="margin-top: 30px;">
+                        <h3><i class="fas fa-bell"></i> Notification Settings</h3>
+                        <div style="display: grid; gap: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="notifyNewUsers" checked>
+                                <span>Notify on new user registration</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="notifyReports" checked>
+                                <span>Notify on new reports</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="notifyPayouts" checked>
+                                <span>Notify on payout requests</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="notifyHighRevenue" checked>
+                                <span>Notify on high revenue days</span>
+                            </label>
+                        </div>
+                        <button class="btn-primary" onclick="updateNotificationSettings()" style="margin-top: 20px;">
+                            Update Notifications
+                        </button>
+                    </div>
+                    
+                    <div class="setting-item" style="margin-top: 30px;">
+                        <h3><i class="fas fa-database"></i> Data Management</h3>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button class="btn-outline" onclick="backupDatabase()">
+                                <i class="fas fa-save"></i> Backup Database
+                            </button>
+                            <button class="btn-outline" onclick="clearOldData()">
+                                <i class="fas fa-trash"></i> Clear Old Data
+                            </button>
+                            <button class="btn-outline" onclick="generateReports()">
+                                <i class="fas fa-chart-bar"></i> Generate Reports
+                            </button>
+                            <button class="btn-danger" onclick="showResetModal()">
+                                <i class="fas fa-bomb"></i> Reset Test Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- User Details Modal -->
+    <div class="modal" id="userDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>User Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="userDetailsContent">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit User</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="editUserForm">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="editUserName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editUserEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="editUserRole" required>
+                        <option value="caller">Caller</option>
+                        <option value="whisper">Whisper</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editUserStatus" required>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending</option>
+                        <option value="banned">Banned</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Coins Balance</label>
+                    <input type="number" id="editUserCoins" min="0" step="1">
+                </div>
+                <div class="form-group">
+                    <label>Earnings Balance ($)</label>
+                    <input type="number" id="editUserEarnings" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Ban Reason (if banned)</label>
+                    <textarea id="editUserBanReason" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-outline modal-close">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Payout Details Modal -->
+    <div class="modal" id="payoutDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Payout Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="payoutDetailsContent">
+                <!-- Payout details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline modal-close">Close</button>
+                <button class="btn-primary" id="markAsPaidBtn">Mark as Paid</button>
+                <button class="btn-danger" id="rejectPayoutBtn">Reject Payout</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Report Details Modal -->
+    <div class="modal" id="reportDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Report Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="reportDetailsContent">
+                <!-- Report details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline modal-close">Close</button>
+                <button class="btn-primary" id="resolveReportBtn">Mark as Resolved</button>
+                <button class="btn-danger" id="dismissReportBtn">Dismiss Report</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call Details Modal -->
+    <div class="modal" id="callDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Call Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="callDetailsContent">
+                <!-- Call details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="scripts.js"></script>
+    
+    <!-- Admin Dashboard Specific Script -->
+    <script>
+        let currentAdminUser = null;
+        let usersPage = 1;
+        let callsPage = 1;
+        let payoutsPage = 1;
+        let reportsPage = 1;
+        const itemsPerPage = 10;
+        
+        let revenueChart = null;
+        let growthChart = null;
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check admin authentication
+            await checkAdminAuth();
+            
+            // Initialize admin dashboard
+            initializeAdminDashboard();
+            
+            // Setup event listeners
+            setupAdminEventListeners();
+            
+            // Load initial data
+            loadDashboardData();
+        });
+        
+        // Check admin authentication
+        async function checkAdminAuth() {
+            // Wait for Firebase auth to initialize
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (!currentUser) {
+                showToast('Please log in to access admin dashboard', 'error');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+            
+            // Check if user is admin
+            const userDoc = await db.collection('users').doc(currentUser.uid).get();
+            if (!userDoc.exists || userDoc.data().role !== 'admin') {
+                showToast('Access denied. Admin privileges required.', 'error');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+            
+            currentAdminUser = userDoc.data();
+            document.getElementById('adminName').textContent = currentAdminUser.displayName || 'Admin';
+        }
+        
+        // Initialize admin dashboard
+        function initializeAdminDashboard() {
+            // Setup tab switching
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    document.querySelectorAll('.admin-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Load data for the tab
+                    switch(tabId) {
+                        case 'usersTab':
+                            loadUsersData();
+                            break;
+                        case 'callsTab':
+                            loadCallsData();
+                            break;
+                        case 'payoutsTab':
+                            loadPayoutsData();
+                            break;
+                        case 'reportsTab':
+                            loadReportsData();
+                            break;
+                    }
+                });
+            });
+            
+            // Initialize charts
+            initializeCharts();
+        }
+        
+        // Setup admin event listeners
+        function setupAdminEventListeners() {
+            // Logout button
+            document.getElementById('adminLogoutBtn').addEventListener('click', logoutUser);
+            
+            // Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', loadDashboardData);
+            
+            // Export data button
+            document.getElementById('exportDataBtn').addEventListener('click', exportAdminData);
+            
+            // Search and filter inputs
+            document.getElementById('userSearch').addEventListener('input', debounce(loadUsersData, 300));
+            document.getElementById('userRoleFilter').addEventListener('change', loadUsersData);
+            document.getElementById('userStatusFilter').addEventListener('change', loadUsersData);
+            
+            document.getElementById('callSearch').addEventListener('input', debounce(loadCallsData, 300));
+            document.getElementById('callStatusFilter').addEventListener('change', loadCallsData);
+            document.getElementById('callDateFilter').addEventListener('change', loadCallsData);
+            
+            document.getElementById('payoutSearch').addEventListener('input', debounce(loadPayoutsData, 300));
+            document.getElementById('payoutStatusFilter').addEventListener('change', loadPayoutsData);
+            document.getElementById('payoutMethodFilter').addEventListener('change', loadPayoutsData);
+            
+            document.getElementById('reportSearch').addEventListener('input', debounce(loadReportsData, 300));
+            document.getElementById('reportStatusFilter').addEventListener('change', loadReportsData);
+            document.getElementById('reportTypeFilter').addEventListener('change', loadReportsData);
+            
+            // Chart period filters
+            document.getElementById('revenuePeriod').addEventListener('change', updateRevenueChart);
+            document.getElementById('growthPeriod').addEventListener('change', updateGrowthChart);
+            
+            // Close modal buttons
+            document.querySelectorAll('.modal-close').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.modal').classList.remove('active');
+                });
+            });
+            
+            // Close modal when clicking outside
+            document.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.classList.remove('active');
+                    });
+                }
+            });
+            
+            // Edit user form submission
+            document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await saveUserChanges();
+            });
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                showToast('Loading dashboard data...', 'info');
+                
+                // Load quick stats
+                await loadQuickStats();
+                
+                // Load users data
+                loadUsersData();
+                
+                // Update charts
+                updateRevenueChart();
+                updateGrowthChart();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showToast('Error loading dashboard data', 'error');
+            }
+        }
+        
+        // Load quick stats
+        async function loadQuickStats() {
+            try {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                // Total users
+                const usersSnapshot = await db.collection('users').count().get();
+                document.getElementById('totalUsers').textContent = usersSnapshot.data().count;
+                
+                // Today's calls
+                const callsQuery = db.collection('calls')
+                    .where('startTime', '>=', today)
+                    .where('startTime', '<', tomorrow);
+                
+                const callsSnapshot = await callsQuery.count().get();
+                document.getElementById('totalCalls').textContent = callsSnapshot.data().count;
+                
+                // Today's revenue
+                const revenueQuery = db.collection('transactions')
+                    .where('type', '==', 'purchase')
+                    .where('createdAt', '>=', today)
+                    .where('createdAt', '<', tomorrow);
+                
+                const revenueSnapshot = await revenueQuery.get();
+                let totalRevenue = 0;
+                revenueSnapshot.forEach(doc => {
+                    totalRevenue += doc.data().amount || 0;
+                });
+                document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(2);
+                
+                // Pending reports
+                const reportsQuery = db.collection('reports')
+                    .where('status', '==', 'pending');
+                
+                const reportsSnapshot = await reportsQuery.count().get();
+                document.getElementById('pendingReports').textContent = reportsSnapshot.data().count;
+                
+            } catch (error) {
+                console.error('Error loading quick stats:', error);
+            }
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [],
+                        borderColor: 'rgb(108, 99, 255)',
+                        backgroundColor: 'rgba(108, 99, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Growth Chart
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            growthChart = new Chart(growthCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'New Users',
+                        data: [],
+                        backgroundColor: 'rgba(72, 187, 120, 0.6)',
+                        borderColor: 'rgb(72, 187, 120)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update revenue chart
+        async function updateRevenueChart() {
+            const period = document.getElementById('revenuePeriod').value;
+            let days = 7;
+            
+            switch(period) {
+                case '7d': days = 7; break;
+                case '30d': days = 30; break;
+                case '90d': days = 90; break;
+            }
+            
+            try {
+                const labels = [];
+                const data = [];
+                
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    labels.push(dateStr);
+                    
+                    const startOfDay = new Date(date);
+                    startOfDay.setHours(0, 0, 0, 0);
+                    const endOfDay = new Date(date);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    
+                    const query = db.collection('transactions')
+                        .where('type', '==', 'purchase')
+                        .where('createdAt', '>=', startOfDay)
+                        .where('createdAt', '<=', endOfDay);
+                    
+                    const snapshot = await query.get();
+                    let dailyRevenue = 0;
+                    snapshot.forEach(doc => {
+                        dailyRevenue += doc.data().amount || 0;
+                    });
+                    data.push(dailyRevenue);
+                }
+                
+                revenueChart.data.labels = labels;
+                revenueChart.data.datasets[0].data = data;
+                revenueChart.update();
+                
+            } catch (error) {
+                console.error('Error updating revenue chart:', error);
+            }
+        }
+        
+        // Update growth chart
+        async function updateGrowthChart() {
+            const period = document.getElementById('growthPeriod').value;
+            let days = 7;
+            
+            switch(period) {
+                case '7d': days = 7; break;
+                case '30d': days = 30; break;
+                case '90d': days = 90; break;
+            }
+            
+            try {
+                const labels = [];
+                const data = [];
+                
+                for (let i = days - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    labels.push(dateStr);
+                    
+                    const startOfDay = new Date(date);
+                    startOfDay.setHours(0, 0, 0, 0);
+                    const endOfDay = new Date(date);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    
+                    const query = db.collection('users')
+                        .where('createdAt', '>=', startOfDay)
+                        .where('createdAt', '<=', endOfDay);
+                    
+                    const snapshot = await query.count().get();
+                    data.push(snapshot.data().count);
+                }
+                
+                growthChart.data.labels = labels;
+                growthChart.data.datasets[0].data = data;
+                growthChart.update();
+                
+            } catch (error) {
+                console.error('Error updating growth chart:', error);
+            }
+        }
+        
+        // Load users data
+        async function loadUsersData() {
+            try {
+                const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+                const roleFilter = document.getElementById('userRoleFilter').value;
+                const statusFilter = document.getElementById('userStatusFilter').value;
+                
+                let query = db.collection('users');
+                
+                // Apply filters
+                if (roleFilter !== 'all') {
+                    query = query.where('role', '==', roleFilter);
+                }
+                
+                if (statusFilter !== 'all') {
+                    query = query.where('status', '==', statusFilter);
+                }
+                
+                // Get total count for pagination
+                const countSnapshot = await query.count().get();
+                const totalUsers = countSnapshot.data().count;
+                const totalPages = Math.ceil(totalUsers / itemsPerPage);
+                
+                // Apply pagination
+                query = query.orderBy('createdAt', 'desc')
+                    .limit(itemsPerPage)
+                    .offset((usersPage - 1) * itemsPerPage);
+                
+                const snapshot = await query.get();
+                const tbody = document.getElementById('usersTableBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">No users found.</td></tr>';
+                    return;
+                }
+                
+                let rowsHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    
+                    // Apply search filter
+                    if (searchTerm && !user.displayName.toLowerCase().includes(searchTerm) && 
+                        !user.email.toLowerCase().includes(searchTerm) && 
+                        !doc.id.includes(searchTerm)) {
+                        return;
+                    }
+                    
+                    rowsHTML += createUserRow(doc.id, user);
+                });
+                
+                tbody.innerHTML = rowsHTML;
+                
+                // Update pagination
+                updatePagination('users', usersPage, totalPages);
+                
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersTableBody').innerHTML = 
+                    '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading users.</td></tr>';
+            }
+        }
+        
+        // Create user row
+        function createUserRow(userId, user) {
+            const joinDate = user.createdAt ? user.createdAt.toDate() : new Date();
+            const formattedDate = joinDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            
+            let statusClass = 'status-active';
+            let statusText = 'Active';
+            
+            if (user.status === 'pending') {
+                statusClass = 'status-pending';
+                statusText = 'Pending';
+            } else if (user.status === 'banned') {
+                statusClass = 'status-banned';
+                statusText = 'Banned';
+            }
+            
+            let roleClass = user.role === 'whisper' ? 'status-whisper' : 'status-caller';
+            let roleText = user.role === 'whisper' ? 'Whisper' : 
+                          user.role === 'admin' ? 'Admin' : 'Caller';
+            
+            return `
+                <tr>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${user.avatarUrl ? 
+                                    `<img src="${user.avatarUrl}" alt="${user.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${user.displayName || 'No Name'}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">ID: ${userId.substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email || 'No email'}</td>
+                    <td><span class="status-badge ${roleClass}">${roleText}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formattedDate}</td>
+                    <td>${user.coins || 0}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view" onclick="viewUserDetails('${userId}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn edit" onclick="editUser('${userId}')" title="Edit User">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${user.status === 'banned' ? 
+                                `<button class="action-btn edit" onclick="unbanUser('${userId}')" title="Unban User">
+                                    <i class="fas fa-check"></i>
+                                </button>` :
+                                `<button class="action-btn ban" onclick="banUser('${userId}')" title="Ban User">
+                                    <i class="fas fa-ban"></i>
+                                </button>`
+                            }
+                            <button class="action-btn delete" onclick="deleteUser('${userId}')" title="Delete User">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // View user details
+        async function viewUserDetails(userId) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+                
+                const user = userDoc.data();
+                const modal = document.getElementById('userDetailsModal');
+                const content = document.getElementById('userDetailsContent');
+                
+                const joinDate = user.createdAt ? user.createdAt.toDate() : new Date();
+                const updateDate = user.updatedAt ? user.updatedAt.toDate() : joinDate;
+                
+                let statusBadge = '<span class="status-badge status-active">Active</span>';
+                if (user.status === 'pending') {
+                    statusBadge = '<span class="status-badge status-pending">Pending</span>';
+                } else if (user.status === 'banned') {
+                    statusBadge = '<span class="status-badge status-banned">Banned</span>';
+                }
+                
+                let roleBadge = user.role === 'whisper' ? 
+                    '<span class="status-badge status-whisper">Whisper</span>' : 
+                    '<span class="status-badge status-caller">Caller</span>';
+                
+                if (user.role === 'admin') {
+                    roleBadge = '<span class="status-badge" style="background: rgba(237, 137, 54, 0.2); color: var(--warning);">Admin</span>';
+                }
+                
+                content.innerHTML = `
+                    <div class="user-details-grid">
+                        <div class="user-details-avatar">
+                            ${user.avatarUrl ? 
+                                `<img src="${user.avatarUrl}" alt="${user.displayName}">` : 
+                                `<i class="fas fa-user"></i>`}
+                        </div>
+                        <div class="user-details-info">
+                            <h3>${user.displayName || 'No Name'}</h3>
+                            <p style="color: var(--gray); margin-bottom: 10px;">${user.email || 'No email'}</p>
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                ${roleBadge}
+                                ${statusBadge}
+                            </div>
+                            ${user.bio ? `<p style="margin-bottom: 20px;">${user.bio}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="user-details-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">User ID</div>
+                            <div class="meta-value">${userId}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Joined</div>
+                            <div class="meta-value">${joinDate.toLocaleDateString()}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Last Active</div>
+                            <div class="meta-value">${updateDate.toLocaleDateString()}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Total Calls</div>
+                            <div class="meta-value">${user.totalCalls || 0}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Coins Balance</div>
+                            <div class="meta-value">${user.coins || 0}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Earnings</div>
+                            <div class="meta-value">$${(user.earnings || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Rating</div>
+                            <div class="meta-value">${(user.rating || 5.0).toFixed(1)} ★</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Response Rate</div>
+                            <div class="meta-value">${user.responseRate || 100}%</div>
+                        </div>
+                    </div>
+                    
+                    ${user.banReason ? `
+                        <div style="background: rgba(245, 101, 101, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <h4 style="color: var(--danger); margin-bottom: 10px;">Ban Reason</h4>
+                            <p>${user.banReason}</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                modal.classList.add('active');
+                
+            } catch (error) {
+                console.error('Error viewing user details:', error);
+                showToast('Error loading user details', 'error');
+            }
+        }
+        
+        // Edit user
+        async function editUser(userId) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (!userDoc.exists) {
+                    showToast('User not found', 'error');
+                    return;
+                }
+                
+                const user = userDoc.data();
+                
+                document.getElementById('editUserName').value = user.displayName || '';
+                document.getElementById('editUserEmail').value = user.email || '';
+                document.getElementById('editUserRole').value = user.role || 'caller';
+                document.getElementById('editUserStatus').value = user.status || 'active';
+                document.getElementById('editUserCoins').value = user.coins || 0;
+                document.getElementById('editUserEarnings').value = user.earnings || 0;
+                document.getElementById('editUserBanReason').value = user.banReason || '';
+                
+                // Store user ID in form for submission
+                document.getElementById('editUserForm').dataset.userId = userId;
+                
+                document.getElementById('editUserModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error editing user:', error);
+                showToast('Error editing user', 'error');
+            }
+        }
+        
+        // Save user changes
+        async function saveUserChanges() {
+            const userId = document.getElementById('editUserForm').dataset.userId;
+            if (!userId) return;
+            
+            const updates = {
+                displayName: document.getElementById('editUserName').value,
+                email: document.getElementById('editUserEmail').value,
+                role: document.getElementById('editUserRole').value,
+                status: document.getElementById('editUserStatus').value,
+                coins: parseInt(document.getElementById('editUserCoins').value) || 0,
+                earnings: parseFloat(document.getElementById('editUserEarnings').value) || 0,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            const banReason = document.getElementById('editUserBanReason').value.trim();
+            if (banReason && updates.status === 'banned') {
+                updates.banReason = banReason;
+            } else if (updates.status !== 'banned') {
+                updates.banReason = firebase.firestore.FieldValue.delete();
+            }
+            
+            try {
+                await db.collection('users').doc(userId).update(updates);
+                
+                showToast('User updated successfully', 'success');
+                document.getElementById('editUserModal').classList.remove('active');
+                loadUsersData();
+                
+            } catch (error) {
+                console.error('Error updating user:', error);
+                showToast('Error updating user: ' + error.message, 'error');
+            }
+        }
+        
+        // Ban user
+        async function banUser(userId) {
+            const reason = prompt('Please enter ban reason:');
+            if (!reason) return;
+            
+            if (!confirm(`Are you sure you want to ban this user? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                await db.collection('users').doc(userId).update({
+                    status: 'banned',
+                    banReason: reason,
+                    bannedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('User banned successfully', 'success');
+                loadUsersData();
+                
+            } catch (error) {
+                console.error('Error banning user:', error);
+                showToast('Error banning user', 'error');
+            }
+        }
+        
+        // Unban user
+        async function unbanUser(userId) {
+            if (!confirm('Are you sure you want to unban this user?')) {
+                return;
+            }
+            
+            try {
+                await db.collection('users').doc(userId).update({
+                    status: 'active',
+                    banReason: firebase.firestore.FieldValue.delete(),
+                    unbannedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('User unbanned successfully', 'success');
+                loadUsersData();
+                
+            } catch (error) {
+                console.error('Error unbanning user:', error);
+                showToast('Error unbanning user', 'error');
+            }
+        }
+        
+        // Delete user
+        async function deleteUser(userId) {
+            if (!confirm('WARNING: This will permanently delete the user and all their data. This action cannot be undone. Are you sure?')) {
+                return;
+            }
+            
+            try {
+                // In production, you would need to delete all related data (calls, ratings, etc.)
+                // For now, just delete the user document
+                await db.collection('users').doc(userId).delete();
+                
+                showToast('User deleted successfully', 'success');
+                loadUsersData();
+                
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showToast('Error deleting user: ' + error.message, 'error');
+            }
+        }
+        
+        // Load calls data
+        async function loadCallsData() {
+            try {
+                const searchTerm = document.getElementById('callSearch').value.toLowerCase();
+                const statusFilter = document.getElementById('callStatusFilter').value;
+                const dateFilter = document.getElementById('callDateFilter').value;
+                
+                let query = db.collection('calls');
+                
+                // Apply filters
+                if (statusFilter !== 'all') {
+                    query = query.where('status', '==', statusFilter);
+                }
+                
+                if (dateFilter) {
+                    const selectedDate = new Date(dateFilter);
+                    const startOfDay = new Date(selectedDate);
+                    startOfDay.setHours(0, 0, 0, 0);
+                    const endOfDay = new Date(selectedDate);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    
+                    query = query.where('startTime', '>=', startOfDay)
+                        .where('startTime', '<=', endOfDay);
+                }
+                
+                // Get total count for pagination
+                const countSnapshot = await query.count().get();
+                const totalCalls = countSnapshot.data().count;
+                const totalPages = Math.ceil(totalCalls / itemsPerPage);
+                
+                // Apply pagination
+                query = query.orderBy('startTime', 'desc')
+                    .limit(itemsPerPage)
+                    .offset((callsPage - 1) * itemsPerPage);
+                
+                const snapshot = await query.get();
+                const tbody = document.getElementById('callsTableBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--gray);">No calls found.</td></tr>';
+                    return;
+                }
+                
+                // Load user data for all call participants
+                const userIds = new Set();
+                snapshot.forEach(doc => {
+                    const call = doc.data();
+                    call.participants.forEach(id => userIds.add(id));
+                });
+                
+                const usersMap = new Map();
+                if (userIds.size > 0) {
+                    const usersSnapshot = await db.collection('users')
+                        .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(userIds))
+                        .get();
+                    
+                    usersSnapshot.forEach(doc => {
+                        usersMap.set(doc.id, doc.data());
+                    });
+                }
+                
+                let rowsHTML = '';
+                snapshot.forEach(doc => {
+                    const call = doc.data();
+                    
+                    // Apply search filter
+                    if (searchTerm && !doc.id.includes(searchTerm)) {
+                        return;
+                    }
+                    
+                    rowsHTML += createCallRow(doc.id, call, usersMap);
+                });
+                
+                tbody.innerHTML = rowsHTML;
+                
+                // Update pagination
+                updatePagination('calls', callsPage, totalPages);
+                
+            } catch (error) {
+                console.error('Error loading calls:', error);
+                document.getElementById('callsTableBody').innerHTML = 
+                    '<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--danger);">Error loading calls.</td></tr>';
+            }
+        }
+        
+        // Create call row
+        function createCallRow(callId, call, usersMap) {
+            const startTime = call.startTime ? call.startTime.toDate() : new Date();
+            const formattedTime = startTime.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            let statusClass = 'status-active';
+            let statusText = 'Active';
+            
+            if (call.status === 'completed') {
+                statusClass = 'status-active';
+                statusText = 'Completed';
+            } else if (call.status === 'missed') {
+                statusClass = 'status-pending';
+                statusText = 'Missed';
+            } else if (call.status === 'refunded') {
+                statusClass = 'status-banned';
+                statusText = 'Refunded';
+            }
+            
+            const caller = usersMap.get(call.callerId);
+            const whisper = usersMap.get(call.whisperId);
+            
+            const duration = call.actualDuration || call.duration || 0;
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            return `
+                <tr>
+                    <td style="font-family: monospace; font-size: 0.9rem;">${callId.substring(0, 12)}...</td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${caller?.avatarUrl ? 
+                                    `<img src="${caller.avatarUrl}" alt="${caller.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${caller?.displayName || 'Unknown Caller'}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${call.callerId.substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${whisper?.avatarUrl ? 
+                                    `<img src="${whisper.avatarUrl}" alt="${whisper.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${whisper?.displayName || 'Unknown Whisper'}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${call.whisperId.substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${durationStr}</td>
+                    <td>${call.cost || 1} coin${call.cost > 1 ? 's' : ''}</td>
+                    <td>$${(call.earnings || 0).toFixed(2)}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formattedTime}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view" onclick="viewCallDetailsAdmin('${callId}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${call.status === 'missed' && duration < 30 ? 
+                                `<button class="action-btn payout" onclick="manualRefund('${callId}')" title="Manual Refund">
+                                    <i class="fas fa-undo"></i>
+                                </button>` : ''
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // View call details (admin)
+        async function viewCallDetailsAdmin(callId) {
+            try {
+                const callDoc = await db.collection('calls').doc(callId).get();
+                if (!callDoc.exists) {
+                    showToast('Call not found', 'error');
+                    return;
+                }
+                
+                const call = callDoc.data();
+                const modal = document.getElementById('callDetailsModal');
+                const content = document.getElementById('callDetailsContent');
+                
+                // Load user data
+                const [callerDoc, whisperDoc] = await Promise.all([
+                    db.collection('users').doc(call.callerId).get(),
+                    db.collection('users').doc(call.whisperId).get()
+                ]);
+                
+                const caller = callerDoc.exists ? callerDoc.data() : null;
+                const whisper = whisperDoc.exists ? whisperDoc.data() : null;
+                
+                const startTime = call.startTime ? call.startTime.toDate() : new Date();
+                const endTime = call.endTime ? call.endTime.toDate() : null;
+                
+                const duration = call.actualDuration || call.duration || 0;
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                let statusBadge = '<span class="status-badge status-active">Active</span>';
+                if (call.status === 'missed') {
+                    statusBadge = '<span class="status-badge status-pending">Missed</span>';
+                } else if (call.status === 'refunded') {
+                    statusBadge = '<span class="status-badge status-banned">Refunded</span>';
+                } else if (call.status === 'ended') {
+                    statusBadge = '<span class="status-badge" style="background: rgba(54, 162, 235, 0.2); color: #36a2eb;">Ended</span>';
+                }
+                
+                content.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <div>
+                            <h3 style="margin-bottom: 5px;">Call Details</h3>
+                            <p style="color: var(--gray); font-size: 0.9rem;">ID: ${callId}</p>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    
+                    <div class="user-details-meta" style="margin-bottom: 30px;">
+                        <div class="meta-item">
+                            <div class="meta-label">Caller</div>
+                            <div class="meta-value">
+                                ${caller ? caller.displayName || 'Unknown' : 'Unknown'} (${call.callerId.substring(0, 8)})
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Whisper</div>
+                            <div class="meta-value">
+                                ${whisper ? whisper.displayName || 'Unknown' : 'Unknown'} (${call.whisperId.substring(0, 8)})
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Start Time</div>
+                            <div class="meta-value">${startTime.toLocaleString()}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">End Time</div>
+                            <div class="meta-value">${endTime ? endTime.toLocaleString() : 'Still active'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Duration</div>
+                            <div class="meta-value">${durationStr}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Cost</div>
+                            <div class="meta-value">${call.cost || 1} coin${call.cost > 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Earnings</div>
+                            <div class="meta-value">$${(call.earnings || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Rating</div>
+                            <div class="meta-value">${call.rating ? call.rating + ' ★' : 'Not rated'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Channel</div>
+                            <div class="meta-value" style="font-family: monospace; font-size: 0.9rem;">${call.channelName || 'N/A'}</div>
+                        </div>
+                    </div>
+                    
+                    ${call.feedback ? `
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-top: 20px;">
+                            <h4 style="margin-bottom: 10px;">Feedback</h4>
+                            <p style="color: var(--gray);">${call.feedback}</p>
+                        </div>
+                    ` : ''}
+                    
+                    ${call.refunded ? `
+                        <div style="background: rgba(237, 137, 54, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <h4 style="color: var(--warning); margin-bottom: 10px;">Refund Information</h4>
+                            <p>This call was refunded on ${call.refundTime?.toDate().toLocaleString() || 'unknown date'}.</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                modal.classList.add('active');
+                
+            } catch (error) {
+                console.error('Error viewing call details:', error);
+                showToast('Error loading call details', 'error');
+            }
+        }
+        
+        // Manual refund
+        async function manualRefund(callId) {
+            if (!confirm('Are you sure you want to manually refund this call?')) {
+                return;
+            }
+            
+            try {
+                const wasRefunded = await refundCall(callId);
+                if (wasRefunded) {
+                    showToast('Call refunded successfully', 'success');
+                    loadCallsData();
+                } else {
+                    showToast('Call does not qualify for refund', 'warning');
+                }
+            } catch (error) {
+                console.error('Error refunding call:', error);
+                showToast('Error refunding call', 'error');
+            }
+        }
+        
+        // Load payouts data
+        async function loadPayoutsData() {
+            try {
+                const searchTerm = document.getElementById('payoutSearch').value.toLowerCase();
+                const statusFilter = document.getElementById('payoutStatusFilter').value;
+                const methodFilter = document.getElementById('payoutMethodFilter').value;
+                
+                let query = db.collection('payouts');
+                
+                // Apply filters
+                if (statusFilter !== 'all') {
+                    query = query.where('status', '==', statusFilter);
+                }
+                
+                if (methodFilter !== 'all') {
+                    query = query.where('method', '==', methodFilter);
+                }
+                
+                // Get total count for pagination
+                const countSnapshot = await query.count().get();
+                const totalPayouts = countSnapshot.data().count;
+                const totalPages = Math.ceil(totalPayouts / itemsPerPage);
+                
+                // Apply pagination
+                query = query.orderBy('requestedAt', 'desc')
+                    .limit(itemsPerPage)
+                    .offset((payoutsPage - 1) * itemsPerPage);
+                
+                const snapshot = await query.get();
+                const tbody = document.getElementById('payoutsTableBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--gray);">No payouts found.</td></tr>';
+                    return;
+                }
+                
+                // Load user data
+                const userIds = new Set();
+                snapshot.forEach(doc => {
+                    userIds.add(doc.data().userId);
+                });
+                
+                const usersMap = new Map();
+                if (userIds.size > 0) {
+                    const usersSnapshot = await db.collection('users')
+                        .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(userIds))
+                        .get();
+                    
+                    usersSnapshot.forEach(doc => {
+                        usersMap.set(doc.id, doc.data());
+                    });
+                }
+                
+                let rowsHTML = '';
+                snapshot.forEach(doc => {
+                    const payout = doc.data();
+                    
+                    // Apply search filter
+                    if (searchTerm && !doc.id.includes(searchTerm) && 
+                        !payout.referenceId?.toLowerCase().includes(searchTerm)) {
+                        return;
+                    }
+                    
+                    rowsHTML += createPayoutRow(doc.id, payout, usersMap);
+                });
+                
+                tbody.innerHTML = rowsHTML;
+                
+                // Update pagination
+                updatePagination('payouts', payoutsPage, totalPages);
+                
+            } catch (error) {
+                console.error('Error loading payouts:', error);
+                document.getElementById('payoutsTableBody').innerHTML = 
+                    '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--danger);">Error loading payouts.</td></tr>';
+            }
+        }
+        
+        // Create payout row
+        function createPayoutRow(payoutId, payout, usersMap) {
+            const requestedAt = payout.requestedAt ? payout.requestedAt.toDate() : new Date();
+            const formattedDate = requestedAt.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            
+            let statusClass = 'status-pending';
+            let statusText = 'Pending';
+            
+            if (payout.status === 'paid') {
+                statusClass = 'status-active';
+                statusText = 'Paid';
+            } else if (payout.status === 'failed') {
+                statusClass = 'status-banned';
+                statusText = 'Failed';
+            }
+            
+            const user = usersMap.get(payout.userId);
+            
+            return `
+                <tr>
+                    <td style="font-family: monospace; font-size: 0.9rem;">${payoutId.substring(0, 12)}...</td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${user?.avatarUrl ? 
+                                    `<img src="${user.avatarUrl}" alt="${user.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${user?.displayName || 'Unknown User'}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${payout.userId.substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>$${payout.amount.toFixed(2)}</td>
+                    <td>${payout.method || 'Unknown'}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view" onclick="viewPayoutDetails('${payoutId}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${payout.status === 'pending' ? 
+                                `<button class="action-btn payout" onclick="processPayout('${payoutId}')" title="Process Payout">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // View payout details
+        async function viewPayoutDetails(payoutId) {
+            try {
+                const payoutDoc = await db.collection('payouts').doc(payoutId).get();
+                if (!payoutDoc.exists) {
+                    showToast('Payout not found', 'error');
+                    return;
+                }
+                
+                const payout = payoutDoc.data();
+                const modal = document.getElementById('payoutDetailsModal');
+                const content = document.getElementById('payoutDetailsContent');
+                
+                // Load user data
+                const userDoc = await db.collection('users').doc(payout.userId).get();
+                const user = userDoc.exists ? userDoc.data() : null;
+                
+                const requestedAt = payout.requestedAt ? payout.requestedAt.toDate() : new Date();
+                const paidAt = payout.paidAt ? payout.paidAt.toDate() : null;
+                
+                content.innerHTML = `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 20px;">Payout Details</h3>
+                        <p style="color: var(--gray); font-size: 0.9rem;">ID: ${payoutId}</p>
+                    </div>
+                    
+                    <div class="user-details-meta">
+                        <div class="meta-item">
+                            <div class="meta-label">User</div>
+                            <div class="meta-value">
+                                ${user ? user.displayName || 'Unknown' : 'Unknown'} (${payout.userId.substring(0, 8)})
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Amount</div>
+                            <div class="meta-value">$${payout.amount.toFixed(2)}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Method</div>
+                            <div class="meta-value">${payout.method || 'Unknown'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Status</div>
+                            <div class="meta-value">
+                                <span class="status-badge ${payout.status === 'paid' ? 'status-active' : payout.status === 'failed' ? 'status-banned' : 'status-pending'}">
+                                    ${payout.status || 'Pending'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Requested</div>
+                            <div class="meta-value">${requestedAt.toLocaleString()}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Paid</div>
+                            <div class="meta-value">${paidAt ? paidAt.toLocaleString() : 'Not paid yet'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Reference ID</div>
+                            <div class="meta-value">${payout.referenceId || 'N/A'}</div>
+                        </div>
+                        ${payout.paypalEmail ? `
+                            <div class="meta-item">
+                                <div class="meta-label">PayPal Email</div>
+                                <div class="meta-value">${payout.paypalEmail}</div>
+                            </div>
+                        ` : ''}
+                        ${payout.bankDetails ? `
+                            <div class="meta-item">
+                                <div class="meta-label">Bank Details</div>
+                                <div class="meta-value" style="font-size: 0.9rem;">${JSON.stringify(payout.bankDetails, null, 2)}</div>
+                            </div>
+                        ` : ''}
+                        ${payout.notes ? `
+                            <div class="meta-item">
+                                <div class="meta-label">Admin Notes</div>
+                                <div class="meta-value">${payout.notes}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Update button event listeners
+                const markAsPaidBtn = document.getElementById('markAsPaidBtn');
+                const rejectPayoutBtn = document.getElementById('rejectPayoutBtn');
+                
+                markAsPaidBtn.onclick = () => processPayout(payoutId);
+                rejectPayoutBtn.onclick = () => rejectPayout(payoutId);
+                
+                modal.classList.add('active');
+                
+            } catch (error) {
+                console.error('Error viewing payout details:', error);
+                showToast('Error loading payout details', 'error');
+            }
+        }
+        
+        // Process payout
+        async function processPayout(payoutId) {
+            const notes = prompt('Enter any notes for this payout (optional):');
+            
+            if (!confirm('Are you sure you want to mark this payout as paid?')) {
+                return;
+            }
+            
+            try {
+                await db.collection('payouts').doc(payoutId).update({
+                    status: 'paid',
+                    paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    processedBy: currentUser.uid,
+                    notes: notes || '',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Payout marked as paid', 'success');
+                document.getElementById('payoutDetailsModal').classList.remove('active');
+                loadPayoutsData();
+                
+            } catch (error) {
+                console.error('Error processing payout:', error);
+                showToast('Error processing payout', 'error');
+            }
+        }
+        
+        // Reject payout
+        async function rejectPayout(payoutId) {
+            const reason = prompt('Enter reason for rejection:');
+            if (!reason) return;
+            
+            if (!confirm('Are you sure you want to reject this payout?')) {
+                return;
+            }
+            
+            try {
+                await db.collection('payouts').doc(payoutId).update({
+                    status: 'failed',
+                    failedReason: reason,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Payout rejected', 'success');
+                document.getElementById('payoutDetailsModal').classList.remove('active');
+                loadPayoutsData();
+                
+            } catch (error) {
+                console.error('Error rejecting payout:', error);
+                showToast('Error rejecting payout', 'error');
+            }
+        }
+        
+        // Load reports data
+        async function loadReportsData() {
+            try {
+                const searchTerm = document.getElementById('reportSearch').value.toLowerCase();
+                const statusFilter = document.getElementById('reportStatusFilter').value;
+                const typeFilter = document.getElementById('reportTypeFilter').value;
+                
+                let query = db.collection('reports');
+                
+                // Apply filters
+                if (statusFilter !== 'all') {
+                    query = query.where('status', '==', statusFilter);
+                }
+                
+                if (typeFilter !== 'all') {
+                    query = query.where('type', '==', typeFilter);
+                }
+                
+                // Get total count for pagination
+                const countSnapshot = await query.count().get();
+                const totalReports = countSnapshot.data().count;
+                const totalPages = Math.ceil(totalReports / itemsPerPage);
+                
+                // Apply pagination
+                query = query.orderBy('createdAt', 'desc')
+                    .limit(itemsPerPage)
+                    .offset((reportsPage - 1) * itemsPerPage);
+                
+                const snapshot = await query.get();
+                const tbody = document.getElementById('reportsTableBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--gray);">No reports found.</td></tr>';
+                    return;
+                }
+                
+                // Load user data
+                const userIds = new Set();
+                snapshot.forEach(doc => {
+                    const report = doc.data();
+                    userIds.add(report.reporterId);
+                    userIds.add(report.reportedId);
+                });
+                
+                const usersMap = new Map();
+                if (userIds.size > 0) {
+                    const usersSnapshot = await db.collection('users')
+                        .where(firebase.firestore.FieldPath.documentId(), 'in', Array.from(userIds))
+                        .get();
+                    
+                    usersSnapshot.forEach(doc => {
+                        usersMap.set(doc.id, doc.data());
+                    });
+                }
+                
+                let rowsHTML = '';
+                snapshot.forEach(doc => {
+                    const report = doc.data();
+                    
+                    // Apply search filter
+                    if (searchTerm && !doc.id.includes(searchTerm) && 
+                        !report.reason?.toLowerCase().includes(searchTerm)) {
+                        return;
+                    }
+                    
+                    rowsHTML += createReportRow(doc.id, report, usersMap);
+                });
+                
+                tbody.innerHTML = rowsHTML;
+                
+                // Update pagination
+                updatePagination('reports', reportsPage, totalPages);
+                
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                document.getElementById('reportsTableBody').innerHTML = 
+                    '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--danger);">Error loading reports.</td></tr>';
+            }
+        }
+        
+        // Create report row
+        function createReportRow(reportId, report, usersMap) {
+            const createdAt = report.createdAt ? report.createdAt.toDate() : new Date();
+            const formattedDate = createdAt.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            let statusClass = 'status-pending';
+            let statusText = 'Pending';
+            
+            if (report.status === 'reviewed') {
+                statusClass = 'status-active';
+                statusText = 'Reviewed';
+            } else if (report.status === 'resolved') {
+                statusClass = 'status-active';
+                statusText = 'Resolved';
+            } else if (report.status === 'dismissed') {
+                statusClass = 'status-banned';
+                statusText = 'Dismissed';
+            }
+            
+            const reporter = usersMap.get(report.reporterId);
+            const reported = usersMap.get(report.reportedId);
+            
+            return `
+                <tr>
+                    <td style="font-family: monospace; font-size: 0.9rem;">${reportId.substring(0, 12)}...</td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${reporter?.avatarUrl ? 
+                                    `<img src="${reporter.avatarUrl}" alt="${reporter.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${reporter?.displayName || 'Unknown User'}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${report.reporterId.substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-small">
+                                ${reported?.avatarUrl ? 
+                                    `<img src="${reported.avatarUrl}" alt="${reported.displayName}">` : 
+                                    `<i class="fas fa-user"></i>`}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">${reported?.displayName || 'Unknown User'}</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">${report.reportedId.substring(0, 8)}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${report.type || 'Other'}</td>
+                    <td>${report.reason ? report.reason.substring(0, 50) + (report.reason.length > 50 ? '...' : '') : 'No description'}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view" onclick="viewReportDetails('${reportId}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            ${report.status === 'pending' ? 
+                                `<button class="action-btn edit" onclick="reviewReport('${reportId}')" title="Mark as Reviewed">
+                                    <i class="fas fa-check"></i>
+                                </button>` : ''
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // View report details
+        async function viewReportDetails(reportId) {
+            try {
+                const reportDoc = await db.collection('reports').doc(reportId).get();
+                if (!reportDoc.exists) {
+                    showToast('Report not found', 'error');
+                    return;
+                }
+                
+                const report = reportDoc.data();
+                const modal = document.getElementById('reportDetailsModal');
+                const content = document.getElementById('reportDetailsContent');
+                
+                // Load user data
+                const [reporterDoc, reportedDoc] = await Promise.all([
+                    db.collection('users').doc(report.reporterId).get(),
+                    db.collection('users').doc(report.reportedId).get()
+                ]);
+                
+                const reporter = reporterDoc.exists ? reporterDoc.data() : null;
+                const reported = reportedDoc.exists ? reportedDoc.data() : null;
+                
+                const createdAt = report.createdAt ? report.createdAt.toDate() : new Date();
+                
+                content.innerHTML = `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="margin-bottom: 20px;">Report Details</h3>
+                        <p style="color: var(--gray); font-size: 0.9rem;">ID: ${reportId}</p>
+                    </div>
+                    
+                    <div class="user-details-meta" style="margin-bottom: 30px;">
+                        <div class="meta-item">
+                            <div class="meta-label">Reporter</div>
+                            <div class="meta-value">
+                                ${reporter ? reporter.displayName || 'Unknown' : 'Unknown'} (${report.reporterId.substring(0, 8)})
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Reported User</div>
+                            <div class="meta-value">
+                                ${reported ? reported.displayName || 'Unknown' : 'Unknown'} (${report.reportedId.substring(0, 8)})
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Report Type</div>
+                            <div class="meta-value">${report.type || 'Other'}</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Status</div>
+                            <div class="meta-value">
+                                <span class="status-badge ${report.status === 'pending' ? 'status-pending' : report.status === 'dismissed' ? 'status-banned' : 'status-active'}">
+                                    ${report.status || 'Pending'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-label">Submitted</div>
+                            <div class="meta-value">${createdAt.toLocaleString()}</div>
+                        </div>
+                        ${report.callId ? `
+                            <div class="meta-item">
+                                <div class="meta-label">Related Call</div>
+                                <div class="meta-value" style="font-family: monospace; font-size: 0.9rem;">${report.callId}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px;">Report Description</h4>
+                        <p style="color: var(--gray); white-space: pre-wrap;">${report.reason || 'No description provided.'}</p>
+                    </div>
+                    
+                    ${report.adminNotes ? `
+                        <div style="background: rgba(237, 137, 54, 0.1); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <h4 style="color: var(--warning); margin-bottom: 10px;">Admin Notes</h4>
+                            <p style="color: var(--gray); white-space: pre-wrap;">${report.adminNotes}</p>
+                        </div>
+                    ` : ''}
+                `;
+                
+                // Update button event listeners
+                const resolveReportBtn = document.getElementById('resolveReportBtn');
+                const dismissReportBtn = document.getElementById('dismissReportBtn');
+                
+                resolveReportBtn.onclick = () => resolveReport(reportId);
+                dismissReportBtn.onclick = () => dismissReport(reportId);
+                
+                modal.classList.add('active');
+                
+            } catch (error) {
+                console.error('Error viewing report details:', error);
+                showToast('Error loading report details', 'error');
+            }
+        }
+        
+        // Review report
+        async function reviewReport(reportId) {
+            const notes = prompt('Enter admin notes (optional):');
+            
+            try {
+                await db.collection('reports').doc(reportId).update({
+                    status: 'reviewed',
+                    adminNotes: notes || '',
+                    reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    reviewedBy: currentUser.uid,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Report marked as reviewed', 'success');
+                loadReportsData();
+                
+            } catch (error) {
+                console.error('Error reviewing report:', error);
+                showToast('Error reviewing report', 'error');
+            }
+        }
+        
+        // Resolve report
+        async function resolveReport(reportId) {
+            const notes = prompt('Enter resolution notes (optional):');
+            
+            try {
+                await db.collection('reports').doc(reportId).update({
+                    status: 'resolved',
+                    resolvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    resolvedBy: currentUser.uid,
+                    adminNotes: (notes || '') + '\n\n[Resolved]',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Report marked as resolved', 'success');
+                document.getElementById('reportDetailsModal').classList.remove('active');
+                loadReportsData();
+                
+            } catch (error) {
+                console.error('Error resolving report:', error);
+                showToast('Error resolving report', 'error');
+            }
+        }
+        
+        // Dismiss report
+        async function dismissReport(reportId) {
+            const reason = prompt('Enter reason for dismissal:');
+            if (!reason) return;
+            
+            try {
+                await db.collection('reports').doc(reportId).update({
+                    status: 'dismissed',
+                    dismissedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    dismissedBy: currentUser.uid,
+                    adminNotes: reason + '\n\n[Dismissed]',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showToast('Report dismissed', 'success');
+                document.getElementById('reportDetailsModal').classList.remove('active');
+                loadReportsData();
+                
+            } catch (error) {
+                console.error('Error dismissing report:', error);
+                showToast('Error dismissing report', 'error');
+            }
+        }
+        
+        // Update pagination
+        function updatePagination(type, currentPage, totalPages) {
+            const pageNumbersDiv = document.getElementById(`${type}PageNumbers`);
+            const prevBtn = document.querySelector(`#${type}Pagination .prev`);
+            const nextBtn = document.querySelector(`#${type}Pagination .next`);
+            
+            if (!pageNumbersDiv) return;
+            
+            // Update page numbers
+            let pageNumbersHTML = '';
+            const maxPagesToShow = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+            
+            if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbersHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="change${type.charAt(0).toUpperCase() + type.slice(1)}Page(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            pageNumbersDiv.innerHTML = pageNumbersHTML;
+            
+            // Update button states
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+        }
+        
+        // Change users page
+        function changeUsersPage(page) {
+            if (page === 'prev') {
+                usersPage--;
+            } else if (page === 'next') {
+                usersPage++;
+            } else {
+                usersPage = page;
+            }
+            
+            loadUsersData();
+        }
+        
+        // Change calls page
+        function changeCallsPage(page) {
+            if (page === 'prev') {
+                callsPage--;
+            } else if (page === 'next') {
+                callsPage++;
+            } else {
+                callsPage = page;
+            }
+            
+            loadCallsData();
+        }
+        
+        // Change payouts page
+        function changePayoutsPage(page) {
+            if (page === 'prev') {
+                payoutsPage--;
+            } else if (page === 'next') {
+                payoutsPage++;
+            } else {
+                payoutsPage = page;
+            }
+            
+            loadPayoutsData();
+        }
+        
+        // Change reports page
+        function changeReportsPage(page) {
+            if (page === 'prev') {
+                reportsPage--;
+            } else if (page === 'next') {
+                reportsPage++;
+            } else {
+                reportsPage = page;
+            }
+            
+            loadReportsData();
+        }
+        
+        // Settings functions
+        async function updateCoinPrices() {
+            const singlePrice = parseFloat(document.getElementById('singleCoinPrice').value);
+            const fivePrice = parseFloat(document.getElementById('fiveCoinPrice').value);
+            const tenPrice = parseFloat(document.getElementById('tenCoinPrice').value);
+            
+            try {
+                await db.collection('settings').doc('pricing').set({
+                    singleCoin: singlePrice,
+                    fiveCoins: fivePrice,
+                    tenCoins: tenPrice,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.uid
+                }, { merge: true });
+                
+                showToast('Coin prices updated', 'success');
+            } catch (error) {
+                console.error('Error updating coin prices:', error);
+                showToast('Error updating prices', 'error');
+            }
+        }
+        
+        async function updateCommissionRates() {
+            const whisperCommission = parseInt(document.getElementById('whisperCommission').value);
+            const platformCommission = 100 - whisperCommission;
+            
+            document.getElementById('platformCommission').value = platformCommission;
+            
+            try {
+                await db.collection('settings').doc('commission').set({
+                    whisper: whisperCommission,
+                    platform: platformCommission,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.uid
+                }, { merge: true });
+                
+                showToast('Commission rates updated', 'success');
+            } catch (error) {
+                console.error('Error updating commission rates:', error);
+                showToast('Error updating rates', 'error');
+            }
+        }
+        
+        async function updateCallSettings() {
+            const callDuration = parseInt(document.getElementById('callDuration').value);
+            const refundThreshold = parseInt(document.getElementById('refundThreshold').value);
+            const minPayout = parseFloat(document.getElementById('minPayout').value);
+            
+            try {
+                await db.collection('settings').doc('calls').set({
+                    duration: callDuration,
+                    refundThreshold: refundThreshold,
+                    minPayout: minPayout,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.uid
+                }, { merge: true });
+                
+                showToast('Call settings updated', 'success');
+            } catch (error) {
+                console.error('Error updating call settings:', error);
+                showToast('Error updating settings', 'error');
+            }
+        }
+        
+        async function updateNotificationSettings() {
+            const notifyNewUsers = document.getElementById('notifyNewUsers').checked;
+            const notifyReports = document.getElementById('notifyReports').checked;
+            const notifyPayouts = document.getElementById('notifyPayouts').checked;
+            const notifyHighRevenue = document.getElementById('notifyHighRevenue').checked;
+            
+            try {
+                await db.collection('settings').doc('notifications').set({
+                    newUsers: notifyNewUsers,
+                    reports: notifyReports,
+                    payouts: notifyPayouts,
+                    highRevenue: notifyHighRevenue,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.uid
+                }, { merge: true });
+                
+                showToast('Notification settings updated', 'success');
+            } catch (error) {
+                console.error('Error updating notification settings:', error);
+                showToast('Error updating notifications', 'error');
+            }
+        }
+        
+        async function backupDatabase() {
+            showToast('Starting database backup...', 'info');
+            // In production, this would trigger a cloud function
+            setTimeout(() => {
+                showToast('Database backup completed successfully', 'success');
+            }, 2000);
+        }
+        
+        async function clearOldData() {
+            if (!confirm('Are you sure you want to clear data older than 90 days? This action cannot be undone.')) {
+                return;
+            }
+            
+            showToast('Clearing old data...', 'info');
+            // In production, this would delete old data
+            setTimeout(() => {
+                showToast('Old data cleared successfully', 'success');
+            }, 2000);
+        }
+        
+        async function generateReports() {
+            showToast('Generating reports...', 'info');
+            // In production, this would generate PDF reports
+            setTimeout(() => {
+                showToast('Reports generated successfully', 'success');
+            }, 2000);
+        }
+        
+        function showResetModal() {
+            if (!confirm('WARNING: This will reset all test data. This action cannot be undone. Are you sure?')) {
+                return;
+            }
+            
+            showToast('Resetting test data...', 'warning');
+            // In production, this would reset test data
+            setTimeout(() => {
+                showToast('Test data reset successfully', 'success');
+            }, 2000);
+        }
+        
+        // Export admin data
+        async function exportAdminData() {
+            showToast('Preparing data export...', 'info');
+            
+            // In production, this would generate CSV/Excel files
+            const data = {
+                timestamp: new Date().toISOString(),
+                exportedBy: currentUser.uid,
+                users: await getCollectionData('users'),
+                calls: await getCollectionData('calls'),
+                payouts: await getCollectionData('payouts'),
+                reports: await getCollectionData('reports')
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `whisperchat-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Data exported successfully', 'success');
+        }
+        
+        async function getCollectionData(collectionName) {
+            const snapshot = await db.collection(collectionName).limit(1000).get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        }
+        
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

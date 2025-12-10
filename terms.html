@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <title>Terms of Service | WhisperChat</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Terms Specific Styles -->
+    <style>
+        .terms {
+            padding-top: 100px;
+            min-height: 100vh;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .terms-header {
+            margin-bottom: 40px;
+        }
+        
+        .terms-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .terms-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .terms-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(108, 99, 255, 0.2);
+        }
+        
+        .section h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 15px;
+            color: white;
+        }
+        
+        .section p, .section li {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .section ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .section li {
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .section li:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .highlight-box {
+            background: rgba(108, 99, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+            justify-content: center;
+        }
+        
+        .quick-link-btn {
+            padding: 12px 25px;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quick-link-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-comment-dots"></i>
+                <span>WhisperChat</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#whispers" class="nav-link">Whispers</a>
+                <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+                <a href="index.html#pricing" class="nav-link">Buy Coins</a>
+                <a href="become-whisper.html" class="nav-link">Become a Whisper</a>
+            </div>
+            
+            <div class="nav-actions">
+                <span id="userNav" class="nav-user">User</span>
+                <button id="logoutBtn" class="btn-outline" style="display: none;">Log Out</button>
+                <button id="loginBtn" class="btn-primary">Log In</button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Terms Page -->
+    <div class="terms">
+        <div class="container">
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <a href="guidelines.html" class="quick-link-btn">
+                    <i class="fas fa-heart"></i> Community Guidelines
+                </a>
+                <a href="privacy.html" class="quick-link-btn">
+                    <i class="fas fa-user-shield"></i> Privacy Policy
+                </a>
+                <a href="faq.html" class="quick-link-btn">
+                    <i class="fas fa-question-circle"></i> FAQ
+                </a>
+                <a href="contact.html" class="quick-link-btn">
+                    <i class="fas fa-headset"></i> Contact Us
+                </a>
+            </div>
+            
+            <!-- Header -->
+            <div class="terms-header">
+                <h1>Terms of Service</h1>
+                <p>Last Updated: January 15, 2024</p>
+                <p style="margin-top: 10px;">Please read these terms carefully before using WhisperChat.</p>
+            </div>
+            
+            <!-- Terms Content -->
+            <div class="terms-content">
+                <!-- Introduction -->
+                <div class="section">
+                    <h2>1. Acceptance of Terms</h2>
+                    <p>By accessing or using the WhisperChat platform, website, mobile application, or any services provided by WhisperChat ("Services"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of the terms, you may not access the Services.</p>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Important:</strong> These Terms contain provisions that limit our liability and require individual arbitration for disputes. Please review these sections carefully.</p>
+                    </div>
+                </div>
+                
+                <!-- Account Terms -->
+                <div class="section">
+                    <h2>2. Account Registration and Security</h2>
+                    
+                    <h3>2.1 Eligibility</h3>
+                    <p>To use WhisperChat Services, you must:</p>
+                    <ul>
+                        <li>Be at least 18 years old</li>
+                        <li>Have the legal capacity to enter into a binding contract</li>
+                        <li>Provide accurate and complete registration information</li>
+                        <li>Maintain the security of your account credentials</li>
+                    </ul>
+                    
+                    <h3>2.2 Account Responsibilities</h3>
+                    <p>You are responsible for:</p>
+                    <ul>
+                        <li>All activities under your account</li>
+                        <li>Maintaining the confidentiality of your password</li>
+                        <li>Notifying us immediately of any unauthorized use</li>
+                        <li>Ensuring your account information remains accurate</li>
+                    </ul>
+                    
+                    <h3>2.3 Account Suspension or Termination</h3>
+                    <p>We reserve the right to suspend or terminate accounts that:</p>
+                    <ul>
+                        <li>Violate these Terms or Community Guidelines</li>
+                        <li>Engage in fraudulent, abusive, or illegal activities</li>
+                        <li>Create risk or legal exposure for WhisperChat</li>
+                        <li>Remain inactive for an extended period</li>
+                    </ul>
+                </div>
+                
+                <!-- Services Terms -->
+                <div class="section">
+                    <h2>3. Services and Payments</h2>
+                    
+                    <h3>3.1 Whisper Services</h3>
+                    <p>Whispers provide conversation services through our platform. They are independent contractors, not employees of WhisperChat. We are not responsible for the content of conversations.</p>
+                    
+                    <h3>3.2 Caller Services</h3>
+                    <p>Callers purchase coins to access conversation services. Coins:</p>
+                    <ul>
+                        <li>Are non-refundable except as required by law</li>
+                        <li>Expire after 365 days of inactivity</li>
+                        <li>Cannot be transferred between accounts</li>
+                        <li>Have no cash value</li>
+                    </ul>
+                    
+                    <h3>3.3 Payments and Billing</h3>
+                    <ul>
+                        <li>All payments are processed through third-party providers</li>
+                        <li>Prices are subject to change with notice</li>
+                        <li>You are responsible for any applicable taxes</li>
+                        <li>Chargebacks may result in account suspension</li>
+                    </ul>
+                    
+                    <h3>3.4 Whisper Earnings</h3>
+                    <p>Whispers earn $12 per 5-minute call, subject to:</p>
+                    <ul>
+                        <li>Successful completion of calls</li>
+                        <li>Compliance with our quality standards</li>
+                        <li>Minimum payout threshold of $50</li>
+                        <li>Bi-weekly payment processing</li>
+                    </ul>
+                </div>
+                
+                <!-- User Conduct -->
+                <div class="section">
+                    <h2>4. User Conduct and Content</h2>
+                    
+                    <h3>4.1 Prohibited Activities</h3>
+                    <p>You agree not to:</p>
+                    <ul>
+                        <li>Harass, abuse, or harm other users</li>
+                        <li>Share inappropriate, explicit, or illegal content</li>
+                        <li>Impersonate others or provide false information</li>
+                        <li>Attempt to circumvent our payment systems</li>
+                        <li>Use automated systems to access Services</li>
+                        <li>Violate any applicable laws or regulations</li>
+                    </ul>
+                    
+                    <h3>4.2 Content Ownership</h3>
+                    <p>You retain ownership of content you create, but grant WhisperChat:</p>
+                    <ul>
+                        <li>A worldwide, non-exclusive license to use, reproduce, and display content</li>
+                        <li>The right to remove any content violating these Terms</li>
+                        <li>Permission to use anonymized data for analytics and improvement</li>
+                    </ul>
+                </div>
+                
+                <!-- Intellectual Property -->
+                <div class="section">
+                    <h2>5. Intellectual Property</h2>
+                    
+                    <p>The WhisperChat platform, including its design, features, and content, are owned by WhisperChat and protected by intellectual property laws. You may not:</p>
+                    <ul>
+                        <li>Copy, modify, or create derivative works</li>
+                        <li>Reverse engineer or attempt to extract source code</li>
+                        <li>Use our trademarks without permission</li>
+                        <li>Remove any proprietary notices</li>
+                    </ul>
+                </div>
+                
+                <!-- Limitation of Liability -->
+                <div class="section">
+                    <h2>6. Limitation of Liability</h2>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Disclaimer:</strong> WhisperChat provides a platform for conversations. We do not provide professional advice, therapy, counseling, or any other professional services. Conversations are for entertainment and social connection purposes only.</p>
+                    </div>
+                    
+                    <p>To the maximum extent permitted by law:</p>
+                    <ul>
+                        <li>We are not liable for any indirect, incidental, or consequential damages</li>
+                        <li>Our total liability is limited to the amount you paid in the last 12 months</li>
+                        <li>We make no warranties about the reliability or availability of Services</li>
+                        <li>We are not responsible for user-to-user interactions</li>
+                    </ul>
+                </div>
+                
+                <!-- Dispute Resolution -->
+                <div class="section">
+                    <h2>7. Dispute Resolution</h2>
+                    
+                    <h3>7.1 Informal Resolution</h3>
+                    <p>Before filing a claim, you agree to attempt informal resolution by contacting us at support@whisperchat.com.</p>
+                    
+                    <h3>7.2 Binding Arbitration</h3>
+                    <p>Any disputes arising from these Terms shall be resolved through binding arbitration, not in court. Arbitration will be conducted in accordance with the rules of the American Arbitration Association.</p>
+                    
+                    <h3>7.3 Class Action Waiver</h3>
+                    <p>You waive any right to participate in class actions, class arbitrations, or representative actions.</p>
+                </div>
+                
+                <!-- Changes to Terms -->
+                <div class="section">
+                    <h2>8. Changes to Terms</h2>
+                    
+                    <p>We may modify these Terms at any time. We will provide notice of material changes through:</p>
+                    <ul>
+                        <li>Email notification to registered users</li>
+                        <li>In-app notifications</li>
+                        <li>Updated "Last Updated" date on this page</li>
+                    </ul>
+                    
+                    <p>Continued use of Services after changes constitutes acceptance of modified Terms.</p>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="section">
+                    <h2>9. Contact Information</h2>
+                    
+                    <p>For questions about these Terms, please contact:</p>
+                    
+                    <div class="highlight-box">
+                        <p><strong>WhisperChat Support</strong><br>
+                        Email: support@whisperchat.com<br>
+                        Address: 123 Conversation Street, San Francisco, CA 94107</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Last Updated -->
+            <div class="last-updated">
+                <p>These Terms of Service were last updated on January 15, 2024.</p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">
+                    By using WhisperChat, you acknowledge that you have read, understood, and agree to be bound by these Terms.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>WhisperChat</span>
+                    <p style="margin-top: 15px; max-width: 300px;">
+                        Committed to creating safe, meaningful conversations.
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <a href="index.html#whispers">Find Whispers</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="index.html#pricing">Buy Coins</a>
+                    <a href="become-whisper.html">Become a Whisper</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Legal</h4>
+                    <a href="guidelines.html">Community Guidelines</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="cookies.html">Cookie Policy</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="faq.html">FAQ</a>
+                    <a href="contact.html">Contact Us</a>
+                    <a href="status.html">Service Status</a>
+                    <a href="report.html">Report Issue</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 WhisperChat. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="guidelines.html">Guidelines</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="scripts.js"></script>
+    
+    <!-- Terms Specific Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mobile menu
+            initMobileMenu();
+            
+            // Check auth status
+            if (currentUser && userData) {
+                document.getElementById('userNav').textContent = userData.displayName || 'User';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+            }
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+        });
+    </script>
+</body>
+</html>

@@ -1,4 +1,23 @@
-backup-*/
-node_modules/
+# Firebase
+.firebase/
+.firebaserc
+
+# Environment variables
 .env
+.env.local
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <title>Profile | WhisperChat</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Member Profile Specific Styles -->
+    <style>
+        .profile-page {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+        
+        @media (min-width: 992px) {
+            .profile-container {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+        
+        .profile-sidebar {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+            position: sticky;
+            top: 120px;
+            height: fit-content;
+        }
+        
+        .profile-avatar {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            overflow: hidden;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-name {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .profile-category {
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .profile-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .profile-rating .stars {
+            color: #FFD700;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .profile-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(108, 99, 255, 0.2);
+        }
+        
+        .bio-text {
+            color: var(--gray);
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+        
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            transition: var(--transition);
+        }
+        
+        .social-link:hover {
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        .social-link i {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+        
+        .review-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .reviewer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--dark);
+        }
+        
+        .review-rating {
+            color: #FFD700;
+        }
+        
+        .review-date {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .review-text {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        .availability-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(72, 187, 120, 0.2);
+            color: var(--success);
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .availability-badge.unavailable {
+            background: rgba(245, 101, 101, 0.2);
+            color: var(--danger);
+        }
+        
+        .call-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .call-history-table th,
+        .call-history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .call-history-table th {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .call-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-completed { background: rgba(72, 187, 120, 0.2); color: var(--success); }
+        .status-missed { background: rgba(245, 101, 101, 0.2); color: var(--danger); }
+        .status-upcoming { background: rgba(237, 137, 54, 0.2); color: var(--warning); }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-comment-dots"></i>
+                <span>WhisperChat</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#whispers" class="nav-link">Whispers</a>
+                <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+                <a href="index.html#pricing" class="nav-link">Buy Coins</a>
+            </div>
+            
+            <div class="nav-actions">
+                <span id="userNav" class="nav-user">User</span>
+                <button id="logoutBtn" class="btn-outline" style="display: none;">Log Out</button>
+                <button id="loginBtn" class="btn-primary">Log In</button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Member Profile Page -->
+    <div class="profile-page">
+        <div class="container">
+            <div class="profile-container">
+                <!-- Sidebar -->
+                <div class="profile-sidebar">
+                    <div class="profile-avatar">
+                        <img id="profileAvatar" src="https://via.placeholder.com/400x400?text=Whisper" alt="Profile Picture">
+                    </div>
+                    
+                    <h1 class="profile-name" id="profileName">Whisper Name</h1>
+                    <div class="profile-category" id="profileCategory">Entertainment</div>
+                    
+                    <div class="profile-rating">
+                        <div class="stars" id="profileStars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span id="profileRating">4.8</span>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-value" id="totalCalls">150</span>
+                            <span class="stat-label">Calls</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="responseRate">95%</span>
+                            <span class="stat-label">Response</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="avgDuration">5:00</span>
+                            <span class="stat-label">Avg Call</span>
+                        </div>
+                    </div>
+                    
+                    <div class="availability-badge" id="availabilityBadge">
+                        <i class="fas fa-circle"></i>
+                        <span>Available Now</span>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn-primary" id="startCallBtn">
+                            <i class="fas fa-phone-alt"></i> Start a Call - 1 Coin
+                        </button>
+                        <button class="btn-outline" id="addToFavoritesBtn">
+                            <i class="fas fa-heart"></i> Add to Favorites
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="profile-content">
+                    <!-- About Section -->
+                    <div class="section">
+                        <h2 class="section-title">About</h2>
+                        <div class="bio-text" id="profileBio">
+                            Loading bio...
+                        </div>
+                    </div>
+                    
+                    <!-- Social Links -->
+                    <div class="section">
+                        <h2 class="section-title">Social Links</h2>
+                        <div class="social-links" id="socialLinks">
+                            <!-- Social links will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Reviews -->
+                    <div class="section">
+                        <h2 class="section-title">Recent Reviews</h2>
+                        <div id="recentReviews">
+                            <!-- Reviews will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Call History -->
+                    <div class="section">
+                        <h2 class="section-title">Recent Call History</h2>
+                        <div id="callHistory">
+                            <table class="call-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="callHistoryBody">
+                                    <!-- Call history will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Call Guidelines -->
+                    <div class="section">
+                        <h2 class="section-title">Call Guidelines</h2>
+                        <div style="color: var(--gray); line-height: 1.6;">
+                            <p>Please remember to be respectful and follow our community guidelines during calls. This whisper is here to provide conversation and entertainment.</p>
+                            <p style="margin-top: 15px;"><strong>Topics you can discuss:</strong></p>
+                            <ul style="margin-top: 10px; padding-left: 20px;">
+                                <li>Entertainment and pop culture</li>
+                                <li>Personal stories and experiences</li>
+                                <li>Hobbies and interests</li>
+                                <li>General advice and conversation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>WhisperChat</span>
+                    <p style="margin-top: 15px; max-width: 300px;">
+                        Connecting people through meaningful conversations.
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <a href="index.html#whispers">Find Whispers</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="index.html#pricing">Buy Coins</a>
+                    <a href="become-whisper.html">Become a Whisper</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Support</h4>
+                    <a href="faq.html">FAQ</a>
+                    <a href="guidelines.html">Community Guidelines</a>
+                    <a href="contact.html">Contact Us</a>
+                    <a href="status.html">Service Status</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Connect</h4>
+                    <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                    <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+                    <a href="#"><i class="fab fa-tiktok"></i> TikTok</a>
+                    <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 WhisperChat. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="guidelines.html">Guidelines</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="scripts.js"></script>
+    
+    <!-- Member Profile Specific Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mobile menu
+            initMobileMenu();
+            
+            // Get whisper ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const whisperId = urlParams.get('id');
+            
+            if (!whisperId) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Load whisper data
+            loadWhisperProfile(whisperId);
+            
+            // Set up event listeners
+            document.getElementById('startCallBtn').addEventListener('click', function() {
+                startCallWithWhisper(whisperId);
+            });
+            
+            // Check auth status for UI updates
+            if (currentUser && userData) {
+                document.getElementById('userNav').textContent = userData.displayName || 'User';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+            }
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+        });
+        
+        // Load whisper profile data
+        async function loadWhisperProfile(whisperId) {
+            try {
+                const whisperDoc = await db.collection('users').doc(whisperId).get();
+                
+                if (!whisperDoc.exists) {
+                    showToast('Whisper not found', 'error');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                const whisperData = whisperDoc.data();
+                
+                // Update profile information
+                document.getElementById('profileName').textContent = whisperData.displayName || 'Whisper';
+                document.getElementById('profileCategory').textContent = whisperData.category ? 
+                    whisperData.category.charAt(0).toUpperCase() + whisperData.category.slice(1) : 'Entertainment';
+                document.getElementById('profileBio').textContent = whisperData.bio || 'No bio provided.';
+                
+                // Update rating
+                const rating = whisperData.rating || 5.0;
+                document.getElementById('profileRating').textContent = rating.toFixed(1);
+                updateStarRating(rating);
+                
+                // Update stats
+                document.getElementById('totalCalls').textContent = whisperData.totalCalls || 0;
+                document.getElementById('responseRate').textContent = (whisperData.responseRate || 95) + '%';
+                document.getElementById('avgDuration').textContent = formatDuration(whisperData.avgDuration || 300);
+                
+                // Update availability
+                const availabilityBadge = document.getElementById('availabilityBadge');
+                if (whisperData.isAvailable) {
+                    availabilityBadge.innerHTML = '<i class="fas fa-circle"></i> <span>Available Now</span>';
+                    availabilityBadge.classList.remove('unavailable');
+                } else {
+                    availabilityBadge.innerHTML = '<i class="fas fa-circle"></i> <span>Currently Unavailable</span>';
+                    availabilityBadge.classList.add('unavailable');
+                }
+                
+                // Update profile picture
+                if (whisperData.avatarUrl) {
+                    document.getElementById('profileAvatar').src = whisperData.avatarUrl;
+                }
+                
+                // Update social links
+                updateSocialLinks(whisperData.socialLinks || {});
+                
+                // Load reviews
+                await loadWhisperReviews(whisperId);
+                
+                // Load call history
+                await loadCallHistory(whisperId);
+                
+            } catch (error) {
+                console.error('Error loading whisper profile:', error);
+                showToast('Error loading profile', 'error');
+            }
+        }
+        
+        // Update star rating display
+        function updateStarRating(rating) {
+            const starsContainer = document.getElementById('profileStars');
+            starsContainer.innerHTML = '';
+            
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('i');
+                if (i <= Math.floor(rating)) {
+                    star.className = 'fas fa-star';
+                } else if (i === Math.ceil(rating) && rating % 1 !== 0) {
+                    star.className = 'fas fa-star-half-alt';
+                } else {
+                    star.className = 'far fa-star';
+                }
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Format duration
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Update social links
+        function updateSocialLinks(socialLinks) {
+            const container = document.getElementById('socialLinks');
+            container.innerHTML = '';
+            
+            const platforms = [
+                { key: 'instagram', icon: 'fab fa-instagram', label: 'Instagram' },
+                { key: 'twitter', icon: 'fab fa-twitter', label: 'Twitter' },
+                { key: 'tiktok', icon: 'fab fa-tiktok', label: 'TikTok' },
+                { key: 'youtube', icon: 'fab fa-youtube', label: 'YouTube' },
+                { key: 'facebook', icon: 'fab fa-facebook', label: 'Facebook' },
+                { key: 'linkedin', icon: 'fab fa-linkedin', label: 'LinkedIn' },
+                { key: 'twitch', icon: 'fab fa-twitch', label: 'Twitch' },
+                { key: 'snapchat', icon: 'fab fa-snapchat', label: 'Snapchat' },
+                { key: 'reddit', icon: 'fab fa-reddit', label: 'Reddit' }
+            ];
+            
+            platforms.forEach(platform => {
+                if (socialLinks[platform.key]) {
+                    const link = document.createElement('a');
+                    link.href = socialLinks[platform.key];
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.className = 'social-link';
+                    
+                    link.innerHTML = `
+                        <i class="${platform.icon}"></i>
+                        <span>${platform.label}</span>
+                    `;
+                    
+                    container.appendChild(link);
+                }
+            });
+            
+            if (container.children.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray);">No social links provided.</p>';
+            }
+        }
+        
+        // Load whisper reviews
+        async function loadWhisperReviews(whisperId) {
+            try {
+                const reviewsRef = db.collection('ratings')
+                    .where('whisperId', '==', whisperId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(5);
+                
+                const snapshot = await reviewsRef.get();
+                const container = document.getElementById('recentReviews');
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<p style="color: var(--gray); text-align: center;">No reviews yet.</p>';
+                    return;
+                }
+                
+                let reviewsHTML = '';
+                snapshot.forEach(doc => {
+                    const review = doc.data();
+                    reviewsHTML += createReviewItem(review);
+                });
+                
+                container.innerHTML = reviewsHTML;
+                
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
+        }
+        
+        // Create review item HTML
+        function createReviewItem(review) {
+            const date = review.createdAt ? review.createdAt.toDate() : new Date();
+            const formattedDate = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(review.rating)) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else if (i === Math.ceil(review.rating) && review.rating % 1 !== 0) {
+                    stars += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            
+            return `
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer">
+                            <div class="reviewer-avatar"></div>
+                            <div>
+                                <div style="font-weight: 600;">Anonymous Caller</div>
+                                <div class="review-rating">${stars}</div>
+                            </div>
+                        </div>
+                        <div class="review-date">${formattedDate}</div>
+                    </div>
+                    <div class="review-text">${review.feedback || 'No feedback provided.'}</div>
+                </div>
+            `;
+        }
+        
+        // Load call history
+        async function loadCallHistory(whisperId) {
+            try {
+                const callsRef = db.collection('calls')
+                    .where('whisperId', '==', whisperId)
+                    .orderBy('startTime', 'desc')
+                    .limit(10);
+                
+                const snapshot = await callsRef.get();
+                const tbody = document.getElementById('callHistoryBody');
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--gray);">No call history yet.</td></tr>';
+                    return;
+                }
+                
+                let rowsHTML = '';
+                snapshot.forEach(doc => {
+                    const call = doc.data();
+                    rowsHTML += createCallHistoryRow(call);
+                });
+                
+                tbody.innerHTML = rowsHTML;
+                
+            } catch (error) {
+                console.error('Error loading call history:', error);
+            }
+        }
+        
+        // Create call history row
+        function createCallHistoryRow(call) {
+            const startTime = call.startTime ? call.startTime.toDate() : new Date();
+            const formattedDate = startTime.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            
+            const duration = call.actualDuration || call.duration || 0;
+            const status = call.status || 'completed';
+            
+            let statusClass = 'status-completed';
+            let statusText = 'Completed';
+            
+            if (status === 'missed') {
+                statusClass = 'status-missed';
+                statusText = 'Missed';
+            } else if (status === 'refunded') {
+                statusClass = 'status-missed';
+                statusText = 'Refunded';
+            }
+            
+            const rating = call.rating ? call.rating.toFixed(1) : '-';
+            
+            return `
+                <tr>
+                    <td>${formattedDate}</td>
+                    <td>${formatDuration(duration)}</td>
+                    <td><span class="call-status ${statusClass}">${statusText}</span></td>
+                    <td>${rating}</td>
+                </tr>
+            `;
+        }
+    </script>
+</body>
+</html>

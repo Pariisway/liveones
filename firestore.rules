@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to read their own data
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Public read for whispers (available users)
+    match /users/{userId} {
+      allow read: if resource.data.role == "whisper" && resource.data.isAvailable == true;
+    }
+    
+    // Calls collection rules
+    match /calls/{callId} {
+      allow read: if request.auth != null && request.auth.uid in resource.data.participants;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && request.auth.uid in resource.data.participants;
+    }
+    
+    // Whisper applications
+    match /whisperApplications/{applicationId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if false; // Applications can't be modified after submission
+    }
+    
+    // Ratings collection
+    match /ratings/{ratingId} {
+      allow read: if true; // Public read for ratings
+      allow create: if request.auth != null;
+      allow update: if false; // Ratings can't be modified
+    }
+    
+    // Admin rules (uncomment and customize for admin access)
+    // match /{document=**} {
+    //   allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    // }
+  }
+}

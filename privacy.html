@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <title>Privacy Policy | WhisperChat</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Privacy Policy Specific Styles -->
+    <style>
+        .privacy {
+            padding-top: 100px;
+            min-height: 100vh;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .privacy-header {
+            margin-bottom: 40px;
+        }
+        
+        .privacy-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .privacy-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .privacy-content {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(108, 99, 255, 0.2);
+        }
+        
+        .section h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 15px;
+            color: white;
+        }
+        
+        .section p, .section li {
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .section ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .section li {
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .section li:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .highlight-box {
+            background: rgba(108, 99, 255, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+            justify-content: center;
+        }
+        
+        .quick-link-btn {
+            padding: 12px 25px;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quick-link-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-table th {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-comment-dots"></i>
+                <span>WhisperChat</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#whispers" class="nav-link">Whispers</a>
+                <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+                <a href="index.html#pricing" class="nav-link">Buy Coins</a>
+                <a href="become-whisper.html" class="nav-link">Become a Whisper</a>
+            </div>
+            
+            <div class="nav-actions">
+                <span id="userNav" class="nav-user">User</span>
+                <button id="logoutBtn" class="btn-outline" style="display: none;">Log Out</button>
+                <button id="loginBtn" class="btn-primary">Log In</button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Privacy Policy Page -->
+    <div class="privacy">
+        <div class="container">
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <a href="guidelines.html" class="quick-link-btn">
+                    <i class="fas fa-heart"></i> Community Guidelines
+                </a>
+                <a href="terms.html" class="quick-link-btn">
+                    <i class="fas fa-file-contract"></i> Terms of Service
+                </a>
+                <a href="faq.html" class="quick-link-btn">
+                    <i class="fas fa-question-circle"></i> FAQ
+                </a>
+                <a href="contact.html" class="quick-link-btn">
+                    <i class="fas fa-headset"></i> Contact Us
+                </a>
+            </div>
+            
+            <!-- Header -->
+            <div class="privacy-header">
+                <h1>Privacy Policy</h1>
+                <p>Last Updated: January 15, 2024</p>
+                <p style="margin-top: 10px;">This Privacy Policy describes how WhisperChat collects, uses, and protects your personal information.</p>
+            </div>
+            
+            <!-- Privacy Content -->
+            <div class="privacy-content">
+                <!-- Introduction -->
+                <div class="section">
+                    <h2>1. Introduction</h2>
+                    <p>WhisperChat ("we", "us", or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform, website, and services (collectively, the "Services").</p>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Key Points:</strong> We collect minimal data necessary to provide our Services. We do not sell your personal data. You have control over your information.</p>
+                    </div>
+                </div>
+                
+                <!-- Information Collection -->
+                <div class="section">
+                    <h2>2. Information We Collect</h2>
+                    
+                    <h3>2.1 Information You Provide</h3>
+                    <p>We collect information you directly provide when using our Services:</p>
+                    <ul>
+                        <li><strong>Account Information:</strong> Email address, display name, password</li>
+                        <li><strong>Profile Information:</strong> Bio, category, social links (optional)</li>
+                        <li><strong>Whisper Application:</strong> Full name, date of birth, payment information</li>
+                        <li><strong>Payment Information:</strong> Billing details (processed by Stripe)</li>
+                        <li><strong>Communications:</strong> Messages, call notes, feedback</li>
+                    </ul>
+                    
+                    <h3>2.2 Information Collected Automatically</h3>
+                    <p>When you use our Services, we automatically collect:</p>
+                    <ul>
+                        <li><strong>Usage Data:</strong> Pages visited, features used, time spent</li>
+                        <li><strong>Device Information:</strong> IP address, browser type, operating system</li>
+                        <li><strong>Call Data:</strong> Call duration, participants, timestamps (no audio/video content)</li>
+                        <li><strong>Cookies & Tracking:</strong> Session information, preferences</li>
+                    </ul>
+                    
+                    <h3>2.3 Information from Third Parties</h3>
+                    <p>We may receive information from:</p>
+                    <ul>
+                        <li><strong>Authentication Providers:</strong> Google (when using Google Sign-In)</li>
+                        <li><strong>Payment Processors:</strong> Stripe (payment confirmation)</li>
+                        <li><strong>Analytics Services:</strong> Google Analytics (anonymized usage data)</li>
+                    </ul>
+                </div>
+                
+                <!-- Use of Information -->
+                <div class="section">
+                    <h2>3. How We Use Your Information</h2>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Purpose</th>
+                                <th>Legal Basis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Provide and maintain our Services</td>
+                                <td>Contractual necessity</td>
+                            </tr>
+                            <tr>
+                                <td>Process payments and transactions</td>
+                                <td>Contractual necessity</td>
+                            </tr>
+                            <tr>
+                                <td>Communicate with you about Services</td>
+                                <td>Legitimate interests</td>
+                            </tr>
+                            <tr>
+                                <td>Improve and personalize user experience</td>
+                                <td>Legitimate interests</td>
+                            </tr>
+                            <tr>
+                                <td>Ensure platform security and safety</td>
+                                <td>Legal obligation & legitimate interests</td>
+                            </tr>
+                            <tr>
+                                <td>Comply with legal requirements</td>
+                                <td>Legal obligation</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Data Sharing -->
+                <div class="section">
+                    <h2>4. Data Sharing and Disclosure</h2>
+                    
+                    <h3>4.1 Service Providers</h3>
+                    <p>We share information with trusted service providers:</p>
+                    <ul>
+                        <li><strong>Firebase (Google):</strong> Authentication, database, hosting</li>
+                        <li><strong>Stripe:</strong> Payment processing</li>
+                        <li><strong>Google AdSense:</strong> Advertising (non-personalized)</li>
+                        <li><strong>Analytics Providers:</strong> Usage statistics (anonymized)</li>
+                    </ul>
+                    
+                    <h3>4.2 Legal Requirements</h3>
+                    <p>We may disclose information if required by law:</p>
+                    <ul>
+                        <li>To comply with legal obligations</li>
+                        <li>To protect our rights and property</li>
+                        <li>To prevent fraud or security issues</li>
+                        <li>To protect the safety of users</li>
+                    </ul>
+                    
+                    <h3>4.3 Business Transfers</h3>
+                    <p>In the event of a merger, acquisition, or sale of assets, user information may be transferred as part of the transaction.</p>
+                    
+                    <h3>4.4 With Your Consent</h3>
+                    <p>We may share information for specific purposes with your explicit consent.</p>
+                </div>
+                
+                <!-- Data Security -->
+                <div class="section">
+                    <h2>5. Data Security</h2>
+                    
+                    <p>We implement appropriate security measures:</p>
+                    <ul>
+                        <li><strong>Encryption:</strong> Data in transit (SSL/TLS) and at rest</li>
+                        <li><strong>Access Control:</strong> Role-based access to sensitive data</li>
+                        <li><strong>Regular Audits:</strong> Security assessments and testing</li>
+                        <li><strong>Secure Development:</strong> Following security best practices</li>
+                    </ul>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Note:</strong> No method of transmission over the Internet is 100% secure. We strive to protect your information but cannot guarantee absolute security.</p>
+                    </div>
+                </div>
+                
+                <!-- User Rights -->
+                <div class="section">
+                    <h2>6. Your Rights and Choices</h2>
+                    
+                    <h3>6.1 Access and Control</h3>
+                    <p>You have the right to:</p>
+                    <ul>
+                        <li><strong>Access:</strong> Request copies of your personal data</li>
+                        <li><strong>Rectification:</strong> Correct inaccurate or incomplete data</li>
+                        <li><strong>Erasure:</strong> Request deletion of your data</li>
+                        <li><strong>Restriction:</strong> Limit processing of your data</li>
+                        <li><strong>Portability:</strong> Receive your data in a machine-readable format</li>
+                        <li><strong>Objection:</strong> Object to certain types of processing</li>
+                    </ul>
+                    
+                    <h3>6.2 Account Settings</h3>
+                    <p>You can manage your information through:</p>
+                    <ul>
+                        <li>Profile settings in your dashboard</li>
+                        <li>Email preferences in account settings</li>
+                        <li>Cookie settings in your browser</li>
+                    </ul>
+                    
+                    <h3>6.3 Opt-Out Options</h3>
+                    <p>You can opt-out of:</p>
+                    <ul>
+                        <li>Marketing communications (unsubscribe link in emails)</li>
+                        <li>Non-essential cookies (browser settings)</li>
+                        <li>Analytics tracking (opt-out mechanisms)</li>
+                    </ul>
+                </div>
+                
+                <!-- International Transfers -->
+                <div class="section">
+                    <h2>7. International Data Transfers</h2>
+                    
+                    <p>Your information may be transferred to and processed in countries other than your own. We ensure adequate safeguards:</p>
+                    <ul>
+                        <li>Using Standard Contractual Clauses (EU/EEA)</li>
+                        <li>Complying with Privacy Shield principles (where applicable)</li>
+                        <li>Implementing additional security measures</li>
+                    </ul>
+                </div>
+                
+                <!-- Children's Privacy -->
+                <div class="section">
+                    <h2>8. Children's Privacy</h2>
+                    
+                    <p>Our Services are not intended for individuals under 18 years of age. We do not knowingly collect information from children under 18.</p>
+                    
+                    <div class="highlight-box">
+                        <p>If you believe we have collected information from a child under 18, please contact us immediately at support@whisperchat.com.</p>
+                    </div>
+                </div>
+                
+                <!-- Data Retention -->
+                <div class="section">
+                    <h2>9. Data Retention</h2>
+                    
+                    <p>We retain your information for as long as necessary:</p>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data Type</th>
+                                <th>Retention Period</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Account information</td>
+                                <td>While account is active + 30 days</td>
+                            </tr>
+                            <tr>
+                                <td>Call records</td>
+                                <td>3 years for compliance</td>
+                            </tr>
+                            <tr>
+                                <td>Payment records</td>
+                                <td>7 years for tax purposes</td>
+                            </tr>
+                            <tr>
+                                <td>Inactive accounts</td>
+                                <td>Deleted after 2 years of inactivity</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Changes to Policy -->
+                <div class="section">
+                    <h2>10. Changes to Privacy Policy</h2>
+                    
+                    <p>We may update this Privacy Policy periodically. We will notify you of material changes:</p>
+                    <ul>
+                        <li>By email to registered users</li>
+                        <li>Through in-app notifications</li>
+                        <li>By updating the "Last Updated" date</li>
+                    </ul>
+                    
+                    <p>Your continued use of Services after changes constitutes acceptance of the updated policy.</p>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="section">
+                    <h2>11. Contact Us</h2>
+                    
+                    <p>For privacy-related questions or requests:</p>
+                    
+                    <div class="highlight-box">
+                        <p><strong>Data Protection Officer</strong><br>
+                        Email: privacy@whisperchat.com<br>
+                        Address: 123 Conversation Street, San Francisco, CA 94107</p>
+                    </div>
+                    
+                    <p>For EU/EEA residents, you have the right to lodge a complaint with your local data protection authority.</p>
+                </div>
+            </div>
+            
+            <!-- Last Updated -->
+            <div class="last-updated">
+                <p>This Privacy Policy was last updated on January 15, 2024.</p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">
+                    By using WhisperChat, you acknowledge that you have read and understood this Privacy Policy.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>WhisperChat</span>
+                    <p style="margin-top: 15px; max-width: 300px;">
+                        Your privacy is our priority.
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <a href="index.html#whispers">Find Whispers</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="index.html#pricing">Buy Coins</a>
+                    <a href="become-whisper.html">Become a Whisper</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Legal</h4>
+                    <a href="guidelines.html">Community Guidelines</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="cookies.html">Cookie Policy</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Your Rights</h4>
+                    <a href="privacy.html#rights">Data Rights</a>
+                    <a href="privacy.html#contact">Contact DPO</a>
+                    <a href="privacy.html#access">Access Your Data</a>
+                    <a href="privacy.html#delete">Delete Account</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 WhisperChat. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="cookies.html">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="scripts.js"></script>
+    
+    <!-- Privacy Specific Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mobile menu
+            initMobileMenu();
+            
+            // Check auth status
+            if (currentUser && userData) {
+                document.getElementById('userNav').textContent = userData.displayName || 'User';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+            }
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href.startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = href.substring(1);
+                        const targetElement = document.getElementById(targetId);
+                        
+                        if (targetElement) {
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 100,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

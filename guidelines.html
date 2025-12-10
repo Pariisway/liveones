@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
+    <title>Community Guidelines | WhisperChat</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- Guidelines Specific Styles -->
+    <style>
+        .guidelines {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        
+        .guidelines-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .guidelines-header h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .guidelines-header p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .guidelines-container {
+            max-width: 1000px;
+            margin: 0 auto 60px;
+        }
+        
+        .guideline-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-bottom: 40px;
+            transition: var(--transition);
+        }
+        
+        .guideline-section:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(108, 99, 255, 0.2);
+        }
+        
+        .section-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+        }
+        
+        .guideline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .guideline-item {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .guideline-number {
+            width: 40px;
+            height: 40px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+        
+        .guideline-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        
+        .guideline-content p {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        .guideline-content ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+        
+        .guideline-content li {
+            margin-bottom: 8px;
+            padding-left: 25px;
+            position: relative;
+            color: var(--gray);
+        }
+        
+        .guideline-content li:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .warning-note {
+            background: rgba(245, 101, 101, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+        }
+        
+        .success-note {
+            background: rgba(72, 187, 120, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+        }
+        
+        .consequences-section {
+            background: rgba(245, 101, 101, 0.05);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-top: 60px;
+        }
+        
+        .consequences-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .consequence-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .consequence-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(245, 101, 101, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--danger);
+            margin: 0 auto 20px;
+        }
+        
+        .consequence-item h3 {
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .consequence-item p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .reporting-section {
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-top: 60px;
+        }
+        
+        .reporting-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .report-step {
+            text-align: center;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 20px;
+        }
+        
+        .report-step h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .report-step p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+        
+        .quick-link-btn {
+            padding: 12px 25px;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .quick-link-btn:hover {
+            background: rgba(108, 99, 255, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .guideline-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .guideline-number {
+                align-self: flex-start;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-comment-dots"></i>
+                <span>WhisperChat</span>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#whispers" class="nav-link">Whispers</a>
+                <a href="index.html#how-it-works" class="nav-link">How It Works</a>
+                <a href="index.html#pricing" class="nav-link">Buy Coins</a>
+                <a href="become-whisper.html" class="nav-link">Become a Whisper</a>
+            </div>
+            
+            <div class="nav-actions">
+                <span id="userNav" class="nav-user">User</span>
+                <button id="logoutBtn" class="btn-outline" style="display: none;">Log Out</button>
+                <button id="loginBtn" class="btn-primary">Log In</button>
+            </div>
+            
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Guidelines Page -->
+    <div class="guidelines">
+        <div class="container">
+            <!-- Header -->
+            <div class="guidelines-header">
+                <h1>Community Guidelines</h1>
+                <p>Our guidelines ensure a safe, respectful, and enjoyable experience for everyone on WhisperChat.</p>
+            </div>
+            
+            <!-- Main Guidelines Container -->
+            <div class="guidelines-container">
+                <!-- Respect Section -->
+                <div class="guideline-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div>
+                            <h2 class="section-title">Respect & Kindness</h2>
+                            <p style="color: var(--gray); margin-top: 10px;">Treat everyone with respect and kindness</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guideline-list">
+                        <div class="guideline-item">
+                            <div class="guideline-number">1</div>
+                            <div class="guideline-content">
+                                <h3>Be Respectful</h3>
+                                <p>Treat all users with respect, regardless of their background, beliefs, or identity. Everyone deserves a safe and welcoming environment.</p>
+                                <ul>
+                                    <li>Use appropriate language and tone</li>
+                                    <li>Respect differing opinions and perspectives</li>
+                                    <li>Avoid personal attacks or insults</li>
+                                    <li>Listen actively and be considerate</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">2</div>
+                            <div class="guideline-content">
+                                <h3>No Harassment or Bullying</h3>
+                                <p>We have zero tolerance for harassment, bullying, or intimidation of any kind.</p>
+                                <div class="warning-note">
+                                    <p><strong>Prohibited:</strong> Threats, stalking, sexual harassment, hate speech, deliberate intimidation, or any behavior that makes others feel unsafe.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">3</div>
+                            <div class="guideline-content">
+                                <h3>Protect Privacy</h3>
+                                <p>Respect the privacy of others. Do not share personal information without consent.</p>
+                                <ul>
+                                    <li>Don't ask for personal contact information</li>
+                                    <li>Don't share others' personal information</li>
+                                    <li>Report any privacy violations immediately</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content & Communication Section -->
+                <div class="guideline-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div>
+                            <h2 class="section-title">Content & Communication</h2>
+                            <p style="color: var(--gray); margin-top: 10px;">Keep conversations appropriate and meaningful</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guideline-list">
+                        <div class="guideline-item">
+                            <div class="guideline-number">1</div>
+                            <div class="guideline-content">
+                                <h3>Appropriate Content</h3>
+                                <p>All conversations must be appropriate for a general audience. WhisperChat is not a dating platform or adult service.</p>
+                                <ul>
+                                    <li>No sexually explicit content or conversations</li>
+                                    <li>No discussion of illegal activities</li>
+                                    <li>No graphic violence or disturbing content</li>
+                                    <li>No promotion of self-harm or dangerous activities</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">2</div>
+                            <div class="guideline-content">
+                                <h3>No Solicitation</h3>
+                                <p>Do not use WhisperChat for commercial solicitation, advertising, or promotion of external services.</p>
+                                <div class="warning-note">
+                                    <p><strong>Prohibited:</strong> Spam, advertising, fundraising, recruitment for external platforms, or any commercial promotion.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">3</div>
+                            <div class="guideline-content">
+                                <h3>Quality Conversations</h3>
+                                <p>Strive for meaningful, engaging conversations that provide value to both participants.</p>
+                                <div class="success-note">
+                                    <p><strong>Encouraged:</strong> Sharing experiences, offering advice, discussing interests, providing emotional support, and building genuine connections.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Whispers Specific Section -->
+                <div class="guideline-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-ear-listen"></i>
+                        </div>
+                        <div>
+                            <h2 class="section-title">For Whispers</h2>
+                            <p style="color: var(--gray); margin-top: 10px;">Professional standards for our whisper community</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guideline-list">
+                        <div class="guideline-item">
+                            <div class="guideline-number">1</div>
+                            <div class="guideline-content">
+                                <h3>Professional Conduct</h3>
+                                <p>As a Whisper, you represent our platform. Maintain professional standards at all times.</p>
+                                <ul>
+                                    <li>Be punctual for scheduled calls</li>
+                                    <li>Maintain clear audio/video quality</li>
+                                    <li>Dress appropriately for video calls</li>
+                                    <li>Keep your background professional and distraction-free</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">2</div>
+                            <div class="guideline-content">
+                                <h3>No Guaranteed Outcomes</h3>
+                                <p>Do not promise specific outcomes, results, or guaranteed advice. You are providing conversation, not professional services.</p>
+                                <div class="warning-note">
+                                    <p><strong>Prohibited:</strong> Medical advice, financial advice, legal advice, therapy, or any other professional services you are not licensed to provide.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">3</div>
+                            <div class="guideline-content">
+                                <h3>Ethical Boundaries</h3>
+                                <p>Maintain appropriate boundaries with callers. Report any uncomfortable situations immediately.</p>
+                                <ul>
+                                    <li>Do not develop personal relationships with callers</li>
+                                    <li>Do not share personal contact information</li>
+                                    <li>End calls that violate guidelines</li>
+                                    <li>Report inappropriate behavior promptly</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Safety & Security Section -->
+                <div class="guideline-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div>
+                            <h2 class="section-title">Safety & Security</h2>
+                            <p style="color: var(--gray); margin-top: 10px;">Protecting yourself and others</p>
+                        </div>
+                    </div>
+                    
+                    <div class="guideline-list">
+                        <div class="guideline-item">
+                            <div class="guideline-number">1</div>
+                            <div class="guideline-content">
+                                <h3>Account Security</h3>
+                                <p>Protect your account and personal information.</p>
+                                <ul>
+                                    <li>Use a strong, unique password</li>
+                                    <li>Don't share your account with others</li>
+                                    <li>Log out from shared devices</li>
+                                    <li>Enable two-factor authentication if available</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">2</div>
+                            <div class="guideline-content">
+                                <h3>Reporting System</h3>
+                                <p>Use our reporting system to flag violations. All reports are confidential and reviewed promptly.</p>
+                                <div class="success-note">
+                                    <p>We investigate all reports within 24 hours. False reports may result in account suspension.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="guideline-item">
+                            <div class="guideline-number">3</div>
+                            <div class="guideline-content">
+                                <h3>Emergency Situations</h3>
+                                <p>If you encounter an emergency situation or someone expressing thoughts of self-harm:</p>
+                                <ul>
+                                    <li>End the call immediately if you feel unsafe</li>
+                                    <li>Report the incident to WhisperChat support</li>
+                                    <li>Encourage the person to contact emergency services</li>
+                                    <li>Provide crisis resources if appropriate</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Consequences Section -->
+                <div class="consequences-section">
+                    <h2 style="text-align: center; margin-bottom: 30px; font-size: 2rem;">Violation Consequences</h2>
+                    <p style="text-align: center; color: var(--gray); max-width: 700px; margin: 0 auto 30px;">
+                        Violations of these guidelines may result in the following consequences, depending on severity:
+                    </p>
+                    
+                    <div class="consequences-grid">
+                        <div class="consequence-item">
+                            <div class="consequence-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <h3>Warning</h3>
+                            <p>First-time minor violations may result in a warning and education about the guidelines.</p>
+                        </div>
+                        
+                        <div class="consequence-item">
+                            <div class="consequence-icon">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                            <h3>Temporary Suspension</h3>
+                            <p>Repeated or moderate violations may lead to account suspension for 7-30 days.</p>
+                        </div>
+                        
+                        <div class="consequence-item">
+                            <div class="consequence-icon">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                            <h3>Permanent Ban</h3>
+                            <p>Severe violations or repeated offenses after warnings result in permanent account termination.</p>
+                        </div>
+                        
+                        <div class="consequence-item">
+                            <div class="consequence-icon">
+                                <i class="fas fa-gavel"></i>
+                            </div>
+                            <h3>Legal Action</h3>
+                            <p>Illegal activities will be reported to authorities and may result in legal proceedings.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reporting Section -->
+                <div class="reporting-section">
+                    <h2 style="text-align: center; margin-bottom: 30px; font-size: 2rem;">How to Report Violations</h2>
+                    <p style="text-align: center; color: var(--gray); max-width: 700px; margin: 0 auto 30px;">
+                        If you encounter behavior that violates our guidelines, please report it immediately:
+                    </p>
+                    
+                    <div class="reporting-steps">
+                        <div class="report-step">
+                            <div class="step-number">1</div>
+                            <h3>During a Call</h3>
+                            <p>Use the "Report" button during the call. The call will be flagged for review.</p>
+                        </div>
+                        
+                        <div class="report-step">
+                            <div class="step-number">2</div>
+                            <h3>After a Call</h3>
+                            <p>Go to your call history and select "Report Issue" next to the call in question.</p>
+                        </div>
+                        
+                        <div class="report-step">
+                            <div class="step-number">3</div>
+                            <h3>Contact Support</h3>
+                            <p>Email support@whisperchat.com with details of the violation.</p>
+                        </div>
+                        
+                        <div class="report-step">
+                            <div class="step-number">4</div>
+                            <h3>Confidential Review</h3>
+                            <p>Our team reviews all reports within 24 hours. We'll notify you of the outcome.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px;">
+                        <p style="color: var(--gray); margin-bottom: 20px;">
+                            All reports are confidential. We never share reporter information with the reported user.
+                        </p>
+                        <a href="mailto:support@whisperchat.com" class="btn-primary">
+                            <i class="fas fa-envelope"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <a href="terms.html" class="quick-link-btn">
+                    <i class="fas fa-file-contract"></i> Terms of Service
+                </a>
+                <a href="privacy.html" class="quick-link-btn">
+                    <i class="fas fa-user-shield"></i> Privacy Policy
+                </a>
+                <a href="faq.html" class="quick-link-btn">
+                    <i class="fas fa-question-circle"></i> FAQ
+                </a>
+                <a href="contact.html" class="quick-link-btn">
+                    <i class="fas fa-headset"></i> Contact Us
+                </a>
+            </div>
+            
+            <!-- Last Updated -->
+            <div class="last-updated">
+                <p><i class="fas fa-history"></i> Last updated: January 15, 2024</p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">
+                    These guidelines may be updated periodically. Continued use of WhisperChat constitutes acceptance of any changes.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>WhisperChat</span>
+                    <p style="margin-top: 15px; max-width: 300px;">
+                        Building a community of meaningful conversations since 2024.
+                    </p>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Platform</h4>
+                    <a href="index.html#whispers">Find Whispers</a>
+                    <a href="index.html#how-it-works">How It Works</a>
+                    <a href="index.html#pricing">Buy Coins</a>
+                    <a href="become-whisper.html">Become a Whisper</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Legal</h4>
+                    <a href="guidelines.html">Community Guidelines</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="cookies.html">Cookie Policy</a>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Connect</h4>
+                    <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                    <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+                    <a href="#"><i class="fab fa-tiktok"></i> TikTok</a>
+                    <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 WhisperChat. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="terms.html">Terms</a>
+                    <a href="privacy.html">Privacy</a>
+                    <a href="guidelines.html">Guidelines</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
+    <script src="scripts.js"></script>
+    
+    <!-- Guidelines Specific Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mobile menu
+            initMobileMenu();
+            
+            // Check auth status
+            if (currentUser && userData) {
+                document.getElementById('userNav').textContent = userData.displayName || 'User';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+            }
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href.startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = href.substring(1);
+                        const targetElement = document.getElementById(targetId);
+                        
+                        if (targetElement) {
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 100,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -893,6 +893,37 @@
                 lastUrl = window.location.href;
             }
         }, 100);
-    </script>
+        <script>
+// Listen for incoming calls
+firebase.auth().onAuthStateChanged((user) => {
+    if (user && user.uid) {
+        // Listen for calls where user is participant and status is ringing
+        firebase.firestore().collection('calls')
+            .where('participants', 'array-contains', user.uid)
+            .where('status', '==', 'ringing')
+            .onSnapshot((snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const call = change.doc.data();
+                        console.log('INCOMING CALL!', call);
+                        
+                        // Show notification
+                        if (Notification.permission === 'granted') {
+                            new Notification('📞 Incoming Call!', {
+                                body: 'Click to join the chat',
+                                icon: '/icon.png'
+                            });
+                        }
+                        
+                        // Auto-redirect after 5 seconds
+                        setTimeout(() => {
+                            window.location.href = `call.html?callId=${change.doc.id}`;
+                        }, 5000);
+                    }
+                });
+            });
+    }
+});
+</script>
 </body>
 </html>

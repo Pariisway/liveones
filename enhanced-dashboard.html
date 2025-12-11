@@ -361,6 +361,108 @@
                 justify-content: center;
             }
         }
+        
+        /* Availability Button Style */
+        .availability-toggle-button {
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .availability-toggle-button.online {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .availability-toggle-button.offline {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        /* Flash Notification for Calls */
+        .flash-notification {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 9999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: flash 1s infinite;
+            font-weight: bold;
+        }
+        
+        @keyframes flash {
+            0%, 100% { opacity: 1; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+            50% { opacity: 0.8; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        }
+        
+        /* Call Card Styles */
+        .call-card {
+            border-left: 4px solid #28a745 !important;
+            transition: all 0.3s ease;
+        }
+        
+        .call-card:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateX(2px);
+        }
+        
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        /* Notification styles */
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 9999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            max-width: 350px;
+        }
+        
+        .notification.error {
+            background: #f56565;
+        }
+        
+        .notification.warning {
+            background: #ed8936;
+        }
+        
+        .notification.info {
+            background: #4299e1;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -471,7 +573,7 @@
                 <div class="role-description" id="whisperDescription" style="display: none;">
                     <h4><i class="fas fa-user-check"></i> Whisper Benefits:</h4>
                     <ul>
-                        <li><i class="fas fa-check"></i> Earn $12.00 per 5-minute call</li>
+                        <li><i class="fas fa-check"></i> Earn <strong>$12.00 per 5-minute call</strong></li>
                         <li><i class="fas fa-check"></i> Set your own availability</li>
                         <li><i class="fas fa-check"></i> Build your reputation with ratings</li>
                         <li><i class="fas fa-check"></i> Flexible schedule - work when you want</li>
@@ -500,7 +602,7 @@
                     </div>
                     
                     <p style="color: var(--text-gray); margin-top: 15px; font-size: 1rem !important;">
-                        When you're available, callers can see your profile and connect with you. You'll earn $0.70 for every 5-minute call.
+                        When you're available, callers can see your profile and connect with you. You'll earn <strong>$12.00</strong> for every 5-minute call.
                     </p>
                 </div>
             </div>
@@ -519,21 +621,39 @@
                         <span>Buy Coins</span>
                     </a>
                     
-                    <!-- ADDED: Edit Profile Button -->
                     <a href="edit-profile.html" class="action-btn">
                         <i class="fas fa-user-edit"></i>
                         <span>Edit Profile</span>
                     </a>
                     
-                    <a href="#" class="action-btn" onclick="startAsWhisper()" id="startWhisperingBtn">
+                    <a href="#" class="action-btn" id="startWhisperingBtn">
                         <i class="fas fa-broadcast-tower"></i>
                         <span>Start Whispering</span>
                     </a>
                     
-                    <a href="#" class="action-btn" onclick="window.location.href='index.html'">
+                    <a href="index.html" class="action-btn">
                         <i class="fas fa-home"></i>
                         <span>Back to Home</span>
                     </a>
+                </div>
+            </div>
+            
+            <!-- Incoming Calls for Whispers -->
+            <div class="dashboard-card" id="incomingCallsCard" style="display: none;">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-phone-volume"></i>
+                        <span>Incoming Calls</span>
+                    </div>
+                    <span class="badge" id="incomingCallCount">0</span>
+                </div>
+                
+                <div id="incomingCallsList" class="call-history">
+                    <div class="empty-history">
+                        <i class="fas fa-phone-slash"></i>
+                        <h3>No incoming calls</h3>
+                        <p>When you're available, callers will see you here!</p>
+                    </div>
                 </div>
             </div>
             
@@ -544,7 +664,7 @@
                         <i class="fas fa-history"></i>
                         <span>Recent Calls</span>
                     </div>
-                    <button class="btn-outline btn-sm" onclick="loadCallHistory()">Refresh</button>
+                    <button class="btn-outline btn-sm" id="refreshHistoryBtn">Refresh</button>
                 </div>
                 
                 <div class="call-history" id="callHistory">
@@ -559,6 +679,12 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Flash Notification for Calls -->
+    <div id="flash-notification" class="flash-notification">
+        <span style="margin-right: 10px;">⚡</span>
+        <span id="flash-count">1</span> New Call Waiting!
     </div>
 
     <footer class="footer">
@@ -600,6 +726,16 @@
         </div>
     </footer>
 
+    <!-- Profile Popup Modal -->
+    <div id="profilePopup" class="profile-modal" style="display: none;">
+        <div class="profile-modal-content">
+            <span class="profile-close-btn">&times;</span>
+            <div id="profilePopupContent">
+                <!-- Profile content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
@@ -607,323 +743,628 @@
     <script src="firebase-config.js"></script>
     <script src="scripts.js"></script>
     
+    <!-- Unified Role & Availability System -->
     <script>
-        // Dashboard initialization
-        let dashboardInitialized = false;
-        
-        function initializeDashboard() {
-            if (dashboardInitialized) return;
-            dashboardInitialized = true;
-            
-            console.log("🔧 Initializing dashboard...");
-            console.log("Current user on dashboard init:", currentUser);
-            console.log("User data on dashboard init:", userData);
-            
-            initMobileMenu();
-            
-            // Use auth state to determine if user is logged in
-            auth.onAuthStateChanged((user) => {
-                console.log("🔄 Dashboard auth state changed:", user ? "Logged in" : "Logged out");
+    console.log('🔧 Loading Unified Role & Availability System...');
+
+    let roleAvailabilityInitialized = false;
+    let currentUserData = null;
+    let callListener = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait for Firebase to be ready
+        const checkFirebase = setInterval(() => {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                clearInterval(checkFirebase);
                 
-                if (!user) {
-                    console.log("⚠️ User not logged in on dashboard, showing message");
-                    showToast('Please log in to view dashboard', 'warning');
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
-                    return;
+                firebase.auth().onAuthStateChanged(async function(user) {
+                    if (user) {
+                        console.log('👤 User authenticated for availability system:', user.email);
+                        await initializeRoleAvailabilitySystem(user);
+                    }
+                });
+            }
+        }, 500);
+    });
+
+    async function initializeRoleAvailabilitySystem(user) {
+        try {
+            // Get user data
+            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+            const whisperDoc = await firebase.firestore().collection('whispers').doc(user.uid).get();
+            
+            currentUserData = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || ''
+            };
+            
+            // Determine current role
+            let currentRole = 'caller';
+            if (userDoc.exists) {
+                currentRole = userDoc.data().role || 'caller';
+            }
+            
+            // Determine current availability
+            let isAvailable = false;
+            if (whisperDoc.exists && whisperDoc.data().isAvailable === true) {
+                isAvailable = true;
+            }
+            
+            console.log('📊 Initial state - Role:', currentRole, 'Available:', isAvailable);
+            
+            // Update UI
+            updateRoleToggleUI(currentRole);
+            updateAvailabilityUI(currentRole, isAvailable);
+            
+            // Setup event listeners
+            setupRoleToggleListener(user.uid, currentRole);
+            setupAvailabilityToggleListener(user.uid, currentRole);
+            
+            // Setup other dashboard listeners
+            setupDashboardListeners(user.uid);
+            
+            // Load initial data
+            loadDashboardData(user.uid);
+            loadCallHistory(user.uid);
+            
+            // If user is whisper, monitor incoming calls
+            if (currentRole === 'whisper') {
+                monitorIncomingCalls(user.uid);
+            }
+            
+            roleAvailabilityInitialized = true;
+            
+        } catch (error) {
+            console.error('❌ Error initializing role/availability:', error);
+        }
+    }
+
+    async function loadDashboardData(userId) {
+        try {
+            const userDoc = await firebase.firestore().collection('users').doc(userId).get();
+            if (userDoc.exists) {
+                const data = userDoc.data();
+                
+                // Update coin balance
+                const coinBalance = document.getElementById('coinBalance');
+                if (coinBalance) {
+                    coinBalance.textContent = data.coins || 0;
                 }
                 
-                // User is logged in, proceed with dashboard
-                console.log("✅ User is logged in, loading dashboard data");
+                // Update total calls
+                const totalCalls = document.getElementById('totalCalls');
+                if (totalCalls) {
+                    // Count user's calls
+                    const callsSnapshot = await firebase.firestore()
+                        .collection('calls')
+                        .where('participants', 'array-contains', userId)
+                        .get();
+                    totalCalls.textContent = callsSnapshot.size;
+                }
                 
-                // Wait for userData to load
-                const checkUserData = setInterval(() => {
-                    if (userData) {
-                        clearInterval(checkUserData);
-                        loadDashboardData();
-                        
-                        // Setup logout button
-                        const logoutBtn = document.getElementById('logoutBtn');
-                        if (logoutBtn) {
-                            logoutBtn.addEventListener('click', logoutUser);
-                        }
-                        
-                        // Update user nav
-                        const userNav = document.getElementById('userNav');
-                        if (userNav && userData.displayName) {
-                            userNav.textContent = userData.displayName || user.email || 'User';
-                        }
-                    }
-                }, 100);
-            });
+                // Update rating
+                const userRating = document.getElementById('userRating');
+                const starRating = document.getElementById('starRating');
+                if (userRating && starRating) {
+                    const rating = data.rating || 5.0;
+                    userRating.textContent = rating.toFixed(1);
+                    
+                    // Create star display
+                    const fullStars = Math.floor(rating);
+                    const hasHalfStar = rating % 1 >= 0.5;
+                    let stars = '★'.repeat(fullStars);
+                    if (hasHalfStar) stars += '☆';
+                    stars += '☆'.repeat(5 - fullStars - (hasHalfStar ? 1 : 0));
+                    starRating.innerHTML = stars;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error loading dashboard data:', error);
+        }
+    }
+
+    function updateRoleToggleUI(role) {
+        const roleToggle = document.getElementById('roleToggle');
+        const roleLabel = document.getElementById('roleLabel');
+        const roleDescription = document.getElementById('roleDescription');
+        const callerDescription = document.getElementById('callerDescription');
+        const whisperDescription = document.getElementById('whisperDescription');
+        const availabilitySection = document.getElementById('availabilitySection');
+        const startWhisperingBtn = document.getElementById('startWhisperingBtn');
+        const incomingCallsCard = document.getElementById('incomingCallsCard');
+        
+        if (roleToggle) {
+            roleToggle.checked = (role === 'whisper');
         }
         
-        async function loadDashboardData() {
-            if (!userData) {
-                console.log('Waiting for user data...');
-                setTimeout(loadDashboardData, 1000);
+        if (role === 'whisper') {
+            if (roleLabel) roleLabel.textContent = 'Whisper Mode';
+            if (roleDescription) roleDescription.textContent = 'You are currently a whisper. Switch to caller mode to connect with other whispers.';
+            if (callerDescription) callerDescription.style.display = 'none';
+            if (whisperDescription) whisperDescription.style.display = 'block';
+            if (availabilitySection) availabilitySection.style.display = 'block';
+            if (incomingCallsCard) incomingCallsCard.style.display = 'block';
+            
+            if (startWhisperingBtn) {
+                startWhisperingBtn.innerHTML = '<i class="fas fa-phone"></i> <span>Take a Call</span>';
+                startWhisperingBtn.href = '#';
+                startWhisperingBtn.onclick = function(e) {
+                    e.preventDefault();
+                    // Already a whisper, go to home to see available whispers
+                    window.location.href = 'index.html#whispers';
+                };
+            }
+        } else {
+            if (roleLabel) roleLabel.textContent = 'Caller Mode';
+            if (roleDescription) roleDescription.textContent = 'You are currently a caller. Switch to whisper mode to earn coins by taking calls.';
+            if (callerDescription) callerDescription.style.display = 'block';
+            if (whisperDescription) whisperDescription.style.display = 'none';
+            if (availabilitySection) availabilitySection.style.display = 'none';
+            if (incomingCallsCard) incomingCallsCard.style.display = 'none';
+            
+            if (startWhisperingBtn) {
+                startWhisperingBtn.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Start Whispering</span>';
+                startWhisperingBtn.href = '#';
+                startWhisperingBtn.onclick = function(e) {
+                    e.preventDefault();
+                    // Switch to whisper mode
+                    document.getElementById('roleToggle').checked = true;
+                    document.getElementById('roleToggle').dispatchEvent(new Event('change'));
+                };
+            }
+        }
+    }
+
+    function updateAvailabilityUI(role, isAvailable) {
+        const availabilityToggle = document.getElementById('availabilityToggle');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        
+        if (!availabilityToggle || !statusIndicator || !statusText) return;
+        
+        if (role === 'whisper') {
+            // Enable for whispers
+            availabilityToggle.disabled = false;
+            availabilityToggle.checked = isAvailable;
+            
+            if (isAvailable) {
+                statusIndicator.className = 'status-indicator available';
+                statusText.textContent = 'Currently available for calls';
+            } else {
+                statusIndicator.className = 'status-indicator';
+                statusText.textContent = 'Currently unavailable';
+            }
+        } else {
+            // Caller mode - disable availability
+            availabilityToggle.disabled = true;
+            availabilityToggle.checked = false;
+            statusIndicator.className = 'status-indicator';
+            statusText.textContent = 'Available only in whisper mode';
+        }
+    }
+
+    function setupRoleToggleListener(userId, currentRole) {
+        const roleToggle = document.getElementById('roleToggle');
+        if (!roleToggle) return;
+        
+        roleToggle.addEventListener('change', async function() {
+            const newRole = this.checked ? 'whisper' : 'caller';
+            console.log('🔄 Switching role to:', newRole);
+            
+            try {
+                // Update user document
+                await firebase.firestore().collection('users').doc(userId).set({
+                    role: newRole,
+                    email: currentUserData.email,
+                    displayName: currentUserData.displayName,
+                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                // Handle whisper document
+                if (newRole === 'whisper') {
+                    // Create whisper document with default availability: true
+                    await firebase.firestore().collection('whispers').doc(userId).set({
+                        uid: userId,
+                        email: currentUserData.email,
+                        displayName: currentUserData.displayName,
+                        isAvailable: true,
+                        earnings: 0,
+                        totalCalls: 0,
+                        rating: 5.0,
+                        lastOnline: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                    
+                    // Start monitoring calls
+                    monitorIncomingCalls(userId);
+                    
+                    // Show notification using the function from firebase-config.js
+                    if (typeof showNotification === 'function') {
+                        showNotification('🎉 You are now a Whisper!', 'You are now online and visible to callers. You\'ll earn $12.00 per 5-minute call.', 'success');
+                    }
+                } else {
+                    // Remove from whispers collection
+                    await firebase.firestore().collection('whispers').doc(userId).delete()
+                        .catch(() => console.log('⚠️ No whisper document to delete'));
+                    
+                    // Stop monitoring calls
+                    if (callListener) {
+                        callListener();
+                        callListener = null;
+                    }
+                    
+                    // Show notification
+                    if (typeof showNotification === 'function') {
+                        showNotification('🔈 You are now a Caller', 'You can browse whispers on the home screen.', 'info');
+                    }
+                }
+                
+                // Update UI
+                updateRoleToggleUI(newRole);
+                updateAvailabilityUI(newRole, newRole === 'whisper');
+                
+                // Reload dashboard data
+                loadDashboardData(userId);
+                
+            } catch (error) {
+                console.error('❌ Error switching role:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('⚠️ Error switching role', 'Please try again.', 'warning');
+                }
+                // Revert toggle
+                roleToggle.checked = !roleToggle.checked;
+            }
+        });
+    }
+
+    function setupAvailabilityToggleListener(userId, currentRole) {
+        const availabilityToggle = document.getElementById('availabilityToggle');
+        if (!availabilityToggle) return;
+        
+        availabilityToggle.addEventListener('change', async function() {
+            if (currentRole !== 'whisper') {
+                if (typeof showNotification === 'function') {
+                    showNotification('⚠️ Switch to Whisper role first', 'You need to be a whisper to change availability.', 'warning');
+                }
+                this.checked = false;
                 return;
             }
             
-            console.log("📊 Loading dashboard data for user:", userData);
-            
-            // Update coin balance
-            document.getElementById('coinBalance').textContent = userData.coins || 0;
-            
-            // Update total calls
-            document.getElementById('totalCalls').textContent = userData.totalCalls || 0;
-            
-            // Update rating
-            const rating = userData.rating || 5.0;
-            document.getElementById('userRating').textContent = rating.toFixed(1);
-            
-            // Update star rating
-            updateStarRating(rating);
-            
-            // Update role management
-            updateRoleUI();
-            
-            // Load call history
-            await loadCallHistory();
-        }
-        
-        function updateStarRating(rating) {
-            const starRating = document.getElementById('starRating');
-            const fullStars = Math.floor(rating);
-            const hasHalfStar = rating % 1 >= 0.5;
-            
-            let stars = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= fullStars) {
-                    stars += '★';
-                } else if (i === fullStars + 1 && hasHalfStar) {
-                    stars += '½';
-                } else {
-                    stars += '☆';
-                }
-            }
-            starRating.innerHTML = stars;
-        }
-        
-        function updateRoleUI() {
-            const role = userData.role || 'caller';
-            const isAvailable = userData.isAvailable || false;
-            
-            console.log("Updating role UI. Role:", role, "Available:", isAvailable);
-            
-            // Update role toggle
-            const roleToggle = document.getElementById('roleToggle');
-            if (roleToggle) {
-                roleToggle.checked = role === 'whisper';
-            }
-            
-            // Update role label and description
-            const roleLabel = document.getElementById('roleLabel');
-            const roleDescription = document.getElementById('roleDescription');
-            const callerDescription = document.getElementById('callerDescription');
-            const whisperDescription = document.getElementById('whisperDescription');
-            const availabilitySection = document.getElementById('availabilitySection');
-            const startWhisperingBtn = document.getElementById('startWhisperingBtn');
-            
-            if (role === 'whisper') {
-                if (roleLabel) roleLabel.textContent = 'Whisper Mode';
-                if (roleDescription) roleDescription.textContent = 'You are currently a whisper. Switch to caller mode to connect with other whispers.';
-                if (callerDescription) callerDescription.style.display = 'none';
-                if (whisperDescription) whisperDescription.style.display = 'block';
-                if (availabilitySection) availabilitySection.style.display = 'block';
-                
-                if (startWhisperingBtn) {
-                    startWhisperingBtn.innerHTML = '<i class="fas fa-phone"></i> <span>Take a Call</span>';
-                    startWhisperingBtn.onclick = () => {
-                        showToast('Check the whispers page to see available calls!', 'info');
-                        setTimeout(() => {
-                            window.location.href = 'index.html#whispers';
-                        }, 1500);
-                    };
-                }
-                
-                // Update availability
-                const availabilityToggle = document.getElementById('availabilityToggle');
-                const statusIndicator = document.getElementById('statusIndicator');
-                const statusText = document.getElementById('statusText');
-                
-                if (availabilityToggle) availabilityToggle.checked = isAvailable;
-                if (statusIndicator) statusIndicator.className = 'status-indicator ' + (isAvailable ? 'available' : '');
-                if (statusText) statusText.textContent = isAvailable ? 'Currently available for calls' : 'Currently unavailable';
-                
-            } else {
-                if (roleLabel) roleLabel.textContent = 'Caller Mode';
-                if (roleDescription) roleDescription.textContent = 'You are currently a caller. Switch to whisper mode to earn coins by taking calls.';
-                if (callerDescription) callerDescription.style.display = 'block';
-                if (whisperDescription) whisperDescription.style.display = 'none';
-                if (availabilitySection) availabilitySection.style.display = 'none';
-                
-                if (startWhisperingBtn) {
-                    startWhisperingBtn.innerHTML = '<i class="fas fa-broadcast-tower"></i> <span>Start Whispering</span>';
-                    startWhisperingBtn.onclick = () => {
-                        const roleToggle = document.getElementById('roleToggle');
-                        if (roleToggle) {
-                            roleToggle.checked = true;
-                            handleRoleToggle();
-                        }
-                    };
-                }
-            }
-        }
-        
-        function handleRoleToggle() {
-            const roleToggle = document.getElementById('roleToggle');
-            const newRole = roleToggle.checked ? 'whisper' : 'caller';
-            
-            if (confirm(`Are you sure you want to switch to ${newRole} mode?`)) {
-                switchUserRole(newRole);
-            } else {
-                // Revert toggle
-                roleToggle.checked = !roleToggle.checked;
-                updateRoleUI();
-            }
-        }
-        
-        function handleAvailabilityToggle() {
-            const availabilityToggle = document.getElementById('availabilityToggle');
-            const isAvailable = availabilityToggle.checked;
-            
-            updateWhisperAvailability(isAvailable);
-        }
-        
-        function startAsWhisper() {
-            if (userData.role === 'caller') {
-                const roleToggle = document.getElementById('roleToggle');
-                if (roleToggle) {
-                    roleToggle.checked = true;
-                    handleRoleToggle();
-                }
-            } else {
-                showToast('Check the whispers page to see available calls!', 'info');
-                setTimeout(() => {
-                    window.location.href = 'index.html#whispers';
-                }, 1500);
-            }
-        }
-        
-        async function loadCallHistory() {
-            const historyContainer = document.getElementById('callHistory');
+            const isAvailable = this.checked;
+            console.log('🔄 Setting availability to:', isAvailable);
             
             try {
-                const calls = await getUserCallHistory(5);
-                
-                if (calls.length === 0) {
-                    historyContainer.innerHTML = `
-                        <div class="empty-history">
-                            <i class="fas fa-history"></i>
-                            <h3>No calls yet</h3>
-                            <p>Start your first conversation!</p>
-                            <a href="index.html#whispers" class="btn-primary" style="margin-top: 20px;">
-                                <i class="fas fa-phone-alt"></i> Find Whispers
-                            </a>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                calls.forEach(call => {
-                    const startTime = call.startTime ? call.startTime.toDate() : new Date();
-                    const duration = call.duration || 0;
-                    
-                    html += `
-                        <div class="history-item">
-                            <div class="history-info">
-                                <h4>${formatDate(startTime)}</h4>
-                                <p>${call.status || 'completed'}</p>
-                            </div>
-                            <div class="history-duration">
-                                ${formatDuration(duration)}
-                            </div>
-                        </div>
-                    `;
+                // Update whisper document
+                await firebase.firestore().collection('whispers').doc(userId).update({
+                    isAvailable: isAvailable,
+                    lastOnline: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                historyContainer.innerHTML = html;
+                // Also update user document
+                await firebase.firestore().collection('users').doc(userId).update({
+                    isAvailable: isAvailable,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update UI
+                updateAvailabilityUI('whisper', isAvailable);
+                
+                if (isAvailable) {
+                    if (typeof showNotification === 'function') {
+                        showNotification('✅ You are now Online', 'You are visible to callers and can receive calls.', 'success');
+                    }
+                    // Start monitoring calls
+                    monitorIncomingCalls(userId);
+                } else {
+                    if (typeof showNotification === 'function') {
+                        showNotification('⛔ You are now Offline', 'You are hidden from callers.', 'info');
+                    }
+                    // Stop monitoring calls
+                    if (callListener) {
+                        callListener();
+                        callListener = null;
+                    }
+                }
                 
             } catch (error) {
-                console.error('Error loading call history:', error);
-                historyContainer.innerHTML = `
-                    <div class="empty-history">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Error loading history</h3>
-                        <p>Please try again later</p>
-                    </div>
-                `;
+                console.error('❌ Error setting availability:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('⚠️ Error updating availability', 'Please try again.', 'warning');
+                }
+                // Revert toggle
+                availabilityToggle.checked = !availabilityToggle.checked;
             }
+        });
+    }
+
+    function monitorIncomingCalls(userId) {
+        // Clean up previous listener if exists
+        if (callListener) {
+            callListener();
         }
         
-        // Initialize dashboard when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("🏠 Dashboard DOM loaded");
-            initializeDashboard();
-            
-            // Setup role toggle
-            const roleToggle = document.getElementById('roleToggle');
-            if (roleToggle) {
-                roleToggle.addEventListener('change', handleRoleToggle);
-            }
-            
-            // Setup availability toggle
-            const availabilityToggle = document.getElementById('availabilityToggle');
-            if (availabilityToggle) {
-                availabilityToggle.addEventListener('change', handleAvailabilityToggle);
-            }
-            
-            // Add redirect blocker
-            window.addEventListener('beforeunload', function(e) {
-                console.log("Page unloading, current URL:", window.location.href);
-            });
-        });
+        console.log('👂 Setting up call listener for user:', userId);
         
-        // Monitor for any redirects
-        let lastUrl = window.location.href;
-        setInterval(() => {
-            if (window.location.href !== lastUrl) {
-                console.log("🚨 UNEXPECTED REDIRECT DETECTED!");
-                console.log("From:", lastUrl);
-                console.log("To:", window.location.href);
-                console.trace("Stack trace:");
-                lastUrl = window.location.href;
-            }
-        }, 100);
-        <script>
-// Listen for incoming calls
-firebase.auth().onAuthStateChanged((user) => {
-    if (user && user.uid) {
-        // Listen for calls where user is participant and status is ringing
-        firebase.firestore().collection('calls')
-            .where('participants', 'array-contains', user.uid)
+        // Listen for incoming calls where user is the whisper
+        callListener = firebase.firestore()
+            .collection('calls')
+            .where('whisperId', '==', userId)
             .where('status', '==', 'ringing')
-            .onSnapshot((snapshot) => {
+            .onSnapshot(function(snapshot) {
+                updateIncomingCallsUI(snapshot);
+                
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === 'added') {
                         const call = change.doc.data();
-                        console.log('INCOMING CALL!', call);
+                        console.log('📞 New incoming call:', call);
                         
-                        // Show notification
-                        if (Notification.permission === 'granted') {
+                        // Show browser notification
+                        if ("Notification" in window && Notification.permission === "granted") {
                             new Notification('📞 Incoming Call!', {
                                 body: 'Click to join the chat',
-                                icon: '/icon.png'
+                                icon: 'https://cdn-icons-png.flaticon.com/512/646/646094.png',
+                                requireInteraction: true
                             });
                         }
                         
-                        // Auto-redirect after 5 seconds
-                        setTimeout(() => {
-                            window.location.href = `call.html?callId=${change.doc.id}`;
-                        }, 5000);
+                        // Show flash notification
+                        const flash = document.getElementById('flash-notification');
+                        const flashCount = document.getElementById('flash-count');
+                        if (flash && flashCount) {
+                            flashCount.textContent = snapshot.size;
+                            flash.style.display = 'block';
+                            
+                            // Auto-hide after 10 seconds
+                            setTimeout(() => {
+                                flash.style.display = 'none';
+                            }, 10000);
+                        }
+                        
+                        // Show notification
+                        if (typeof showNotification === 'function') {
+                            showNotification('📞 Incoming Call!', 'Click "Accept" to start the conversation.', 'info');
+                        }
                     }
                 });
+            }, function(error) {
+                console.error('❌ Error listening for calls:', error);
             });
     }
-});
-</script>
+
+    function updateIncomingCallsUI(snapshot) {
+        const incomingCallsCard = document.getElementById('incomingCallsCard');
+        const incomingCallsList = document.getElementById('incomingCallsList');
+        const incomingCallCount = document.getElementById('incomingCallCount');
+        const flash = document.getElementById('flash-notification');
+        
+        if (!incomingCallsCard || !incomingCallsList) return;
+        
+        // Remove existing call cards
+        const cards = incomingCallsList.querySelectorAll('.call-card');
+        cards.forEach(card => card.remove());
+        
+        if (snapshot.empty) {
+            incomingCallsCard.style.display = 'none';
+            incomingCallsList.innerHTML = `
+                <div class="empty-history">
+                    <i class="fas fa-phone-slash"></i>
+                    <h3>No incoming calls</h3>
+                    <p>When you're available, callers will see you here!</p>
+                </div>
+            `;
+            
+            if (flash) flash.style.display = 'none';
+            return;
+        }
+        
+        incomingCallsCard.style.display = 'block';
+        if (incomingCallCount) incomingCallCount.textContent = snapshot.size;
+        
+        // Add each call
+        snapshot.forEach(function(doc) {
+            const call = doc.data();
+            const card = createCallCard(doc.id, call);
+            incomingCallsList.appendChild(card);
+        });
+    }
+
+    function createCallCard(callId, callData) {
+        const card = document.createElement('div');
+        card.className = 'history-item call-card';
+        
+        const startTime = callData.startTime ? callData.startTime.toDate() : new Date();
+        const callerName = callData.callerName || 'Anonymous';
+        
+        card.innerHTML = `
+            <div class="history-info">
+                <h4>${callerName}</h4>
+                <p>${formatRelativeTime(startTime)}</p>
+                <p style="color: var(--primary); font-size: 0.8rem; margin-top: 5px;">
+                    <i class="fas fa-coins"></i> Earn: $12.00
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="acceptIncomingCall('${callId}')" class="btn-primary btn-sm" style="padding: 8px 15px; font-size: 0.9rem;">
+                    <i class="fas fa-phone"></i> Accept
+                </button>
+                <button onclick="declineIncomingCall('${callId}')" class="btn-outline btn-sm" style="padding: 8px 15px; font-size: 0.9rem;">
+                    <i class="fas fa-times"></i> Decline
+                </button>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    async function acceptIncomingCall(callId) {
+        try {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            
+            console.log('✅ Accepting call:', callId);
+            
+            // Update call status to ongoing
+            await firebase.firestore().collection('calls').doc(callId).update({
+                status: 'ongoing',
+                answeredTime: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Hide flash notification
+            const flash = document.getElementById('flash-notification');
+            if (flash) flash.style.display = 'none';
+            
+            // Redirect to call page
+            window.location.href = `call.html?callId=${callId}`;
+            
+        } catch (error) {
+            console.error('❌ Error accepting call:', error);
+            if (typeof showNotification === 'function') {
+                showNotification('⚠️ Error accepting call', 'Please try again.', 'warning');
+            }
+        }
+    }
+
+    async function declineIncomingCall(callId) {
+        try {
+            console.log('❌ Declining call:', callId);
+            
+            await firebase.firestore().collection('calls').doc(callId).update({
+                status: 'declined',
+                endTime: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // Refund coin to caller
+            const callDoc = await firebase.firestore().collection('calls').doc(callId).get();
+            const callData = callDoc.data();
+            
+            if (callData.callerId) {
+                await firebase.firestore().collection('users').doc(callData.callerId).update({
+                    coins: firebase.firestore.FieldValue.increment(1)
+                });
+            }
+            
+            // Make whisper available again
+            await firebase.firestore().collection('whispers').doc(callData.whisperId).update({
+                isAvailable: true,
+                lastOnline: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            if (typeof showNotification === 'function') {
+                showNotification('Call declined', 'The caller has been refunded 1 coin.', 'info');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error declining call:', error);
+        }
+    }
+
+    function setupDashboardListeners(userId) {
+        // Start Whispering button is handled in updateRoleToggleUI
+        
+        // Refresh history button
+        const refreshHistoryBtn = document.getElementById('refreshHistoryBtn');
+        if (refreshHistoryBtn) {
+            refreshHistoryBtn.addEventListener('click', function() {
+                loadCallHistory(userId);
+            });
+        }
+    }
+
+    async function loadCallHistory(userId) {
+        const historyContainer = document.getElementById('callHistory');
+        if (!historyContainer) return;
+        
+        try {
+            // Get call history from Firestore
+            const callsRef = firebase.firestore().collection('calls')
+                .where('participants', 'array-contains', userId)
+                .orderBy('startTime', 'desc')
+                .limit(10);
+            
+            const snapshot = await callsRef.get();
+            
+            if (snapshot.empty) {
+                historyContainer.innerHTML = `
+                    <div class="empty-history">
+                        <i class="fas fa-history"></i>
+                        <h3>No calls yet</h3>
+                        <p>Start your first conversation!</p>
+                        <a href="index.html#whispers" class="btn-primary" style="margin-top: 20px;">
+                            <i class="fas fa-phone-alt"></i> Find Whispers
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            snapshot.forEach(doc => {
+                const call = doc.data();
+                const startTime = call.startTime ? call.startTime.toDate() : new Date();
+                const duration = call.duration || 0;
+                const status = call.status || 'completed';
+                
+                // Determine if user was caller or whisper
+                const userRole = call.callerId === userId ? 'Caller' : 'Whisper';
+                const earnings = userRole === 'Whisper' ? call.earnings || 12.00 : 0;
+                
+                html += `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <h4>${formatDate(startTime)}</h4>
+                            <p>${status} • ${userRole} • ${formatDuration(duration)}</p>
+                            ${earnings > 0 ? `<p style="color: var(--success); font-size: 0.9rem; margin-top: 5px;">
+                                <i class="fas fa-dollar-sign"></i> Earned: $${earnings.toFixed(2)}
+                            </p>` : ''}
+                        </div>
+                        <div class="history-duration">
+                            ${formatDuration(duration)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            historyContainer.innerHTML = html;
+            
+        } catch (error) {
+            console.error('❌ Error loading call history:', error);
+            historyContainer.innerHTML = `
+                <div class="empty-history">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Error loading history</h3>
+                    <p>Please try again later</p>
+                </div>
+            `;
+        }
+    }
+
+    function formatDate(date) {
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatDuration(seconds) {
+        if (!seconds) return '0m';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+
+    function formatRelativeTime(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return `${diffInSeconds} seconds ago`;
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+        return date.toLocaleDateString();
+    }
+
+    // Make functions available globally
+    window.acceptIncomingCall = acceptIncomingCall;
+    window.declineIncomingCall = declineIncomingCall;
+
+    console.log('✅ Unified Role & Availability System ready!');
+    </script>
 </body>
 </html>

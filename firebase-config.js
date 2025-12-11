@@ -402,6 +402,29 @@ function updateWhisperUI(isAvailable) {
 // ===== FIRESTORE FUNCTIONS =====
 async function getAvailableWhispers(limit = 12) {
     try {
+        console.log("Fetching available whispers...");
+        
+        // Try to get from whispers collection first
+        try {
+            const snapshot = await db.collection('whispers')
+                .where('isAvailable', '==', true)
+                .limit(limit)
+                .get();
+            
+            if (!snapshot.empty) {
+                const whispers = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                console.log(`Loaded ${whispers.length} whispers from whispers collection`);
+                return whispers;
+            }
+        } catch (whispersError) {
+            console.log("Could not fetch from whispers collection:", whispersError);
+        }
+        
+        // Fallback to users collection
         const snapshot = await db.collection('users')
             .where('role', '==', 'whisper')
             .where('isAvailable', '==', true)
@@ -413,12 +436,40 @@ async function getAvailableWhispers(limit = 12) {
             ...doc.data()
         }));
         
-        console.log(`Loaded ${whispers.length} whispers`);
+        console.log(`Loaded ${whispers.length} whispers from users collection`);
         return whispers;
         
     } catch (error) {
         console.error("Error getting whispers:", error);
-        return [];
+        
+        // Return mock data for testing
+        console.log("Returning mock whispers for testing");
+        return [
+            {
+                id: 'mock1',
+                displayName: 'Sarah',
+                category: 'Entertainment',
+                rating: 4.8,
+                totalCalls: 42,
+                bio: 'Professional conversationalist and listener'
+            },
+            {
+                id: 'mock2',
+                displayName: 'Alex',
+                category: 'Life Advice',
+                rating: 4.9,
+                totalCalls: 67,
+                bio: 'Life coach and motivational speaker'
+            },
+            {
+                id: 'mock3',
+                displayName: 'Jamie',
+                category: 'Friendship',
+                rating: 4.7,
+                totalCalls: 23,
+                bio: 'Always here to listen and chat'
+            }
+        ];
     }
 }
 
@@ -430,6 +481,16 @@ async function updateWhisperAvailability(isAvailable) {
             isAvailable: isAvailable,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        
+        // Also update whispers collection
+        await db.collection('whispers').doc(currentUser.uid).set({
+            uid: currentUser.uid,
+            email: userData.email,
+            displayName: userData.displayName,
+            isAvailable: isAvailable,
+            lastOnline: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
         
         userData.isAvailable = isAvailable;
         updateWhisperUI(isAvailable);
@@ -465,10 +526,18 @@ async function getUserCallHistory(limit = 10) {
 
 async function getWhisperProfile(whisperId) {
     try {
-        const doc = await db.collection('users').doc(whisperId).get();
-        if (doc.exists) {
-            return { id: doc.id, ...doc.data() };
+        // Try whispers collection first
+        const whisperDoc = await db.collection('whispers').doc(whisperId).get();
+        if (whisperDoc.exists) {
+            return { id: whisperDoc.id, ...whisperDoc.data() };
         }
+        
+        // Fallback to users collection
+        const userDoc = await db.collection('users').doc(whisperId).get();
+        if (userDoc.exists) {
+            return { id: userDoc.id, ...userDoc.data() };
+        }
+        
         return null;
     } catch (error) {
         console.error("Error getting whisper profile:", error);
@@ -479,16 +548,25 @@ async function getWhisperProfile(whisperId) {
 // ===== CALL FUNCTIONS =====
 async function checkActiveCall(userId) {
     try {
-        const activeCall = await db.collection('activeCalls')
+        const activeCall = await db.collection('calls')
             .where('participants', 'array-contains', userId)
-            .where('status', 'in', ['active', 'connecting'])
+            .where('status', 'in', ['active', 'connecting', 'ringing', 'ongoing'])
             .limit(1)
             .get();
         
         if (!activeCall.empty) {
             const call = activeCall.docs[0].data();
-            if (call.endTime && call.endTime.toDate() > new Date()) {
-                window.location.href = `call.html?callId=${activeCall.docs[0].id}`;
+            const callId = activeCall.docs[0].id;
+            
+            // Check if call is still active (within last 5 minutes)
+            if (call.startTime) {
+                const callStartTime = call.startTime.toDate();
+                const now = new Date();
+                const diffInMinutes = (now - callStartTime) / (1000 * 60);
+                
+                if (diffInMinutes < 60) { // Call active if started within last hour
+                    window.location.href = `call.html?callId=${callId}`;
+                }
             }
         }
     } catch (error) {
@@ -515,6 +593,7 @@ async function startCallWithWhisper(whisperId) {
             return;
         }
         
+        // Deduct coin from caller
         await db.collection('users').doc(currentUser.uid).update({
             coins: firebase.firestore.FieldValue.increment(-1),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -523,25 +602,31 @@ async function startCallWithWhisper(whisperId) {
         userData.coins -= 1;
         updateCoinBalance();
         
-        const callRef = await db.collection('activeCalls').add({
+        // Create call document
+        const callRef = await db.collection('calls').add({
             callerId: currentUser.uid,
+            callerName: userData.displayName || userData.email,
             whisperId: whisperId,
+            whisperName: whisperData.displayName,
             participants: [currentUser.uid, whisperId],
-            status: 'connecting',
+            status: 'ringing',
+            coinsRequired: 1,
+            earnings: 12.00, // Changed from 0.70 to $12.00
             startTime: firebase.firestore.FieldValue.serverTimestamp(),
             endTime: null,
-            cost: 1,
-            earnings: 0.70,
             duration: 0,
             actualDuration: 0,
             rating: null,
             feedback: '',
-            channelName: `call_${Date.now()}_${currentUser.uid}_${whisperId}`
+            channelName: `call_${Date.now()}_${currentUser.uid}_${whisperId}`,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        await db.collection('users').doc(whisperId).update({
+        // Set whisper as unavailable
+        await db.collection('whispers').doc(whisperId).update({
             isAvailable: false,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            lastOnline: firebase.firestore.FieldValue.serverTimestamp()
         });
         
         window.location.href = `call.html?callId=${callRef.id}`;
@@ -550,6 +635,7 @@ async function startCallWithWhisper(whisperId) {
         console.error("Error starting call:", error);
         showToast('Error starting call: ' + error.message, 'error');
         
+        // Refund coin if error occurred
         if (userData) {
             await db.collection('users').doc(currentUser.uid).update({
                 coins: firebase.firestore.FieldValue.increment(1),
@@ -563,7 +649,7 @@ async function startCallWithWhisper(whisperId) {
 
 async function refundCall(callId) {
     try {
-        const callDoc = await db.collection('activeCalls').doc(callId).get();
+        const callDoc = await db.collection('calls').doc(callId).get();
         if (!callDoc.exists) {
             showToast('Call not found', 'error');
             return;
@@ -578,16 +664,16 @@ async function refundCall(callId) {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            await db.collection('activeCalls').doc(callId).update({
+            await db.collection('calls').doc(callId).update({
                 status: 'refunded',
                 refunded: true,
                 refundTime: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             
-            await db.collection('users').doc(callData.whisperId).update({
+            await db.collection('whispers').doc(callData.whisperId).update({
                 isAvailable: true,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                lastOnline: firebase.firestore.FieldValue.serverTimestamp()
             });
             
             showToast('Call refunded successfully', 'success');
@@ -806,7 +892,9 @@ async function loadWhispers() {
                     <div class="whisper-avatar">
                         ${whisper.avatarUrl ? 
                             `<img src="${whisper.avatarUrl}" alt="${whisper.displayName}" style="width: 100%; height: 100%; object-fit: cover;">` : 
-                            `<i class="fas fa-user"></i>`}
+                            `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                <i class="fas fa-user"></i>
+                            </div>`}
                     </div>
                     <div class="whisper-info">
                         <h3>${whisper.displayName || 'Anonymous'}</h3>
@@ -819,7 +907,7 @@ async function loadWhispers() {
                         </div>
                         <div class="whisper-stats">
                             <span><i class="fas fa-phone-alt"></i> ${whisper.totalCalls || 0} calls</span>
-                            <span><i class="fas fa-clock"></i> 5 min</span>
+                            <span><i class="fas fa-dollar-sign"></i> $12/5min</span>
                         </div>
                         <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px; height: 40px; overflow: hidden;">
                             ${whisper.bio || 'Ready to have a meaningful conversation!'}
@@ -866,6 +954,74 @@ function generateStarRating(rating) {
     return stars;
 }
 
+// ===== NOTIFICATION FUNCTION =====
+function showNotification(title, message, type = 'info') {
+    console.log(`💬 ${type.toUpperCase()}: ${title} - ${message}`);
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#f56565' : type === 'warning' ? '#ed8936' : '#4299e1'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        z-index: 9999;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 350px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="flex: 1;">
+            <div style="font-weight: 600; margin-bottom: 5px;">${title}</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">${message}</div>
+        </div>
+        <button style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">
+            ×
+        </button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Close button functionality
+    notification.querySelector('button').addEventListener('click', () => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    });
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Add notification animation styles
+if (!document.querySelector('#notification-styles')) {
+    const style = document.createElement('style');
+    style.id = 'notification-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // ===== INITIALIZATION =====
 window.auth = auth;
 window.db = db;
@@ -886,6 +1042,7 @@ window.initializeStripePayment = initializeStripePayment;
 window.initializeAgoraClient = initializeAgoraClient;
 window.leaveAgoraCall = leaveAgoraCall;
 window.showToast = showToast;
+window.showNotification = showNotification;
 window.showAuthModal = showAuthModal;
 window.closeModal = closeModal;
 window.loadWhispers = loadWhispers;

@@ -1,0 +1,474 @@
+# 1. Create the HTML section file
+cat > whisper-calls-section.html << 'EOF'
+<!-- Flash Notification -->
+<div id="flash-notification" style="display: none; position: fixed; top: 15px; right: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 25px; border-radius: 10px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: flash 1s infinite; font-weight: bold;">
+  <span style="margin-right: 10px;">⚡</span>
+  <span id="flash-count">1</span> New Call Waiting!
+</div>
+
+<!-- Calls Waiting Container -->
+<div class="card shadow-lg mb-4" id="calls-waiting-container">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">
+      <i class="fas fa-phone-volume mr-2"></i>
+      Calls Waiting
+      <span class="badge badge-light ml-2" id="call-count">0</span>
+    </h5>
+    <button id="avail-btn" onclick="toggleAvailability()" class="btn btn-sm btn-light">
+      <span id="status-dot" class="mr-2" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; background-color: #28a745;"></span>
+      <span id="status-text">Online</span>
+    </button>
+  </div>
+  
+  <div class="card-body p-0">
+    <div id="waiting-calls-list" class="list-group list-group-flush">
+      <div class="text-center py-5 text-muted" id="no-calls-message">
+        <i class="fas fa-phone-slash fa-2x mb-3"></i>
+        <p class="mb-0">No calls waiting</p>
+        <small>Stay online to receive calls</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Call Card Template (hidden) -->
+<template id="call-card-template">
+  <div class="list-group-item call-card">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="mr-3">
+        <div class="d-flex align-items-center mb-1">
+          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 18px;">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="ml-3">
+            <h6 class="mb-0 caller-name">Caller Name</h6>
+            <small class="text-muted call-time">Just now</small>
+          </div>
+        </div>
+        <p class="mb-0 text-muted"><small>Topic: <span class="topic-text">General conversation</span></small></p>
+      </div>
+      <div>
+        <button class="btn btn-success btn-sm accept-btn">
+          <i class="fas fa-phone mr-1"></i> Join Call
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+@keyframes flash {
+  0%, 100% { opacity: 1; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  50% { opacity: 0.8; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+}
+
+.call-card {
+  border-left: 4px solid #28a745 !important;
+  transition: all 0.3s ease;
+}
+
+.call-card:hover {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+#status-dot {
+  background-color: #28a745;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+#avail-btn.offline #status-dot {
+  background-color: #dc3545;
+  animation: none;
+}
+</style>
+EOF
+
+# 2. Create the JavaScript file
+cat > whisper-calls.js << 'EOF'
+// Whisper Calls System
+// Add this to your whisper dashboard
+
+// CONFIGURATION - UPDATE THESE FIELD NAMES
+const CALLS_CONFIG = {
+  collection: 'calls',
+  whisperIdField: 'whisperId',     // Change to match your Firestore
+  statusField: 'status',           // Change to match your Firestore
+  callerIdField: 'callerId',       // Change to match your Firestore
+  channelField: 'agoraChannel',    // Change to match your Firestore
+  createdAtField: 'createdAt',     // Change to match your Firestore
+  callerLeftField: 'callerLeft',   // Change to match your Firestore
+  topicField: 'topic'              // Change to match your Firestore
+};
+
+let callListener = null;
+let flashInterval = null;
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for Firebase auth
+  if (typeof firebase !== 'undefined') {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        setTimeout(() => {
+          initCallsSystem();
+          loadAvailability();
+        }, 1000);
+      }
+    });
+  } else {
+    console.error('Firebase not loaded');
+  }
+});
+
+function initCallsSystem() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  
+  // Listen for waiting calls
+  callListener = firebase.firestore()
+    .collection(CALLS_CONFIG.collection)
+    .where(CALLS_CONFIG.whisperIdField, '==', user.uid)
+    .where(CALLS_CONFIG.statusField, '==', 'waiting')
+    .onSnapshot(function(snapshot) {
+      updateCallsUI(snapshot);
+    }, function(error) {
+      console.error('Calls listener error:', error);
+    });
+}
+
+function updateCallsUI(snapshot) {
+  const list = document.getElementById('waiting-calls-list');
+  const count = document.getElementById('call-count');
+  const noCalls = document.getElementById('no-calls-message');
+  const flash = document.getElementById('flash-notification');
+  const flashCount = document.getElementById('flash-count');
+  
+  if (!list) return;
+  
+  // Remove existing call cards
+  const cards = list.querySelectorAll('.call-card');
+  cards.forEach(card => card.remove());
+  
+  if (snapshot.empty) {
+    if (noCalls) noCalls.style.display = 'block';
+    if (count) count.textContent = '0';
+    hideFlash();
+    return;
+  }
+  
+  // Hide "no calls" message
+  if (noCalls) noCalls.style.display = 'none';
+  
+  // Update count
+  if (count) count.textContent = snapshot.size;
+  
+  // Show notification if there are calls
+  if (snapshot.size > 0) {
+    if (flashCount) flashCount.textContent = snapshot.size;
+    showFlash();
+  }
+  
+  // Add each call
+  snapshot.forEach(function(doc) {
+    const call = doc.data();
+    const card = createCallCard(doc.id, call);
+    list.appendChild(card);
+  });
+}
+
+function createCallCard(callId, callData) {
+  const template = document.getElementById('call-card-template');
+  if (!template) return document.createElement('div');
+  
+  const clone = template.content.cloneNode(true);
+  const card = clone.querySelector('.call-card');
+  
+  // Update card content
+  const name = callData.callerName || 'Anonymous';
+  const topic = callData[CALLS_CONFIG.topicField] || 'General conversation';
+  const time = formatTime(callData[CALLS_CONFIG.createdAtField]);
+  
+  const nameEl = clone.querySelector('.caller-name');
+  const timeEl = clone.querySelector('.call-time');
+  const topicEl = clone.querySelector('.topic-text');
+  const button = clone.querySelector('.accept-btn');
+  
+  if (nameEl) nameEl.textContent = name;
+  if (timeEl) timeEl.textContent = time;
+  if (topicEl) topicEl.textContent = topic;
+  
+  if (button) {
+    button.dataset.callId = callId;
+    button.dataset.channel = callData[CALLS_CONFIG.channelField] || '';
+    button.addEventListener('click', function() {
+      acceptCall(this.dataset.callId, this.dataset.channel);
+    });
+  }
+  
+  return card;
+}
+
+async function acceptCall(callId, channelName) {
+  if (!callId) return;
+  
+  try {
+    // Update call status
+    await firebase.firestore()
+      .collection(CALLS_CONFIG.collection)
+      .doc(callId)
+      .update({
+        [CALLS_CONFIG.statusField]: 'accepted',
+        acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    
+    console.log('Call accepted:', callId);
+    hideFlash();
+    
+    // Redirect to call page or join Agora
+    if (channelName) {
+      // Adjust this based on your call page
+      window.location.href = `call.html?channel=${channelName}&callId=${callId}`;
+    }
+    
+  } catch (error) {
+    console.error('Error accepting call:', error);
+    alert('Failed to accept call. Please try again.');
+  }
+}
+
+async function toggleAvailability() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  
+  const btn = document.getElementById('avail-btn');
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  
+  if (!btn) return;
+  
+  const isOnline = !btn.classList.contains('offline');
+  const newStatus = !isOnline;
+  
+  try {
+    await firebase.firestore()
+      .collection('whispers')
+      .doc(user.uid)
+      .update({
+        isAvailable: newStatus,
+        lastOnline: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    
+    if (newStatus) {
+      // Going online
+      btn.classList.remove('offline');
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-success');
+      if (dot) dot.style.backgroundColor = '#28a745';
+      if (text) text.textContent = 'Online';
+      
+      // Restart listener
+      if (!callListener) {
+        initCallsSystem();
+      }
+    } else {
+      // Going offline
+      btn.classList.add('offline');
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-secondary');
+      if (dot) dot.style.backgroundColor = '#dc3545';
+      if (text) text.textContent = 'Offline';
+    }
+    
+  } catch (error) {
+    console.error('Error toggling availability:', error);
+  }
+}
+
+async function loadAvailability() {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+  
+  try {
+    const doc = await firebase.firestore()
+      .collection('whispers')
+      .doc(user.uid)
+      .get();
+    
+    if (doc.exists) {
+      const data = doc.data();
+      const isAvailable = data.isAvailable !== false; // Default to true
+      
+      const btn = document.getElementById('avail-btn');
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      
+      if (btn) {
+        if (isAvailable) {
+          btn.classList.remove('offline');
+          btn.classList.add('btn-success');
+          if (dot) dot.style.backgroundColor = '#28a745';
+          if (text) text.textContent = 'Online';
+        } else {
+          btn.classList.add('offline');
+          btn.classList.add('btn-secondary');
+          if (dot) dot.style.backgroundColor = '#dc3545';
+          if (text) text.textContent = 'Offline';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading availability:', error);
+  }
+}
+
+function showFlash() {
+  const flash = document.getElementById('flash-notification');
+  if (!flash) return;
+  
+  flash.style.display = 'block';
+  
+  if (flashInterval) clearInterval(flashInterval);
+  
+  let bright = true;
+  flashInterval = setInterval(() => {
+    flash.style.opacity = bright ? '0.9' : '1';
+    bright = !bright;
+  }, 800);
+}
+
+function hideFlash() {
+  const flash = document.getElementById('flash-notification');
+  if (!flash) return;
+  
+  flash.style.display = 'none';
+  if (flashInterval) {
+    clearInterval(flashInterval);
+    flashInterval = null;
+  }
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return 'Just now';
+  
+  try {
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const seconds = Math.floor((new Date() - date) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + ' hour' + (seconds >= 7200 ? 's' : '') + ' ago';
+    return Math.floor(seconds / 86400) + ' day' + (seconds >= 172800 ? 's' : '') + ' ago';
+  } catch (e) {
+    return 'Recently';
+  }
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+  if (callListener) {
+    callListener();
+  }
+  if (flashInterval) {
+    clearInterval(flashInterval);
+  }
+});
+EOF
+
+# 3. Create a setup script
+cat > setup-calls-system.sh << 'EOF'
+#!/bin/bash
+
+echo "=== Whisper Calls System Setup ==="
+echo ""
+
+# 1. Check which dashboard is for whispers
+echo "1. Checking which HTML file is the Whisper dashboard..."
+if [ -f "enhanced-dashboard.html" ]; then
+    WHISPER_DASHBOARD="enhanced-dashboard.html"
+    echo "   Found: $WHISPER_DASHBOARD"
+elif [ -f "whisper-dashboard.html" ]; then
+    WHISPER_DASHBOARD="whisper-dashboard.html"
+    echo "   Found: $WHISPER_DASHBOARD"
+else
+    echo "   ❌ No obvious whisper dashboard found."
+    echo "   Please specify which file is the whisper dashboard:"
+    read -p "   Enter filename: " WHISPER_DASHBOARD
+fi
+
+if [ ! -f "$WHISPER_DASHBOARD" ]; then
+    echo "   ❌ File $WHISPER_DASHBOARD not found!"
+    exit 1
+fi
+
+# 2. Backup the original
+BACKUP="${WHISPER_DASHBOARD%.html}-with-calls-backup.html"
+cp "$WHISPER_DASHBOARD" "$BACKUP"
+echo "2. Backup created: $BACKUP"
+
+# 3. Add the calls section
+echo "3. Adding calls section to dashboard..."
+# Find where to insert (after main content or specific section)
+INSERT_POINT=$(grep -n "container\|main\|row" "$WHISPER_DASHBOARD" | head -5 | tail -1 | cut -d: -f1)
+if [ -z "$INSERT_POINT" ]; then
+    INSERT_POINT=50
+fi
+
+# Insert the HTML
+sed -i "${INSERT_POINT}r whisper-calls-section.html" "$WHISPER_DASHBOARD"
+echo "   Added calls section HTML"
+
+# 4. Add the JavaScript reference
+echo "4. Adding JavaScript reference..."
+if grep -q "whisper-calls.js" "$WHISPER_DASHBOARD"; then
+    echo "   Already added"
+else
+    # Add before closing body tag
+    sed -i '/<\/body>/i\    <script src="whisper-calls.js"></script>' "$WHISPER_DASHBOARD"
+    echo "   Added script tag"
+fi
+
+# 5. Create a test script
+cat > test-calls.html << 'TESTEOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Calls System</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <h1>Test: Whisper Calls System</h1>
+    <p>If you see the calls waiting section below, HTML is working.</p>
+    
+    <!-- Insert calls section -->
+    <div id="test-section"></div>
+    
+    <script>
+        fetch('whisper-calls-section.html')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('test-section').innerHTML = html;
+                console.log('✅ Calls section loaded');
+            })
+            .catch(e => console.error('❌ Error:', e));
+    </script>
+</body>
+</html>
+TESTEOF
+
+echo ""
+echo "=== SETUP COMPLETE ==="
+echo ""
+echo "Next steps:"
+echo "1. Edit 'whisper-calls.js' and update CALLS_CONFIG with your Firestore field names"
+echo "2. Open $WHISPER_DASHBOARD in browser to test"
+echo "3. Open test-calls.html to verify HTML loads"
+echo ""
+echo "To find your Firestore field names:"
+echo "   - Go to Firebase Console → Firestore Database"
+echo "   - Look at a call document"
+echo "   - Update the field names in whisper-calls.js"
+EOF
+
+chmod +x setup-calls-system.sh

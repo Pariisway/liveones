@@ -134,6 +134,7 @@ async function getUserAvatar(userId) {
 }
 
 // ===== WHISPER FUNCTIONS =====
+// In your getAvailableWhispers function, update the avatarUrl logic:
 async function getAvailableWhispers() {
     try {
         const snapshot = await db.collection('whispers')
@@ -145,18 +146,25 @@ async function getAvailableWhispers() {
         snapshot.forEach(doc => {
             const data = doc.data();
             
-            // Use the getUserAvatar function to get consistent avatars
-            const avatarUrlPromise = getUserAvatar(data.uid || doc.id).then(avatar => avatar);
+            // FIX: Always use user's actual avatar if it exists
+            let avatarUrl = data.avatarUrl;
+            
+            // If no avatar, use DiceBear OR check user's actual avatar
+            if (!avatarUrl || avatarUrl.includes('dicebear')) {
+                // Try to get user's actual avatar from users collection
+                // Or use display name for consistent avatar
+                avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.displayName || data.uid || doc.id)}&backgroundColor=6c63ff`;
+            }
             
             whispers.push({
                 id: doc.id,
                 displayName: data.displayName || 'Anonymous',
-                avatarUrl: data.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.displayName || doc.id)}&backgroundColor=6c63ff`,
+                avatarUrl: avatarUrl,
                 category: data.category || 'General',
                 rating: data.rating || 5.0,
                 bio: data.bio || 'Available for calls',
                 price: data.price || 1,
-                uid: data.uid || doc.id
+                uid: data.uid // Add this to track user
             });
         });
         

@@ -1,4 +1,4 @@
-// ===== FIREBASE CONFIGURATION =====
+// ===== FIREBASE CONFIG - NO AUTO-REDIRECTS =====
 const firebaseConfig = {
     apiKey: "AIzaSyALbIJSI2C-p6IyMtj_F0ZqGyN1i79jOd4",
     authDomain: "whisper-chat-live.firebaseapp.com",
@@ -9,143 +9,85 @@ const firebaseConfig = {
     appId: "1:302894848452:web:61a7ab21a269533c426c91"
 };
 
-// ===== THIRD-PARTY CONFIGURATION =====
-const STRIPE_PUBLISHABLE_KEY = "pk_test_51SPYHwRvETRK3Zx7mnVDTNyPB3mxT8vbSIcSVQURp8irweK0lGznwFrW9sjgju2GFgmDiQ5GkWYVlUQZZVNrXkJb00q2QOCC3I";
-const AGORA_APP_ID = "966c8e41da614722a88d4372c3d95dba";
-
-// ===== INITIALIZATION =====
+// Initialize Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let stripe = null;
-if (typeof Stripe !== 'undefined') {
-    stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-}
-
-// ===== GLOBAL VARIABLES =====
+// ===== SIMPLE AUTH STATE =====
 let currentUser = null;
-let userData = null;
-let agoraClient = null;
-let localStream = null;
-let remoteStream = null;
-let currentCallId = null;
 
-// ===== AUTHENTICATION HANDLER =====
-let authInitialized = false;
-
-function initializeAuth() {
-    if (authInitialized) return;
+auth.onAuthStateChanged((user) => {
+    currentUser = user;
+    console.log("Auth state:", user ? "Logged in" : "Logged out");
     
-    auth.onAuthStateChanged(async (user) => {
-        console.log("🚨 AUTH STATE CHANGED - User:", user ? "Logged in" : "Logged out");
-        console.log("Current page:", window.location.pathname);
-        
-        currentUser = user;
-        
-        if (user) {
-            try {
-                await loadUserData(user.uid);
-                updateUIForAuth(true, user);
-                
-                if (sessionStorage.getItem('newUser') === 'true') {
-                    showToast('Welcome to Whisper+Me!', 'success');
-                    sessionStorage.removeItem('newUser');
-                }
-                
-                await checkActiveCall(user.uid);
-                
-            } catch (error) {
-                console.error("Error in auth state change:", error);
-            }
-        } else {
-            userData = null;
-            updateUIForAuth(false, null);
-        }
-    });
-    
-    authInitialized = true;
-}
+    // Update UI elements if they exist
+    updateAuthUI();
+});
 
-async function loadUserData(userId) {
-    try {
-        const userDoc = await db.collection('users').doc(userId).get();
-        
-        if (userDoc.exists) {
-            userData = { id: userDoc.id, ...userDoc.data() };
-            console.log("User data loaded:", userData);
-            updateUserUI(userData);
-            
-            // Set role switch in dashboard if exists
-            updateRoleSwitchUI(userData.role);
-            
-            if (userData.role === 'whisper') {
-                updateWhisperUI(userData.isAvailable || false);
-            }
-        } else {
-            await createUserDocument(userId);
+function updateAuthUI() {
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userNav = document.getElementById('userNav');
+    
+    if (currentUser) {
+        // User is logged in
+        if (loginBtn) {
+            loginBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i> Dashboard';
+            loginBtn.onclick = () => window.location.href = 'dashboard.html';
         }
-    } catch (error) {
-        console.error("Error loading user data:", error);
+        if (signupBtn) {
+            signupBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+            signupBtn.onclick = logout;
+        }
+        if (logoutBtn) {
+            logoutBtn.style.display = 'block';
+            logoutBtn.onclick = logout;
+        }
+        if (userNav) {
+            userNav.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+        }
+    } else {
+        // User is logged out
+        if (loginBtn) {
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+            loginBtn.onclick = () => showAuthModal('login');
+        }
+        if (signupBtn) {
+            signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Signup';
+            signupBtn.onclick = () => showAuthModal('signup');
+        }
+        if (logoutBtn) {
+            logoutBtn.style.display = 'none';
+        }
     }
 }
 
-async function createUserDocument(userId) {
-    const user = auth.currentUser;
-    const userDoc = {
-        uid: userId,
-        email: user.email,
-        displayName: user.displayName || user.email.split('@')[0],
-        role: 'caller',
-        isAvailable: false,
-        isWhisper: false,
-        coins: 0,
-        earnings: 0,
-        totalCalls: 0,
-        rating: 5.0,
-        ratingCount: 0,
-        bio: '',
-        category: 'general',
-        socialLinks: {
-            instagram: '',
-            twitter: '',
-            tiktok: '',
-            youtube: '',
-            twitch: ''
-        },
-        paymentInfo: {},
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    
-    try {
-        await db.collection('users').doc(userId).set(userDoc);
-        userData = userDoc;
-        console.log("User document created");
-    } catch (error) {
-        console.error("Error creating user document:", error);
-    }
-}
-
-// ===== AUTHENTICATION FUNCTIONS =====
-async function signUpWithEmail(email, password, displayName, role = 'caller') {
+// ===== AUTH FUNCTIONS =====
+async function signUpWithEmail(email, password, displayName) {
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        await userCredential.user.updateProfile({ displayName: displayName });
         
-        await userCredential.user.updateProfile({
-            displayName: displayName
+        // Create user document
+        await db.collection('users').doc(userCredential.user.uid).set({
+            uid: userCredential.user.uid,
+            email: email,
+            displayName: displayName,
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=6c63ff`,
+            role: 'caller',
+            coins: 5,
+            rating: 5.0,
+            bio: 'New user',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        sessionStorage.setItem('newUser', 'true');
-        
-        showToast('Account created successfully!', 'success');
         return { success: true, user: userCredential.user };
-        
     } catch (error) {
-        console.error("Sign up error:", error);
-        showToast(getAuthErrorMessage(error), 'error');
         return { success: false, error: error.message };
     }
 }
@@ -153,254 +95,45 @@ async function signUpWithEmail(email, password, displayName, role = 'caller') {
 async function signInWithEmail(email, password) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        
-        showToast('Logged in successfully!', 'success');
         return { success: true, user: userCredential.user };
-        
     } catch (error) {
-        console.error("Sign in error:", error);
-        showToast(getAuthErrorMessage(error), 'error');
         return { success: false, error: error.message };
     }
 }
 
-async function signInWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    
+async function logout() {
     try {
-        const result = await auth.signInWithPopup(provider);
-        
-        const userDoc = await db.collection('users').doc(result.user.uid).get();
-        
-        if (!userDoc.exists) {
-            sessionStorage.setItem('newUser', 'true');
-        }
-        
-        showToast('Logged in with Google!', 'success');
-        return { success: true, user: result.user };
-        
-    } catch (error) {
-        console.error("Google sign in error:", error);
-        showToast(getAuthErrorMessage(error), 'error');
-        return { success: false, error: error.message };
-    }
-}
-
-async function logoutUser() {
-    try {
-        // Set user role back to caller on logout
-        if (currentUser && userData && userData.role === 'whisper') {
-            await db.collection('users').doc(currentUser.uid).update({
-                role: 'caller',
-                isAvailable: false,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-        
         await auth.signOut();
-        showToast('Logged out successfully', 'success');
-        
+        return { success: true };
     } catch (error) {
-        console.error("Logout error:", error);
-        showToast('Error logging out', 'error');
+        return { success: false, error: error.message };
     }
 }
 
-function getAuthErrorMessage(error) {
-    switch (error.code) {
-        case 'auth/email-already-in-use':
-            return 'Email already in use';
-        case 'auth/invalid-email':
-            return 'Invalid email address';
-        case 'auth/operation-not-allowed':
-            return 'Operation not allowed';
-        case 'auth/weak-password':
-            return 'Password is too weak';
-        case 'auth/user-disabled':
-            return 'Account has been disabled';
-        case 'auth/user-not-found':
-            return 'User not found';
-        case 'auth/wrong-password':
-            return 'Incorrect password';
-        case 'auth/too-many-requests':
-            return 'Too many attempts. Try again later';
-        default:
-            return error.message;
-    }
-}
-
-// ===== ROLE MANAGEMENT =====
-async function switchUserRole(newRole) {
-    if (!currentUser || !userData) {
-        showToast('Please log in to switch roles', 'error');
-        return false;
-    }
-    
+// ===== NEW AVATAR FUNCTION =====
+async function getUserAvatar(userId) {
     try {
-        const updates = {
-            role: newRole,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        
-        if (newRole === 'whisper') {
-            updates.isAvailable = false;
-        } else {
-            updates.isAvailable = false;
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            
+            // Return user's actual avatar if it exists
+            if (userData.avatarUrl && !userData.avatarUrl.includes('dicebear')) {
+                return userData.avatarUrl;
+            }
+            
+            // Otherwise use DiceBear with displayName
+            return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userData.displayName || userId)}&backgroundColor=6c63ff`;
         }
-        
-        await db.collection('users').doc(currentUser.uid).update(updates);
-        
-        userData.role = newRole;
-        userData.isAvailable = newRole === 'whisper' ? false : false;
-        
-        showToast(`Role switched to ${newRole}`, 'success');
-        
-        updateRoleSwitchUI(newRole);
-        
-        if (newRole === 'whisper') {
-            updateWhisperUI(false);
-        }
-        
-        if (typeof loadDashboardData === 'function') {
-            loadDashboardData();
-        }
-        
-        return true;
-        
     } catch (error) {
-        console.error("Error switching role:", error);
-        showToast('Error switching role', 'error');
-        return false;
+        console.error('Error getting user avatar:', error);
     }
-}
-
-// ===== UI FUNCTIONS =====
-function updateUIForAuth(isLoggedIn, user) {
-    console.log('updateUIForAuth called. Logged in:', isLoggedIn);
     
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-    const userNav = document.getElementById('userNav');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const heroSignupBtn = document.getElementById('heroSignupBtn');
-    
-    if (isLoggedIn && user) {
-        console.log('User is logged in, updating UI');
-        
-        if (loginBtn) {
-            loginBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i> Dashboard';
-            loginBtn.onclick = () => window.location.href = 'enhanced-dashboard.html';
-            loginBtn.style.display = 'block';
-        }
-        
-        if (signupBtn) {
-            signupBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Log Out';
-            signupBtn.onclick = logoutUser;
-            signupBtn.style.display = 'block';
-        }
-        
-        if (userNav) {
-            userNav.textContent = user.displayName || user.email || 'User';
-            userNav.style.display = 'inline-block';
-        }
-        
-        if (logoutBtn) {
-            logoutBtn.style.display = 'block';
-            logoutBtn.onclick = logoutUser;
-        }
-        
-        if (heroSignupBtn) {
-            heroSignupBtn.textContent = 'Go to Dashboard';
-            heroSignupBtn.onclick = () => window.location.href = 'enhanced-dashboard.html';
-        }
-        
-    } else {
-        console.log('User is logged out, updating UI');
-        
-        if (loginBtn) {
-            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log In';
-            loginBtn.onclick = () => showAuthModal('login');
-            loginBtn.style.display = 'block';
-        }
-        
-        if (signupBtn) {
-            signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Sign Up';
-            signupBtn.onclick = () => showAuthModal('signup');
-            signupBtn.style.display = 'block';
-        }
-        
-        if (userNav) {
-            userNav.style.display = 'none';
-        }
-        
-        if (logoutBtn) {
-            logoutBtn.style.display = 'none';
-        }
-        
-        if (heroSignupBtn) {
-            heroSignupBtn.textContent = 'Start Connecting';
-            heroSignupBtn.onclick = () => showAuthModal('signup');
-        }
-    }
+    // Fallback to generic DiceBear
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}&backgroundColor=6c63ff`;
 }
 
-function updateUserUI(data) {
-    updateCoinBalance();
-    
-    const userNavElement = document.getElementById('userNav');
-    if (userNavElement && data.displayName) {
-        userNavElement.textContent = data.displayName;
-    }
-}
-
-function updateCoinBalance() {
-    if (!userData) return;
-    
-    const coinElements = document.querySelectorAll('#coinBalance, .coin-balance, .card-value.coins');
-    coinElements.forEach(element => {
-        if (element && userData.coins !== undefined) {
-            element.textContent = userData.coins;
-        }
-    });
-}
-
-function updateRoleSwitchUI(role) {
-    const roleToggle = document.getElementById('roleToggle');
-    if (roleToggle) {
-        roleToggle.checked = role === 'whisper';
-        
-        const roleLabel = document.getElementById('roleLabel');
-        if (roleLabel) {
-            roleLabel.textContent = role === 'whisper' ? 'Whisper Mode' : 'Caller Mode';
-        }
-        
-        const availabilitySection = document.getElementById('availabilitySection');
-        if (availabilitySection) {
-            availabilitySection.style.display = role === 'whisper' ? 'block' : 'none';
-        }
-    }
-}
-
-function updateWhisperUI(isAvailable) {
-    const availabilityToggle = document.getElementById('availabilityToggle');
-    if (availabilityToggle) {
-        availabilityToggle.checked = isAvailable;
-        
-        const statusIndicator = document.getElementById('statusIndicator');
-        const statusText = document.getElementById('statusText');
-        
-        if (statusIndicator) {
-            statusIndicator.className = 'status-indicator ' + (isAvailable ? 'available' : '');
-        }
-        
-        if (statusText) {
-            statusText.textContent = isAvailable ? 'Currently available for calls' : 'Currently unavailable';
-        }
-    }
-}
-
-// ===== FIRESTORE FUNCTIONS =====
-// In your getAvailableWhispers function, update the avatarUrl logic:
+// ===== WHISPER FUNCTIONS =====
 async function getAvailableWhispers() {
     try {
         const snapshot = await db.collection('whispers')
@@ -412,25 +145,18 @@ async function getAvailableWhispers() {
         snapshot.forEach(doc => {
             const data = doc.data();
             
-            // FIX: Always use user's actual avatar if it exists
-            let avatarUrl = data.avatarUrl;
-            
-            // If no avatar, use DiceBear OR check user's actual avatar
-            if (!avatarUrl || avatarUrl.includes('dicebear')) {
-                // Try to get user's actual avatar from users collection
-                // Or use display name for consistent avatar
-                avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.displayName || data.uid || doc.id)}&backgroundColor=6c63ff`;
-            }
+            // Use the getUserAvatar function to get consistent avatars
+            const avatarUrlPromise = getUserAvatar(data.uid || doc.id).then(avatar => avatar);
             
             whispers.push({
                 id: doc.id,
                 displayName: data.displayName || 'Anonymous',
-                avatarUrl: avatarUrl,
+                avatarUrl: data.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.displayName || doc.id)}&backgroundColor=6c63ff`,
                 category: data.category || 'General',
                 rating: data.rating || 5.0,
                 bio: data.bio || 'Available for calls',
                 price: data.price || 1,
-                uid: data.uid // Add this to track user
+                uid: data.uid || doc.id
             });
         });
         
@@ -440,645 +166,131 @@ async function getAvailableWhispers() {
         return [];
     }
 }
-        
-        // Fallback to users collection
-        const snapshot = await db.collection('users')
-            .where('role', '==', 'whisper')
-            .where('isAvailable', '==', true)
-            .limit(limit)
-            .get();
-        
-        const whispers = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        
-        console.log(`Loaded ${whispers.length} whispers from users collection`);
-        return whispers;
-        
-    } catch (error) {
-        console.error("Error getting whispers:", error);
-        
-        // Return mock data for testing
-        console.log("Returning mock whispers for testing");
-        return [
-            {
-                id: 'mock1',
-                displayName: 'Sarah',
-                category: 'Entertainment',
-                rating: 4.8,
-                totalCalls: 42,
-                bio: 'Professional conversationalist and listener'
-            },
-            {
-                id: 'mock2',
-                displayName: 'Alex',
-                category: 'Life Advice',
-                rating: 4.9,
-                totalCalls: 67,
-                bio: 'Life coach and motivational speaker'
-            },
-            {
-                id: 'mock3',
-                displayName: 'Jamie',
-                category: 'Friendship',
-                rating: 4.7,
-                totalCalls: 23,
-                bio: 'Always here to listen and chat'
-            }
-        ];
-    }
-}
-
-async function updateWhisperAvailability(isAvailable) {
-    if (!currentUser || !userData || userData.role !== 'whisper') return;
-    
-    try {
-        await db.collection('users').doc(currentUser.uid).update({
-            isAvailable: isAvailable,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Also update whispers collection
-        await db.collection('whispers').doc(currentUser.uid).set({
-            uid: currentUser.uid,
-            email: userData.email,
-            displayName: userData.displayName,
-            isAvailable: isAvailable,
-            lastOnline: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-        
-        userData.isAvailable = isAvailable;
-        updateWhisperUI(isAvailable);
-        
-        showToast(`You are now ${isAvailable ? 'available' : 'unavailable'} for calls`, 'success');
-        
-    } catch (error) {
-        console.error("Error updating availability:", error);
-        showToast('Error updating availability', 'error');
-    }
-}
-
-async function getUserCallHistory(limit = 10) {
-    if (!currentUser) return [];
-    
-    try {
-        const snapshot = await db.collection('calls')
-            .where('participants', 'array-contains', currentUser.uid)
-            .orderBy('startTime', 'desc')
-            .limit(limit)
-            .get();
-        
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        
-    } catch (error) {
-        console.error("Error getting call history:", error);
-        return [];
-    }
-}
-
-async function getWhisperProfile(whisperId) {
-    try {
-        // Try whispers collection first
-        const whisperDoc = await db.collection('whispers').doc(whisperId).get();
-        if (whisperDoc.exists) {
-            return { id: whisperDoc.id, ...whisperDoc.data() };
-        }
-        
-        // Fallback to users collection
-        const userDoc = await db.collection('users').doc(whisperId).get();
-        if (userDoc.exists) {
-            return { id: userDoc.id, ...userDoc.data() };
-        }
-        
-        return null;
-    } catch (error) {
-        console.error("Error getting whisper profile:", error);
-        return null;
-    }
-}
-
-// ===== CALL FUNCTIONS =====
-async function checkActiveCall(userId) {
-    try {
-        const activeCall = await db.collection('calls')
-            .where('participants', 'array-contains', userId)
-            .where('status', 'in', ['active', 'connecting', 'ringing', 'ongoing'])
-            .limit(1)
-            .get();
-        
-        if (!activeCall.empty) {
-            const call = activeCall.docs[0].data();
-            const callId = activeCall.docs[0].id;
-            
-            // Check if call is still active (within last 5 minutes)
-            if (call.startTime) {
-                const callStartTime = call.startTime.toDate();
-                const now = new Date();
-                const diffInMinutes = (now - callStartTime) / (1000 * 60);
-                
-                if (diffInMinutes < 60) { // Call active if started within last hour
-                    window.location.href = `call.html?callId=${callId}`;
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error checking active calls:", error);
-    }
-}
 
 async function startCallWithWhisper(whisperId) {
     if (!currentUser) {
-        showToast('Please log in to start a call', 'error');
-        return;
-    }
-    
-    if (!userData || userData.coins < 1) {
-        showToast('You need at least 1 coin to start a call', 'error');
-        window.location.href = 'payment.html';
+        alert('Please login first');
+        showAuthModal('login');
         return;
     }
     
     try {
-        const whisperData = await getWhisperProfile(whisperId);
-        if (!whisperData || !whisperData.isAvailable) {
-            showToast('This whisper is not available right now', 'error');
+        // Get user data to check coins
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        if (!userDoc.exists) {
+            alert('User not found');
             return;
         }
         
-        // Deduct coin from caller
-        await db.collection('users').doc(currentUser.uid).update({
-            coins: firebase.firestore.FieldValue.increment(-1),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        const userData = userDoc.data();
         
-        userData.coins -= 1;
-        updateCoinBalance();
+        // Check if user has enough coins
+        if (userData.coins < 1) {
+            alert('You need at least 1 coin to call');
+            return;
+        }
+        
+        // Get whisper data for their display name
+        const whisperDoc = await db.collection('whispers').doc(whisperId).get();
+        const whisperData = whisperDoc.data();
+        
+        // Create channel name - FIXED: Consistent channel name for both users
+        const channelName = `call_${Date.now()}_${currentUser.uid}_${whisperId}`;
         
         // Create call document
         const callRef = await db.collection('calls').add({
             callerId: currentUser.uid,
-            callerName: userData.displayName || userData.email,
+            callerName: userData.displayName,
             whisperId: whisperId,
-            whisperName: whisperData.displayName,
-            participants: [currentUser.uid, whisperId],
+            whisperName: whisperData.displayName || 'Anonymous',
             status: 'ringing',
-            coinsRequired: 1,
-            earnings: 12.00, // Changed from 0.70 to $12.00
+            channelName: channelName,
             startTime: firebase.firestore.FieldValue.serverTimestamp(),
-            endTime: null,
-            duration: 0,
-            actualDuration: 0,
-            rating: null,
-            feedback: '',
-            channelName: `call_${Date.now()}_${currentUser.uid}_${whisperId}`,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            earnings: 12.00  // Fixed earnings for whisper
         });
         
-        // Set whisper as unavailable
+        // Deduct coin from caller
+        await db.collection('users').doc(currentUser.uid).update({
+            coins: firebase.firestore.FieldValue.increment(-1)
+        });
+        
+        // Mark whisper as unavailable
         await db.collection('whispers').doc(whisperId).update({
-            isAvailable: false,
-            lastOnline: firebase.firestore.FieldValue.serverTimestamp()
+            isAvailable: false
         });
         
+        // Redirect to call page
         window.location.href = `call.html?callId=${callRef.id}`;
         
     } catch (error) {
-        console.error("Error starting call:", error);
-        showToast('Error starting call: ' + error.message, 'error');
-        
-        // Refund coin if error occurred
-        if (userData) {
-            await db.collection('users').doc(currentUser.uid).update({
-                coins: firebase.firestore.FieldValue.increment(1),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            userData.coins += 1;
-            updateCoinBalance();
-        }
+        console.error('Start call error:', error);
+        alert('Error starting call: ' + error.message);
     }
 }
 
-async function refundCall(callId) {
-    try {
-        const callDoc = await db.collection('calls').doc(callId).get();
-        if (!callDoc.exists) {
-            showToast('Call not found', 'error');
-            return;
-        }
-        
-        const callData = callDoc.data();
-        
-        const duration = callData.actualDuration || 0;
-        if (callData.status === 'missed' || duration < 30) {
-            await db.collection('users').doc(callData.callerId).update({
-                coins: firebase.firestore.FieldValue.increment(1),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            await db.collection('calls').doc(callId).update({
-                status: 'refunded',
-                refunded: true,
-                refundTime: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            await db.collection('whispers').doc(callData.whisperId).update({
-                isAvailable: true,
-                lastOnline: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            showToast('Call refunded successfully', 'success');
-            return true;
-        }
-        
-        return false;
-        
-    } catch (error) {
-        console.error("Error refunding call:", error);
-        showToast('Error refunding call', 'error');
-        return false;
-    }
-}
-
-// ===== PAYMENT FUNCTIONS =====
-async function initializeStripePayment(amount, coins, productId) {
-    showToast('Processing payment...', 'info');
-    
-    try {
-        await db.collection('users').doc(currentUser.uid).update({
-            coins: firebase.firestore.FieldValue.increment(coins),
-            totalSpent: firebase.firestore.FieldValue.increment(amount),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        await db.collection('transactions').add({
-            userId: currentUser.uid,
-            type: 'purchase',
-            amount: amount,
-            coins: coins,
-            status: 'completed',
-            productId: productId,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        userData.coins += coins;
-        userData.totalSpent = (userData.totalSpent || 0) + amount;
-        
-        updateCoinBalance();
-        
-        showToast(`Payment successful! ${coins} coins added`, 'success');
-        return true;
-        
-    } catch (error) {
-        console.error("Error processing payment:", error);
-        showToast('Payment processing failed: ' + error.message, 'error');
-        return false;
-    }
-}
-
-// ===== AGORA FUNCTIONS =====
-async function initializeAgoraClient(channelName) {
-    if (!AGORA_APP_ID) {
-        console.error("Agora App ID not configured");
-        return null;
+// ===== MODAL FUNCTIONS =====
+function showAuthModal(tab) {
+    const modal = document.getElementById('authModal');
+    if (!modal) {
+        window.location.href = 'index.html';
+        return;
     }
     
-    try {
-        agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        
-        await agoraClient.init(AGORA_APP_ID);
-        
-        const uid = currentUser ? currentUser.uid.substring(0, 8) : Math.random().toString(36).substr(2, 9);
-        await agoraClient.join(null, channelName, uid);
-        
-        localStream = AgoraRTC.createStream({
-            streamID: uid,
-            audio: true,
-            video: false,
-            screen: false
-        });
-        
-        await localStream.init();
-        await agoraClient.publish(localStream);
-        
-        agoraClient.on("stream-added", (evt) => {
-            agoraClient.subscribe(evt.stream);
-        });
-        
-        agoraClient.on("stream-subscribed", (evt) => {
-            remoteStream = evt.stream;
-            remoteStream.play("remoteAudio");
-        });
-        
-        agoraClient.on("peer-leave", (evt) => {
-            if (remoteStream && remoteStream.getId() === evt.uid) {
-                remoteStream.stop();
-                remoteStream = null;
-            }
-        });
-        
-        return agoraClient;
-        
-    } catch (error) {
-        console.error("Error initializing Agora:", error);
-        return null;
-    }
+    modal.classList.add('active');
+    
+    // Switch tabs
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    
+    const activeTab = document.querySelector(`[data-tab="${tab}"]`);
+    const activeForm = document.getElementById(`${tab}Form`);
+    
+    if (activeTab) activeTab.classList.add('active');
+    if (activeForm) activeForm.classList.add('active');
 }
 
-async function leaveAgoraCall() {
-    if (localStream) {
-        localStream.close();
-        localStream = null;
-    }
-    
-    if (agoraClient) {
-        await agoraClient.leave();
-        agoraClient = null;
-    }
-    
-    if (remoteStream) {
-        remoteStream.stop();
-        remoteStream = null;
-    }
+function closeModal() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => modal.classList.remove('active'));
 }
 
-// ===== TOAST NOTIFICATIONS =====
+// ===== UTILITY FUNCTIONS =====
 function showToast(message, type = 'info') {
-    const existingToasts = document.querySelectorAll('.toast');
-    existingToasts.forEach(toast => toast.remove());
+    console.log(`Toast [${type}]:`, message);
     
+    // Remove existing toasts
+    document.querySelectorAll('.toast').forEach(toast => toast.remove());
+    
+    // Create toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
-    let icon = 'info-circle';
-    switch (type) {
-        case 'success': icon = 'check-circle'; break;
-        case 'warning': icon = 'exclamation-triangle'; break;
-        case 'error': icon = 'times-circle'; break;
-        default: icon = 'info-circle';
-    }
-    
     toast.innerHTML = `
-        <i class="fas fa-${icon}"></i>
-        <span>${message}</span>
-        <button class="toast-close">&times;</button>
+        <div>${message}</div>
+        <button onclick="this.parentElement.remove()">&times;</button>
     `;
     
     document.body.appendChild(toast);
     
+    // Auto remove
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 5000);
-    
-    toast.querySelector('.toast-close').addEventListener('click', () => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    });
-}
-
-// ===== MODAL FUNCTIONS =====
-function showAuthModal(tab = 'login') {
-    const modal = document.getElementById('authModal');
-    if (modal) {
-        modal.classList.add('active');
-        
-        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-        
-        const activeTab = document.querySelector(`[data-tab="${tab}"]`);
-        const activeForm = document.getElementById(`${tab}Form`);
-        
-        if (activeTab) activeTab.classList.add('active');
-        if (activeForm) activeForm.classList.add('active');
-    } else {
-        window.location.href = 'index.html';
-    }
-}
-
-function closeModal(modalId = null) {
-    if (modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.remove('active');
-    } else {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.remove('active');
-        });
-    }
-}
-
-// ===== LOAD WHISPERS =====
-async function loadWhispers() {
-    const whispersGrid = document.getElementById('whispersGrid');
-    if (!whispersGrid) return;
-    
-    whispersGrid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-            <div class="loading-spinner" style="width: 50px; height: 50px; border: 3px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-            <p>Loading whispers...</p>
-        </div>
-    `;
-    
-    try {
-        const whispers = await getAvailableWhispers(12);
-        
-        if (whispers.length === 0) {
-            whispersGrid.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--text-gray); margin-bottom: 20px;"></i>
-                    <h3>No whispers available at the moment</h3>
-                    <p>Check back soon or become a whisper yourself!</p>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        whispers.forEach(whisper => {
-            const rating = whisper.rating || 5.0;
-            const stars = generateStarRating(rating);
-            
-            html += `
-                <div class="whisper-card" data-whisper-id="${whisper.id}">
-                    <div class="whisper-avatar">
-                        ${whisper.avatarUrl ? 
-                            `<img src="${whisper.avatarUrl}" alt="${whisper.displayName}" style="width: 100%; height: 100%; object-fit: cover;">` : 
-                            `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
-                                <i class="fas fa-user"></i>
-                            </div>`}
-                    </div>
-                    <div class="whisper-info">
-                        <h3>${whisper.displayName || 'Anonymous'}</h3>
-                        <div class="whisper-category">${whisper.category || 'General'}</div>
-                        <div class="whisper-rating">
-                            <div class="stars">
-                                ${stars}
-                            </div>
-                            <span>${rating.toFixed(1)}</span>
-                        </div>
-                        <div class="whisper-stats">
-                            <span><i class="fas fa-phone-alt"></i> ${whisper.totalCalls || 0} calls</span>
-                            <span><i class="fas fa-dollar-sign"></i> $12/5min</span>
-                        </div>
-                        <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px; height: 40px; overflow: hidden;">
-                            ${whisper.bio || 'Ready to have a meaningful conversation!'}
-                        </p>
-                    </div>
-                    <button class="btn-primary whisper-call-btn" onclick="startCallWithWhisper('${whisper.id}')">
-                        <i class="fas fa-phone-alt"></i> Call - 1 Coin
-                    </button>
-                </div>
-            `;
-        });
-        
-        whispersGrid.innerHTML = html;
-        
-    } catch (error) {
-        console.error("Error loading whispers:", error);
-        whispersGrid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--warning); margin-bottom: 20px;"></i>
-                <h3>Error loading whispers</h3>
-                <p>Please try again later or refresh the page.</p>
-                <button class="btn-outline" onclick="loadWhispers()" style="margin-top: 20px;">
-                    <i class="fas fa-sync-alt"></i> Try Again
-                </button>
-            </div>
-        `;
-    }
-}
-
-function generateStarRating(rating) {
-    let stars = '';
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    
-    for (let i = 1; i <= 5; i++) {
-        if (i <= fullStars) {
-            stars += '<i class="fas fa-star"></i>';
-        } else if (i === fullStars + 1 && hasHalfStar) {
-            stars += '<i class="fas fa-star-half-alt"></i>';
-        } else {
-            stars += '<i class="far fa-star"></i>';
-        }
-    }
-    return stars;
-}
-
-// ===== NOTIFICATION FUNCTION =====
-function showNotification(title, message, type = 'info') {
-    console.log(`💬 ${type.toUpperCase()}: ${title} - ${message}`);
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#f56565' : type === 'warning' ? '#ed8936' : '#4299e1'};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        z-index: 9999;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        max-width: 350px;
-    `;
-    
-    notification.innerHTML = `
-        <div style="flex: 1;">
-            <div style="font-weight: 600; margin-bottom: 5px;">${title}</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">${message}</div>
-        </div>
-        <button style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">
-            ×
-        </button>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Close button functionality
-    notification.querySelector('button').addEventListener('click', () => {
-        notification.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => notification.remove(), 300);
-    });
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
+        if (toast.parentNode) {
+            toast.remove();
         }
     }, 5000);
 }
 
-// Add notification animation styles
-if (!document.querySelector('#notification-styles')) {
-    const style = document.createElement('style');
-    style.id = 'notification-styles';
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// ===== INITIALIZATION =====
+// ===== EXPORT =====
 window.auth = auth;
 window.db = db;
-window.currentUser = currentUser;
-window.userData = userData;
 window.signUpWithEmail = signUpWithEmail;
 window.signInWithEmail = signInWithEmail;
-window.signInWithGoogle = signInWithGoogle;
-window.logoutUser = logoutUser;
-window.switchUserRole = switchUserRole;
+window.logout = logout;
 window.getAvailableWhispers = getAvailableWhispers;
-window.updateWhisperAvailability = updateWhisperAvailability;
-window.getWhisperProfile = getWhisperProfile;
 window.startCallWithWhisper = startCallWithWhisper;
-window.refundCall = refundCall;
-window.getUserCallHistory = getUserCallHistory;
-window.initializeStripePayment = initializeStripePayment;
-window.initializeAgoraClient = initializeAgoraClient;
-window.leaveAgoraCall = leaveAgoraCall;
-window.showToast = showToast;
-window.showNotification = showNotification;
 window.showAuthModal = showAuthModal;
 window.closeModal = closeModal;
-window.loadWhispers = loadWhispers;
+window.showToast = showToast;
+window.getUserAvatar = getUserAvatar;  // ADD THIS LINE TOO!
 
-console.log("✅ Firebase configuration loaded successfully");
-
-// Initialize auth when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    initializeAuth();
-    
-    // Add spinner animation style
-    if (!document.querySelector('#spinner-styles')) {
-        const style = document.createElement('style');
-        style.id = 'spinner-styles';
-        style.textContent = `
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-});
+console.log('✅ Firebase config loaded');

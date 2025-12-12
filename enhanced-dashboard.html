@@ -1198,32 +1198,34 @@
     }
 
     async function acceptIncomingCall(callId) {
-        try {
-            const user = firebase.auth().currentUser;
-            if (!user) return;
-            
-            console.log('✅ Accepting call:', callId);
-            
-            // Update call status to ongoing
-            await firebase.firestore().collection('calls').doc(callId).update({
-                status: 'ongoing',
-                answeredTime: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            // Hide flash notification
-            const flash = document.getElementById('flash-notification');
-            if (flash) flash.style.display = 'none';
-            
-            // Redirect to call page
-            window.location.href = `call.html?callId=${callId}`;
-            
-        } catch (error) {
-            console.error('❌ Error accepting call:', error);
-            if (typeof showNotification === 'function') {
-                showNotification('⚠️ Error accepting call', 'Please try again.', 'warning');
-            }
+    try {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+        
+        console.log('✅ Accepting call:', callId);
+        
+        // Update call status to ongoing
+        await firebase.firestore().collection('calls').doc(callId).update({
+            status: 'ongoing',
+            answeredTime: firebase.firestore.FieldValue.serverTimestamp(),
+            timerStarted: true,
+            timerSeconds: 0
+        });
+        
+        // Hide flash notification
+        const flash = document.getElementById('flash-notification');
+        if (flash) flash.style.display = 'none';
+        
+        // Redirect to call page
+        window.location.href = `call.html?callId=${callId}`;
+        
+    } catch (error) {
+        console.error('❌ Error accepting call:', error);
+        if (typeof showNotification === 'function') {
+            showNotification('⚠️ Error accepting call', 'Please try again.', 'warning');
         }
     }
+}
 
     async function declineIncomingCall(callId) {
         try {

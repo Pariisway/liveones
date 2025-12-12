@@ -1699,3 +1699,172 @@ input:checked + .toggle-slider:before {
     color: var(--text-gray);
     font-size: 0.9rem !important;
 }
+
+/* ===== MOBILE RESPONSIVE FIXES ===== */
+@media (max-width: 768px) {
+    /* Fix navbar for mobile */
+    .navbar .nav-container {
+        flex-direction: column;
+        padding: 15px 20px;
+    }
+    
+    .nav-brand {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .nav-buttons {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    /* Fix hero section */
+    .hero {
+        padding: 80px 20px 60px;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem !important;
+        line-height: 1.2;
+    }
+    
+    .hero p {
+        font-size: 1rem !important;
+        margin: 15px 0 25px;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .hero-buttons .btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Fix whispers grid */
+    .whispers-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+        padding: 0 15px;
+    }
+    
+    .whisper-card {
+        width: 100% !important;
+        margin: 0 auto 15px;
+        padding: 20px;
+    }
+    
+    .whisper-avatar {
+        width: 80px !important;
+        height: 80px !important;
+        margin-bottom: 15px;
+    }
+    
+    .whisper-info h3 {
+        font-size: 1.3rem;
+    }
+    
+    /* Fix call page */
+    .call-page {
+        padding: 80px 20px;
+    }
+    
+    .call-container {
+        width: 100% !important;
+        padding: 30px 20px;
+    }
+    
+    .call-avatar {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 2.5rem !important;
+    }
+    
+    .call-timer {
+        font-size: 2.5rem !important;
+    }
+    
+    .call-controls {
+        gap: 15px;
+    }
+    
+    .call-btn {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    /* Fix dashboard */
+    .dashboard-container {
+        padding: 80px 15px 40px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    /* Fix modals */
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 25px 20px;
+    }
+    
+    /* Fix forms */
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
+    h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    h3 {
+        font-size: 1.2rem !important;
+    }
+    
+    .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    /* Make sure everything fits */
+    * {
+        max-width: 100%;
+    }
+}
+
+/* Fix for iOS input zoom */
+@media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}

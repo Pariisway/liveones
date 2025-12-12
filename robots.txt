@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /dashboard/
-Disallow: /call/
-Disallow: /admin/
-
-Sitemap: https://iaiwaf.com/sitemap.xml

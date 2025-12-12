@@ -134,7 +134,6 @@ async function getUserAvatar(userId) {
 }
 
 // ===== WHISPER FUNCTIONS =====
-// In your getAvailableWhispers function, update the avatarUrl logic:
 async function getAvailableWhispers() {
     try {
         const snapshot = await db.collection('whispers')
@@ -202,8 +201,12 @@ async function startCallWithWhisper(whisperId) {
         const whisperDoc = await db.collection('whispers').doc(whisperId).get();
         const whisperData = whisperDoc.data();
         
-        // Create channel name - FIXED: Consistent channel name for both users
-        const channelName = `call_${Date.now()}_${currentUser.uid}_${whisperId}`;
+        // FIXED: Generate UNIQUE but PREDICTABLE channel name
+        // This ensures both users join the same channel
+        const callId = `call_${Date.now()}_${currentUser.uid.substring(0, 8)}_${whisperId.substring(0, 8)}`;
+        const channelName = callId.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        console.log('Creating call with channel:', channelName);
         
         // Create call document
         const callRef = await db.collection('calls').add({
@@ -212,10 +215,15 @@ async function startCallWithWhisper(whisperId) {
             whisperId: whisperId,
             whisperName: whisperData.displayName || 'Anonymous',
             status: 'ringing',
-            channelName: channelName,
+            channelName: channelName, // Same channel for both
             startTime: firebase.firestore.FieldValue.serverTimestamp(),
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            earnings: 12.00  // Fixed earnings for whisper
+            participants: [currentUser.uid, whisperId], // Track both participants
+            earnings: 12.00,
+            // Add timer tracking
+            timerStarted: false,
+            timerSeconds: 0,
+            maxDuration: 300 // 5 minutes in seconds
         });
         
         // Deduct coin from caller
@@ -299,6 +307,4 @@ window.startCallWithWhisper = startCallWithWhisper;
 window.showAuthModal = showAuthModal;
 window.closeModal = closeModal;
 window.showToast = showToast;
-window.getUserAvatar = getUserAvatar;  // ADD THIS LINE TOO!
-
-console.log('✅ Firebase config loaded');
+window.getUserAvatar = getUserAvatar;

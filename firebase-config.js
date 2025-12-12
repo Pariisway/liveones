@@ -400,29 +400,46 @@ function updateWhisperUI(isAvailable) {
 }
 
 // ===== FIRESTORE FUNCTIONS =====
-async function getAvailableWhispers(limit = 12) {
+// In your getAvailableWhispers function, update the avatarUrl logic:
+async function getAvailableWhispers() {
     try {
-        console.log("Fetching available whispers...");
+        const snapshot = await db.collection('whispers')
+            .where('isAvailable', '==', true)
+            .limit(20)
+            .get();
         
-        // Try to get from whispers collection first
-        try {
-            const snapshot = await db.collection('whispers')
-                .where('isAvailable', '==', true)
-                .limit(limit)
-                .get();
+        const whispers = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
             
-            if (!snapshot.empty) {
-                const whispers = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                
-                console.log(`Loaded ${whispers.length} whispers from whispers collection`);
-                return whispers;
+            // FIX: Always use user's actual avatar if it exists
+            let avatarUrl = data.avatarUrl;
+            
+            // If no avatar, use DiceBear OR check user's actual avatar
+            if (!avatarUrl || avatarUrl.includes('dicebear')) {
+                // Try to get user's actual avatar from users collection
+                // Or use display name for consistent avatar
+                avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(data.displayName || data.uid || doc.id)}&backgroundColor=6c63ff`;
             }
-        } catch (whispersError) {
-            console.log("Could not fetch from whispers collection:", whispersError);
-        }
+            
+            whispers.push({
+                id: doc.id,
+                displayName: data.displayName || 'Anonymous',
+                avatarUrl: avatarUrl,
+                category: data.category || 'General',
+                rating: data.rating || 5.0,
+                bio: data.bio || 'Available for calls',
+                price: data.price || 1,
+                uid: data.uid // Add this to track user
+            });
+        });
+        
+        return whispers;
+    } catch (error) {
+        console.error('Get whispers error:', error);
+        return [];
+    }
+}
         
         // Fallback to users collection
         const snapshot = await db.collection('users')

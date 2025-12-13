@@ -535,5 +535,27 @@
     
     <script src="firebase-config.js"></script>
     <script src="scripts.js"></script>
+    <script>
+    // Fix for index.html - load whispers when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📱 Index page loaded');
+        
+        // Wait a bit for firebase-config.js to load
+        setTimeout(() => {
+            if (typeof loadWhispers === 'function') {
+                console.log('✅ loadWhispers function found, loading...');
+                loadWhispers();
+            } else {
+                console.error('❌ loadWhispers function NOT found');
+                // Try again in 1 second
+                setTimeout(() => {
+                    if (typeof loadWhispers === 'function') {
+                        loadWhispers();
+                    }
+                }, 1000);
+            }
+        }, 500);
+    });
+</script>
 </body>
 </html>

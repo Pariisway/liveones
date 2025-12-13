@@ -1,250 +1,196 @@
-// ===== GLOBAL VARIABLES =====
-let currentCall = null;
-let callTimer = null;
-let callDuration = 0;
-
-// ===== MOBILE MENU =====
-function initMobileMenu() {
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const navMenu = document.querySelector('.nav-menu');
+// Main app initialization
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing app...');
     
-    if (mobileMenuBtn && navMenu) {
-        mobileMenuBtn.addEventListener('click', () => {
-            navMenu.style.display = navMenu.style.display === 'flex' ? 'none' : 'flex';
-            mobileMenuBtn.innerHTML = navMenu.style.display === 'flex' ? 
-                '<i class="fas fa-times"></i>' : 
-                '<i class="fas fa-bars"></i>';
+    // Initialize any page-specific functionality
+    if (typeof initPage === 'function') {
+        initPage();
+    }
+    
+    // Setup modal close buttons
+    document.querySelectorAll('.modal-close').forEach(button => {
+        button.addEventListener('click', function() {
+            this.closest('.modal').classList.remove('active');
         });
-        
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                navMenu.style.display = 'flex';
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            } else {
-                navMenu.style.display = 'none';
-                mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+    });
+    
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
             }
         });
-    }
-}
-
-// ===== AUTHENTICATION =====
-async function loginUser(email, password) {
-    try {
-        const result = await signInWithEmail(email, password);
-        if (result.success) {
-            closeModal();
-            // MANUAL redirect to dashboard (not automatic)
-            showToast('Login successful! Going to dashboard...', 'success');
-            setTimeout(() => {
-                window.location.href = 'enhanced-dashboard.html';
-            }, 1500);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('Login error:', error);
-        showToast('Login failed: ' + error.message, 'error');
-        return false;
-    }
-}
-
-async function signupUser(email, password, displayName, role) {
-    try {
-        const result = await signUpWithEmail(email, password, displayName, role);
-        if (result.success) {
-            closeModal();
-            // MANUAL redirect to dashboard (not automatic)
-            showToast('Account created! Going to dashboard...', 'success');
-            setTimeout(() => {
-                window.location.href = 'enhanced-dashboard.html';
-            }, 1500);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('Signup error:', error);
-        showToast('Signup failed: ' + error.message, 'error');
-        return false;
-    }
-}
-
-// ===== CALL MANAGEMENT =====
-async function startCall(whisperId) {
-    if (!currentUser) {
-        showToast('Please log in to start a call', 'error');
-        showAuthModal('login');
-        return;
-    }
-    
-    if (userData && userData.coins < 1) {
-        showToast('You need at least 1 coin to start a call', 'error');
-        window.location.href = 'payment.html';
-        return;
-    }
-    
-    showToast('Starting call...', 'info');
-    await startCallWithWhisper(whisperId);
-}
-
-// ===== UTILITY FUNCTIONS =====
-function formatDuration(seconds) {
-    if (!seconds) return '0:00';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
-
-function formatDate(date) {
-    if (!date) return '';
-    const d = date.toDate ? date.toDate() : new Date(date);
-    return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
     });
-}
-
-// ===== INITIALIZATION =====
-function initializeApp() {
-    console.log("🚀 Initializing app...");
     
-    initMobileMenu();
-    
-    // Setup event listeners
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal') || 
-            e.target.classList.contains('modal-close') ||
-            e.target.closest('.modal-close')) {
-            closeModal();
-        }
-        
-        if (e.target.classList.contains('auth-tab')) {
-            const tabId = e.target.getAttribute('data-tab');
-            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+    // Setup auth tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            // Update active tab
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update active form
             document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
-            
-            e.target.classList.add('active');
-            const form = document.getElementById(`${tabId}Form`);
-            if (form) form.classList.add('active');
-        }
+            document.getElementById(tabName + 'Form').classList.add('active');
+        });
     });
     
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
+    // Setup hero buttons
+    const heroLoginBtn = document.getElementById('heroLoginBtn');
+    const heroSignupBtn = document.getElementById('heroSignupBtn');
     
-    // Login form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail')?.value;
-            const password = document.getElementById('loginPassword')?.value;
-            
-            if (email && password) {
-                const loginBtn = loginForm.querySelector('button[type="submit"]');
-                const originalText = loginBtn.innerHTML;
-                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                loginBtn.disabled = true;
-                
-                try {
-                    await loginUser(email, password);
-                } finally {
-                    loginBtn.innerHTML = originalText;
-                    loginBtn.disabled = false;
-                }
+    if (heroLoginBtn) {
+        heroLoginBtn.addEventListener('click', function() {
+            if (typeof showAuthModal === 'function') {
+                showAuthModal('login');
             }
         });
     }
     
-    // Signup form
-    const signupForm = document.getElementById('signupForm');
-    if (signupForm) {
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signupEmail')?.value;
-            const password = document.getElementById('signupPassword')?.value;
-            const displayName = document.getElementById('displayName')?.value;
-            const role = document.querySelector('input[name="role"]:checked')?.value || 'caller';
-            
-            if (email && password && displayName) {
-                const signupBtn = signupForm.querySelector('button[type="submit"]');
-                const originalText = signupBtn.innerHTML;
-                signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
-                signupBtn.disabled = true;
-                
-                try {
-                    await signupUser(email, password, displayName, role);
-                } finally {
-                    signupBtn.innerHTML = originalText;
-                    signupBtn.disabled = false;
-                }
+    if (heroSignupBtn) {
+        heroSignupBtn.addEventListener('click', function() {
+            if (typeof showAuthModal === 'function') {
+                showAuthModal('signup');
             }
         });
     }
     
-    // Google login
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
-    if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', async () => {
-            const originalText = googleLoginBtn.innerHTML;
-            googleLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
-            googleLoginBtn.disabled = true;
-            
-            try {
-                await signInWithGoogle();
-                // MANUAL redirect after Google login
-                showToast('Login successful! Going to dashboard...', 'success');
-                setTimeout(() => {
-                    window.location.href = 'enhanced-dashboard.html';
-                }, 1500);
-            } finally {
-                googleLoginBtn.innerHTML = originalText;
-                googleLoginBtn.disabled = false;
-            }
-        });
-    }
-    
-    // Google signup (if separate button exists)
-    const googleSignupBtn = document.getElementById('googleSignupBtn');
-    if (googleSignupBtn) {
-        googleSignupBtn.addEventListener('click', async () => {
-            const originalText = googleSignupBtn.innerHTML;
-            googleSignupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
-            googleSignupBtn.disabled = true;
-            
-            try {
-                await signInWithGoogle();
-                // MANUAL redirect after Google signup
-                showToast('Account created! Going to dashboard...', 'success');
-                setTimeout(() => {
-                    window.location.href = 'enhanced-dashboard.html';
-                }, 1500);
-            } finally {
-                googleSignupBtn.innerHTML = originalText;
-                googleSignupBtn.disabled = false;
+    // Refresh whispers button
+    const refreshBtn = document.getElementById('refreshWhispersBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+            if (typeof loadWhispers === 'function') {
+                loadWhispers();
             }
         });
     }
     
     console.log('✅ App initialized successfully');
+});
+
+// ===== GLOBAL FUNCTIONS =====
+// Load whispers for home page - GLOBAL FUNCTION
+async function loadWhispers() {
+    const grid = document.getElementById('whispersGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '<div class="loading-spinner"></div>';
+    
+    try {
+        // Make sure getAvailableWhispers is available
+        if (typeof getAvailableWhispers !== 'function') {
+            console.error('getAvailableWhispers not found');
+            grid.innerHTML = '<p>Error loading whispers. Please refresh.</p>';
+            return;
+        }
+        
+        const whispers = await getAvailableWhispers();
+        
+        if (whispers.length === 0) {
+            grid.innerHTML = '<p>No whispers available. Check back soon!</p>';
+            return;
+        }
+        
+        let html = '';
+        whispers.forEach(whisper => {
+            html += `
+                <div class="whisper-card">
+                    <div class="whisper-avatar">
+                        <img src="${whisper.avatarUrl}" alt="${whisper.displayName}" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(whisper.displayName)}&backgroundColor=6c63ff'">
+                    </div>
+                    <div class="whisper-info">
+                        <h3>${whisper.displayName}</h3>
+                        <div class="whisper-category">${whisper.category}</div>
+                        <div class="whisper-rating">
+                            <i class="fas fa-star"></i> ${whisper.rating.toFixed(1)}
+                        </div>
+                        <p class="whisper-bio">${whisper.bio}</p>
+                        <div class="whisper-price">
+                            <span class="price-tag">1 Coin</span>
+                            <button class="btn-primary" onclick="startCallWithWhisper('${whisper.id}')">
+                                <i class="fas fa-phone"></i> Call Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        grid.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Load whispers error:', error);
+        grid.innerHTML = '<p>Error loading whispers. Please try again.</p>';
+    }
 }
 
-// ===== EXPOSE FUNCTIONS TO WINDOW =====
-window.initMobileMenu = initMobileMenu;
-window.loginUser = loginUser;
-window.signupUser = signupUser;
-window.startCall = startCall;
-window.formatDuration = formatDuration;
-window.formatDate = formatDate;
-window.initializeApp = initializeApp;
-
-// ===== INITIALIZE ON LOAD =====
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    initializeApp();
+// Page-specific initialization for index.html
+function initIndexPage() {
+    console.log('📱 Initializing index page...');
+    
+    // Load whispers if on home page
+    loadWhispers();
+    
+    // Setup auth form submissions
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            const result = await signInWithEmail(email, password);
+            if (result.success) {
+                closeModal();
+                showToast('Logged in successfully!', 'success');
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
+    
+    if (signupForm) {
+        signupForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const displayName = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            if (!displayName || !email || !password) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            const result = await signUpWithEmail(email, password, displayName);
+            if (result.success) {
+                closeModal();
+                showToast('Account created! Welcome to Whisper+Me!', 'success');
+            } else {
+                showToast(result.error, 'error');
+            }
+        });
+    }
 }
+
+// Check if we're on index.html and initialize
+if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/liveones/')) {
+    window.initPage = initIndexPage;
+}
+
+// Make loadWhispers available globally regardless of page
+window.loadWhispers = loadWhispers;

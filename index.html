@@ -3,113 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-adsense-account" content="ca-pub-1184595877548269">
-    <title>Whisper+Me - Connect with Amazing People</title>
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1184595877548269" crossorigin="anonymous"></script>
+    <title>Whisper+Me - Connect Instantly</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     
     <style>
-        /* Additional styles for the centered hero */
-        .hero {
-            min-height: 80vh;
+        .hero-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #151515 100%);
             display: flex;
             align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 120px 0 60px;
+            position: relative;
+            overflow: hidden;
         }
         
         .hero-content {
-            width: 100%;
-            max-width: 900px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
         
-        .hero h1 {
-            margin-top: 0 !important;
-            margin-bottom: var(--space-xl) !important;
-            text-align: center;
-            width: 100%;
-            font-size: 4rem !important;
+        .hero-title {
+            font-size: 4.5rem !important;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
         
         .hero-subtitle {
             font-size: 1.5rem !important;
             color: var(--text-gray);
-            margin-bottom: var(--space-2xl);
-            line-height: 1.6;
-            max-width: 700px;
+            margin-bottom: 40px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
         
         .hero-buttons {
             display: flex;
-            gap: 20px !important;
+            gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
-            margin: var(--space-2xl) auto;
-            max-width: 800px;
         }
         
-        .hero-buttons .btn {
-            min-width: 200px;
-            font-size: 1.2rem !important;
-            padding: 18px 35px !important;
-        }
-        
-        /* IMMEDIATE WHISPERS SECTION - FIRST COLUMN UNDER BUTTONS */
-        .immediate-whispers {
-            padding: 40px 0 80px;
-            background: var(--dark-light);
-        }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: var(--space-xl);
-        }
-        
-        .section-header h2 {
-            font-size: 2.5rem !important;
-            margin-bottom: var(--space-md);
-        }
-        
-        .section-header p {
-            max-width: 600px;
-            margin: 0 auto;
-            font-size: 1.2rem !important;
-            color: var(--text-gray);
-        }
-        
-        /* Stats section */
-        .stats-section {
-            padding: 40px 0;
-            background: rgba(108, 99, 255, 0.05);
-            border-radius: var(--radius-lg);
-            margin: 40px auto;
-            max-width: 900px;
-        }
-        
-        .stats {
+        .hero-stats {
             display: flex;
             justify-content: center;
-            gap: var(--space-xl);
+            gap: 40px;
+            margin-top: 60px;
             flex-wrap: wrap;
         }
         
         .stat-item {
             text-align: center;
-            flex: 1;
-            min-width: 150px;
         }
         
-        .stat-value {
+        .stat-number {
             font-size: 2.5rem !important;
             font-weight: 800;
             background: var(--gradient);
@@ -117,111 +74,212 @@
             background-clip: text;
             color: transparent;
             display: block;
-            margin-bottom: 5px;
         }
         
         .stat-label {
             color: var(--text-gray);
             font-size: 1rem !important;
-            font-weight: 500;
+            margin-top: 5px;
         }
         
-        /* Feature highlights */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--space-lg);
-            margin: var(--space-xl) 0;
+        .whispers-section {
+            padding: 100px 0;
+            background: #0a0a0a;
         }
         
-        .feature-card {
-            background: var(--card-bg);
-            padding: var(--space-lg);
-            border-radius: var(--radius-lg);
+        .section-header {
             text-align: center;
-            transition: var(--transition);
+            margin-bottom: 60px;
         }
         
-        .feature-card:hover {
-            transform: translateY(-5px);
+        .section-title {
+            font-size: 3rem !important;
+            margin-bottom: 15px;
+        }
+        
+        .section-subtitle {
+            color: var(--text-gray);
+            font-size: 1.2rem !important;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .whispers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .whisper-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .whisper-card:hover {
+            transform: translateY(-10px);
             box-shadow: var(--shadow);
         }
         
-        .feature-icon {
-            font-size: 2.5rem !important;
-            color: var(--primary);
-            margin-bottom: var(--space-md);
+        .whisper-avatar {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
         }
         
-        .feature-card h3 {
+        .whisper-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .whisper-card:hover .whisper-avatar img {
+            transform: scale(1.05);
+        }
+        
+        .whisper-info {
+            padding: 25px;
+        }
+        
+        .whisper-info h3 {
             font-size: 1.5rem !important;
-            margin-bottom: var(--space-sm);
+            margin-bottom: 10px;
         }
         
-        .feature-card p {
-            font-size: 1rem !important;
-            color: var(--text-gray);
-        }
-        
-        /* How It Works */
-        .how-it-works-section {
-            padding: 80px 0;
-            background: linear-gradient(135deg, rgba(108, 99, 255, 0.05) 0%, rgba(255, 101, 132, 0.05) 100%);
-        }
-        
-        /* CTA Section */
-        .cta-section {
-            text-align: center;
-            padding: 60px 0;
-            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 101, 132, 0.1) 100%);
-            border-radius: var(--radius-lg);
-            margin: var(--space-xl) 0;
-        }
-        
-        .cta-section h2 {
-            font-size: 2.5rem !important;
-            margin-bottom: var(--space-md);
-        }
-        
-        .cta-section p {
-            font-size: 1.2rem !important;
-            max-width: 600px;
-            margin: 0 auto var(--space-lg);
-            color: var(--text-gray);
-        }
-        
-        .cta-button {
-            font-size: 1.3rem !important;
-            padding: 18px 40px !important;
-            min-height: 60px !important;
-        }
-        
-        /* Loading spinner */
-        .loading-spinner {
+        .whisper-category {
             display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--primary);
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem !important;
+            margin-bottom: 10px;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .whisper-rating {
+            color: #FFD700;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            grid-column: 1/-1;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
+        .whisper-bio {
             color: var(--text-gray);
             margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .whisper-price {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .price-tag {
+            font-size: 1.5rem !important;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem !important;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem !important;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero-stats {
+                gap: 20px;
+            }
+            
+            .section-title {
+                font-size: 2.5rem !important;
+            }
+            
+            .whispers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+        
+        /* How it works section */
+        .how-it-works {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #151515 0%, #0a0a0a 100%);
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .step-card {
+            text-align: center;
+            padding: 40px 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-lg);
+            transition: var(--transition);
+        }
+        
+        .step-card:hover {
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 2rem !important;
+            color: white;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.9rem !important;
+        }
+        
+        .step-card h3 {
+            font-size: 1.5rem !important;
+            margin-bottom: 15px;
+        }
+        
+        .step-card p {
+            color: var(--text-gray);
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -238,13 +296,21 @@
                 <a href="#home" class="nav-link active">Home</a>
                 <a href="#whispers" class="nav-link">Whispers</a>
                 <a href="#how-it-works" class="nav-link">How It Works</a>
-                <a href="#pricing" class="nav-link">Buy Coins</a>
+                <a href="payment.html" class="nav-link">Buy Coins</a>
+                <a href="enhanced-dashboard.html" class="nav-link">Dashboard</a>
             </div>
             
             <div class="nav-actions">
-                <span id="userNav" class="nav-user">User</span>
-                <button id="logoutBtn" class="btn-outline" style="display: none;">Log Out</button>
-                <button id="loginBtn" class="btn-primary">Log In</button>
+                <span id="userNav" class="nav-user">Guest</span>
+                <button id="loginBtn" class="btn-outline">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button id="signupBtn" class="btn-primary">
+                    <i class="fas fa-user-plus"></i> Signup
+                </button>
+                <button id="logoutBtn" class="btn-outline" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
             
             <button class="mobile-menu-btn">
@@ -254,189 +320,173 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero" id="home">
+    <section id="home" class="hero-section">
         <div class="container">
             <div class="hero-content">
-                <h1>Whisper+Me</h1>
+                <h1 class="hero-title">Connect Instantly with Amazing Whispers</h1>
                 <p class="hero-subtitle">
-                    Connect instantly with amazing people for meaningful conversations. 
-                    One coin, five minutes, endless possibilities.
+                    Join meaningful conversations, share stories, or just listen. 
+                    Connect with verified whispers for authentic 1-on-1 conversations.
                 </p>
                 
                 <div class="hero-buttons">
-                    <button class="btn-primary btn-lg" onclick="showAuthModal('signup')">
-                        <i class="fas fa-bolt"></i> Start Connecting
+                    <button id="heroLoginBtn" class="btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Start Talking
                     </button>
-                    <button class="btn-outline btn-lg" onclick="document.querySelector('#how-it-works').scrollIntoView({ behavior: 'smooth' })">
-                        <i class="fas fa-play-circle"></i> How It Works
+                    <button id="heroSignupBtn" class="btn-outline btn-lg">
+                        <i class="fas fa-user-plus"></i> Join Free
                     </button>
+                </div>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="activeUsers">1,234+</span>
+                        <span class="stat-label">Active Users</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalCallsStat">5,678+</span>
+                        <span class="stat-label">Calls Made</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="whisperCount">89+</span>
+                        <span class="stat-label">Whispers Online</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">4.9★</span>
+                        <span class="stat-label">User Rating</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Available Whispers (FIRST COLUMN UNDER BUTTONS) -->
-    <section class="immediate-whispers" id="whispers">
+    <!-- Available Whispers Section -->
+    <section id="whispers" class="whispers-section">
         <div class="container">
             <div class="section-header">
-                <h2>Available Whispers Right Now</h2>
-                <p>Connect instantly with amazing people ready to have meaningful conversations with you</p>
+                <h2 class="section-title">Available Whispers</h2>
+                <p class="section-subtitle">
+                    Connect with verified whispers ready for meaningful conversations. 
+                    Each whisper brings unique perspectives and stories.
+                </p>
             </div>
             
-            <div class="whispers-grid" id="whispersGrid">
+            <div id="whispersGrid" class="whispers-grid">
                 <!-- Whispers will be loaded here dynamically -->
-                <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
-                    <p>Loading available whispers...</p>
-                </div>
+                <div class="loading-spinner"></div>
             </div>
             
-            <div style="text-align: center; margin-top: var(--space-xl);">
-                <button class="btn-outline" onclick="loadWhispers()">
-                    <i class="fas fa-sync-alt"></i> Refresh Whispers
+            <div style="text-align: center;">
+                <button id="refreshWhispersBtn" class="btn-outline">
+                    <i class="fas fa-sync-alt"></i> Refresh List
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- Feature Highlights -->
-    <section class="features-section">
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
         <div class="container">
             <div class="section-header">
-                <h2>Why Choose Whisper+Me</h2>
-                <p>Experience the best platform for meaningful connections</p>
-            </div>
-            
-            <div class="features">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Safe & Secure</h3>
-                    <p>Verified users and secure connections for worry-free conversations</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3>Instant Connect</h3>
-                    <p>Start talking in seconds with our seamless connection system</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <h3>Simple Pricing</h3>
-                    <p>One coin = five minutes. No subscriptions, no commitments</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats -->
-    <section class="stats-section">
-        <div class="container">
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value">10K+</div>
-                    <div class="stat-label">Active Members</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">50K+</div>
-                    <div class="stat-label">Calls Made</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">4.9★</div>
-                    <div class="stat-label">Average Rating</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="how-it-works-section" id="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <h2>How Whisper+Me Works</h2>
-                <p>Get started in three simple steps</p>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">
+                    Getting started with Whisper+Me is simple and straightforward.
+                </p>
             </div>
             
             <div class="steps-grid">
                 <div class="step-card">
-                    <div class="step-number">1</div>
                     <div class="step-icon">
                         <i class="fas fa-user-plus"></i>
                     </div>
+                    <span class="step-number">1</span>
                     <h3>Create Account</h3>
-                    <p>Sign up for free in seconds. No credit card required to browse.</p>
+                    <p>Sign up for free and get 5 free coins to start your first conversations.</p>
                 </div>
                 
                 <div class="step-card">
-                    <div class="step-number">2</div>
                     <div class="step-icon">
-                        <i class="fas fa-coins"></i>
+                        <i class="fas fa-search"></i>
                     </div>
-                    <h3>Get Coins</h3>
-                    <p>Purchase coins at $15 each. One coin = five minutes of conversation.</p>
+                    <span class="step-number">2</span>
+                    <h3>Find Whispers</h3>
+                    <p>Browse available whispers based on interests, ratings, and availability.</p>
                 </div>
                 
                 <div class="step-card">
-                    <div class="step-number">3</div>
                     <div class="step-icon">
                         <i class="fas fa-phone-alt"></i>
                     </div>
-                    <h3>Start Talking</h3>
-                    <p>Choose a whisper and connect instantly. Have meaningful conversations!</p>
+                    <span class="step-number">3</span>
+                    <h3>Start a Call</h3>
+                    <p>Use 1 coin to start a 5-minute conversation with your chosen whisper.</p>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <span class="step-number">4</span>
+                    <h3>Earn or Buy More</h3>
+                    <p>Become a whisper to earn coins, or purchase more to continue conversations.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Pricing -->
-    <section class="pricing-section" id="pricing">
-        <div class="container">
-            <div class="section-header">
-                <h2>Simple Pricing</h2>
-                <p>One coin, five minutes. No subscriptions, no hidden fees</p>
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Welcome to Whisper+Me</h3>
+                <button class="modal-close">&times;</button>
             </div>
             
-            <div class="coins-grid">
-                <div class="coin-package popular">
-                    <div class="package-icon">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <h3 class="package-name">Whisper Coin</h3>
-                    <div class="coin-amount">1</div>
-                    <div class="coin-label">Whisper Coin</div>
-                    <div class="package-price">$15<span> + tax</span></div>
-                    
-                    <ul class="package-features">
-                        <li><i class="fas fa-check"></i> 5 minutes of conversation</li>
-                        <li><i class="fas fa-check"></i> Connect with any whisper</li>
-                        <li><i class="fas fa-check"></i> Instant activation</li>
-                        <li><i class="fas fa-check"></i> Money-back guarantee</li>
-                    </ul>
-                    
-                    <button class="btn-primary btn-block" onclick="window.location.href='payment.html'">
-                        <i class="fas fa-shopping-cart"></i> Buy Now
-                    </button>
+            <div class="modal-body">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Login</button>
+                    <button class="auth-tab" data-tab="signup">Sign Up</button>
                 </div>
+                
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+                
+                <form id="signupForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="signupName">Display Name</label>
+                        <input type="text" id="signupName" placeholder="Choose a display name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create a password (min. 6 chars)" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary btn-block">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
             </div>
         </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <h2>Ready to Connect?</h2>
-            <p>Join thousands of people having meaningful conversations on Whisper+Me</p>
-            <button class="btn-primary cta-button" onclick="showAuthModal('signup')">
-                <i class="fas fa-user-plus"></i> Sign Up Free
-            </button>
-        </div>
-    </section>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -454,7 +504,7 @@
                     <h4>Platform</h4>
                     <a href="#whispers">Find Whispers</a>
                     <a href="#how-it-works">How It Works</a>
-                    <a href="#pricing">Buy Coins</a>
+                    <a href="payment.html">Buy Coins</a>
                     <a href="become-whisper.html">Become a Whisper</a>
                 </div>
                 
@@ -464,14 +514,6 @@
                     <a href="guidelines.html">Community Guidelines</a>
                     <a href="contact.html">Contact Us</a>
                     <a href="status.html">Service Status</a>
-                </div>
-                
-                <div class="footer-links">
-                    <h4>Connect</h4>
-                    <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
-                    <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
-                    <a href="#"><i class="fab fa-tiktok"></i> TikTok</a>
-                    <a href="#"><i class="fab fa-discord"></i> Discord</a>
                 </div>
             </div>
             
@@ -486,91 +528,6 @@
         </div>
     </footer>
 
-    <!-- Auth Modal -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            
-            <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">Log In</button>
-                <button class="auth-tab" data-tab="signup">Sign Up</button>
-            </div>
-            
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form active">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" required placeholder="your@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" required placeholder="••••••••">
-                </div>
-                
-                <button type="submit" class="btn-primary btn-block">
-                    <i class="fas fa-sign-in-alt"></i> Log In
-                </button>
-                
-                <div class="auth-divider">
-                    <span>or continue with</span>
-                </div>
-                
-                <div class="social-login">
-                    <button type="button" class="btn-outline" id="googleLoginBtn">
-                        <i class="fab fa-google"></i> Google
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Signup Form -->
-            <form id="signupForm" class="auth-form">
-                <div class="form-group">
-                    <label for="signupEmail">Email</label>
-                    <input type="email" id="signupEmail" required placeholder="your@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" required placeholder="••••••••">
-                </div>
-                
-                <div class="form-group">
-                    <label for="displayName">Display Name</label>
-                    <input type="text" id="displayName" required placeholder="What should we call you?">
-                </div>
-                
-                <div class="form-group">
-                    <label>I want to join as a:</label>
-                    <div class="radio-group">
-                        <label class="radio-option">
-                            <input type="radio" name="role" value="caller" checked>
-                            <span>Caller</span>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="role" value="whisper">
-                            <span>Whisper</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-primary btn-block">
-                    <i class="fas fa-user-plus"></i> Create Account
-                </button>
-                
-                <div class="auth-divider">
-                    <span>or continue with</span>
-                </div>
-                
-                <div class="social-login">
-                    <button type="button" class="btn-outline" id="googleSignupBtn">
-                        <i class="fab fa-google"></i> Google
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
@@ -578,14 +535,5 @@
     
     <script src="firebase-config.js"></script>
     <script src="scripts.js"></script>
-    
-    <script>
-        // Initialize the app when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing...');
-            // Load whispers immediately
-            loadWhispers();
-        });
-    </script>
 </body>
 </html>
